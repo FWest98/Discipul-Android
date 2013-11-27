@@ -1,17 +1,45 @@
 package com.thomasdh.roosterpgplus;
 
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +53,9 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
@@ -56,9 +83,172 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
+                                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+            ViewPager linearLayout = (ViewPager) rootView.findViewById(R.id.viewPager);
+            linearLayout.setAdapter(new MyPagerAdapter());
+
+            // If the user apikey is already obtained
+            if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
+                //Laat de gebruiker inloggen
+                showLoginDialog();
+            } else {
+                laadRooster(linearLayout, getActivity());
+            }
+
             return rootView;
+
+        }
+
+        private void laadWeken(final LinearLayout linearLayout, final Context context) {
+            new AsyncTask<String, Void, String>() {
+                @Override
+                protected String doInBackground(String... params) {
+                    HttpClient httpclient = new DefaultHttpClient();
+                    HttpGet Get = new HttpGet("http://rooster.fwest98.nl/api/rooster/info?weken");
+
+                    try {
+                        HttpResponse response = httpclient.execute(Get);
+                        int status = response.getStatusLine().getStatusCode();
+
+                        if (status == 200) {
+                            String s = "";
+                            Scanner sc = new Scanner(response.getEntity().getContent());
+                            while (sc.hasNext()) {
+                                s += sc.nextLine();
+                            }
+                            return s;
+                        } else {
+                            return "error:Onbekende status: " + status;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(String string) {
+                    System.out.println("!!!!WEKENE:" + string);
+                    if (string.startsWith("error:")) {
+                        Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
+                    } else {
+                        try {
+                            JSONArray weekArray = new JSONArray(string);
+                            ArrayList<String> weken = new ArrayList<String>();
+
+                            for (int i = 0; i < weekArray.length(); i++) {
+                                JSONObject week = weekArray.getJSONObject(i);
+                                weken.add(week.getString("week"));
+                            }
+
+
+                            /*Spinner spinner = (Spinner) linearLayout.findViewById(R.id.weken_spinner);
+                            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.id.weken_spinner, weken);
+                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            spinner.setAdapter(adapter);*/
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.execute();
+        }
+
+        private void laadRooster(final ViewPager linearLayout, final Context context) {
+            new LoadSceduleAndBuildLayout(context, linearLayout).execute();
+        }
+
+        private void login(String gebruikersnaam, String wachtwoord) {
+            new AsyncTask<String, Void, String>() {
+                @Override
+                protected String doInBackground(String... params) {
+                    HttpClient httpclient = new DefaultHttpClient();
+                    HttpPost httppost = new HttpPost("http://rooster.fwest98.nl/api/account/login.php");
+                    String s = null;
+                    try {
+                        // Add your data
+                        List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+
+                        //TODO: Beveiliging!
+                        postParameters.add(new BasicNameValuePair("username", params[0]));
+                        postParameters.add(new BasicNameValuePair("password", params[1]));
+                        postParameters.add(new BasicNameValuePair("encrypted", "false"));
+                        UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
+                        httppost.setEntity(form);
+
+                        // Execute HTTP Post Request
+                        HttpResponse response = httpclient.execute(httppost);
+                        int status = response.getStatusLine().getStatusCode();
+
+                        if (status == 400) {
+                            return "error:Missende parameters";
+                        } else if (status == 401) {
+                            return "error:Ongeldige logingegevens";
+                        } else if (status == 500) {
+                            return "error:Serverfout";
+                        } else if (status == 200) {
+                            return new Scanner(response.getEntity().getContent()).nextLine();
+                        } else {
+                            return "error:Onbekende status: " + status;
+                        }
+                    } catch (ClientProtocolException e) {
+                        s = "error:" + e.toString();
+                    } catch (IOException e) {
+                        s = "error:" + e.toString();
+                    }
+                    return s;
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    Log.e(this.getClass().getName(), "The string is: " + s);
+                    if (s.startsWith("error:")) {
+                        Toast.makeText(getActivity(), s.substring(6), Toast.LENGTH_LONG).show();
+                    } else {
+                        try {
+                            JSONObject jsonObject = new JSONObject(s);
+                            SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
+                            e.putString("key", jsonObject.getString("key"));
+                            System.out.println("The key: " + jsonObject.getString("key"));
+                            e.putString("naam", jsonObject.getString("naam"));
+                            if (jsonObject.has("klas")) {
+                                e.putString("klas", jsonObject.getString("klas"));
+                                e.putBoolean("vertegenwoordiger", jsonObject.getBoolean("vertegenwoordiger"));
+                            } else {
+                                e.putString("code", jsonObject.getString("code"));
+                            }
+                            e.apply();
+                            Toast.makeText(getActivity(), "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                    super.onPostExecute(s);
+                }
+            }.execute(gebruikersnaam, wachtwoord);
+        }
+
+        private void showLoginDialog() {
+            final Dialog dialog = new Dialog(getActivity());
+            dialog.setTitle("Log in");
+            dialog.setContentView(R.layout.logindialog);
+
+            final EditText gebruikersnaamEditText = (EditText) dialog.findViewById(R.id.logindialogusername);
+            final EditText wachtwoordEditText = (EditText) dialog.findViewById(R.id.logindialogpassword);
+
+            Button button = (Button) dialog.findViewById(R.id.dialogButtonOK);
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    login(gebruikersnaamEditText.getText().toString(), wachtwoordEditText.getText().toString());
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
         }
     }
 

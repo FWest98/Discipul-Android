@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:background="@drawable/basic_rect"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/rooster_vak"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp"
+        android:text="Vak"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/rooster_lokaal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rooster_vak"
+        android:layout_marginLeft="3dp"
+        android:text="Lokaal"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/rooster_leraar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/rooster_vak"
+        android:text="Leraar"
+        android:layout_marginRight="3dp"
+        android:textSize="15sp" />
+
+
+    <TextView
+        android:id="@+id/rooster_tijden"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rooster_lokaal"
+        android:layout_margin="3dp"
+        android:text="Tijden"
+        android:textSize="15sp" />
+
+</RelativeLayout>
