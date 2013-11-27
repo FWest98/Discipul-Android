@@ -156,6 +156,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                 }
                 viewPager.getAdapter().notifyDataSetChanged();
                 viewPager.setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
