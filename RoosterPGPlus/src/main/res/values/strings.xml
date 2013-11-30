@@ -5,4 +5,9 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <array name="dropdown">
+        <item>Dag</item>
+        <item>Week</item>
+    </array>
+
 </resources>

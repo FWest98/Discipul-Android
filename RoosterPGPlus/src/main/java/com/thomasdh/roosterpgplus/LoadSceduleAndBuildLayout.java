@@ -108,7 +108,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String string) {
-        boolean weekView = context.getResources().getBoolean(R.bool.big_screen);
+        boolean weekView = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("weekview", context.getResources().getBoolean(R.bool.big_screen));
 
         Log.d(getClass().getSimpleName(), "The string is: " + string);
         viewPager.setVisibility(View.VISIBLE);

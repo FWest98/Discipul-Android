@@ -15,9 +15,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -51,6 +54,26 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+        // Maak de navigation drawer
+        String[] keuzes = {"Persoonlijk rooster", "Andere roosters"};
+
+        ListView drawerList = (ListView) findViewById(R.id.drawer);
+        drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, keuzes));
+        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.main_linearlayout, new PlaceholderFragment())
+                            .commit();
+                } else if (position == 1) {
+                    //TODO Ander rooster
+                    Toast.makeText(getApplicationContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
@@ -143,12 +166,6 @@ public class MainActivity extends ActionBarActivity {
                                 JSONObject week = weekArray.getJSONObject(i);
                                 weken.add(week.getString("week"));
                             }
-
-
-                            /*Spinner spinner = (Spinner) linearLayout.findViewById(R.id.weken_spinner);
-                            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.id.weken_spinner, weken);
-                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            spinner.setAdapter(adapter);*/
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -252,5 +269,4 @@ public class MainActivity extends ActionBarActivity {
             dialog.show();
         }
     }
-
 }
