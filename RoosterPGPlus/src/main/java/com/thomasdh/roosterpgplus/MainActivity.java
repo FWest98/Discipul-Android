@@ -198,7 +198,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         private void laadRooster(final ViewPager linearLayout, final Context context, final View v) {
-            new LoadSceduleAndBuildLayout(context, linearLayout, v).execute();
+            new LoadSceduleAndBuildLayout(context, linearLayout, v, false).execute();
         }
 
         private void login(String gebruikersnaam, String wachtwoord) {

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="min_refresh_wait_time">600000</integer>
+
+    //Warning: changing this number will probably make all the already preloaded weeks unusable
+    <integer name="number_of_saved_weeks">4</integer>
+</resources>

@@ -37,11 +37,13 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
     public Context context;
     public ViewPager viewPager;
     public View rootView;
+    public boolean forceReload;
 
-    public LoadSceduleAndBuildLayout(Context context, ViewPager viewPager, View rootView) {
+    public LoadSceduleAndBuildLayout(Context context, ViewPager viewPager, View rootView, boolean forceReload) {
         this.context = context;
         this.viewPager = viewPager;
         this.rootView = rootView;
+        this.forceReload = forceReload;
     }
 
     public static String getTijden(int x) {
@@ -91,9 +93,9 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
         //Controleer of het apparaat een internetverbinding heeft
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+        if (netInfo != null && netInfo.isConnectedOrConnecting() && (itIsTimeToReload() || forceReload)) {
             String JSON = laadViaInternet();
-            slaOp(JSON);
+            slaOp(JSON, Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
             Log.d(getClass().getSimpleName(), "Loaded from internet");
             if (JSON == null) {
                 Log.d(getClass().getSimpleName(), "The string is null");
@@ -101,9 +103,17 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
             return JSON;
         }
 
-        String JSON = laadInternal();
+        String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         Log.d(getClass().getSimpleName(), "Loaded without internet");
         return JSON;
+    }
+
+    boolean itIsTimeToReload() {
+        if (PreferenceManager.getDefaultSharedPreferences(context).getLong("lastRefreshTime", 0) +
+                context.getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -218,12 +228,12 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
         return px;
     }
 
-    String laadInternal() {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString("week", "error:Er is nog geen rooster in het geheugen opgeslagen");
+    String laadInternal(int weeknr) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks), "error:Er is nog geen rooster in het geheugen opgeslagen");
     }
 
-    void slaOp(String JSON) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week", JSON).commit();
+    void slaOp(String JSON, int weeknr) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week" + weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks), JSON).commit();
     }
 
     String laadViaInternet() {
@@ -248,6 +258,10 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                 while (sc.hasNext()) {
                     s += sc.nextLine();
                 }
+
+                // Sla de tijd op wanneer het rooster voor het laatst gedownload is.
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putLong("lastRefreshTime", System.currentTimeMillis()).commit();
+
                 return s;
             } else {
                 return "error:Onbekende status: " + status;
