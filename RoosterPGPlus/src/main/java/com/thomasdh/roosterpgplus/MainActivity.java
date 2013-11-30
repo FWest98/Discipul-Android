@@ -89,12 +89,13 @@ public class MainActivity extends ActionBarActivity {
             ViewPager linearLayout = (ViewPager) rootView.findViewById(R.id.viewPager);
             linearLayout.setAdapter(new MyPagerAdapter());
 
+
             // If the user apikey is already obtained
             if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
                 //Laat de gebruiker inloggen
                 showLoginDialog();
             } else {
-                laadRooster(linearLayout, getActivity());
+                laadRooster(linearLayout, getActivity(), rootView);
             }
 
             return rootView;
@@ -157,8 +158,8 @@ public class MainActivity extends ActionBarActivity {
             }.execute();
         }
 
-        private void laadRooster(final ViewPager linearLayout, final Context context) {
-            new LoadSceduleAndBuildLayout(context, linearLayout).execute();
+        private void laadRooster(final ViewPager linearLayout, final Context context, final View v) {
+            new LoadSceduleAndBuildLayout(context, linearLayout, v).execute();
         }
 
         private void login(String gebruikersnaam, String wachtwoord) {

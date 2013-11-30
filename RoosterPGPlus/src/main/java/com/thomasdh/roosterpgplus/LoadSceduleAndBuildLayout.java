@@ -2,13 +2,17 @@ package com.thomasdh.roosterpgplus;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,10 +34,12 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
 
     public Context context;
     public ViewPager viewPager;
+    public View rootLayout;
 
-    public LoadSceduleAndBuildLayout(Context context, ViewPager viewPager) {
+    public LoadSceduleAndBuildLayout(Context context, ViewPager viewPager, View rootLayout) {
         this.context = context;
         this.viewPager = viewPager;
+        this.rootLayout = rootLayout;
     }
 
     public static String getTijden(int x) {
@@ -79,8 +85,117 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        String apikey = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
 
+        //Controleer of het apparaat een internetverbinding heeft
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            String JSON = laadViaInternet();
+            slaOp(JSON);
+            Log.d(getClass().getSimpleName(), "Loaded from internet");
+            if (JSON == null) {
+                Log.d(getClass().getSimpleName(), "The string is null");
+            }
+            return JSON;
+        }
+
+        String JSON = laadInternal();
+        Log.d(getClass().getSimpleName(), "Loaded without internet");
+        return JSON;
+    }
+
+    @Override
+    protected void onPostExecute(String string) {
+        Log.d(getClass().getSimpleName(), "The string is: " + string);
+        viewPager.setVisibility(View.VISIBLE);
+        RelativeLayout progressBar = (RelativeLayout) rootLayout.findViewById(R.id.progressbar);
+        progressBar.setVisibility(View.GONE);
+        if (string != null) {
+            if (string.startsWith("error:")) {
+                Toast.makeText(context, string.substring(6), Toast.LENGTH_LONG).show();
+            } else {
+                try {
+                    JSONObject weekArray = new JSONObject(string);
+                    LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+                    boolean rightWeek = true;
+                    roostermaker:
+                    for (int day = 2; day < 7; day++) {
+
+                        JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day));
+                        View dagView = inflater.inflate(R.layout.rooster_dag, null);
+                        LinearLayout ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
+
+                        //Ga langs alle uren
+                        for (int y = 0; y < 7; y++) {
+                            if (dagArray.has(String.valueOf(y + 1))) {
+                                JSONObject uurObject = dagArray.getJSONArray(String.valueOf(y + 1)).getJSONObject(0);
+                                View uur = null;
+                                if (uurObject.getInt("week") != Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1) {
+                                    rightWeek = false;
+                                    Log.d(getClass().getSimpleName(), "The wanted week is " + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1) + ", but the found week is " + uurObject.getInt("week"));
+                                    break roostermaker;
+                                }
+                                if (uurObject.getString("vervallen").equals("1")) {
+                                    uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
+                                    uur.setMinimumHeight((int) convertDPToPX(80, context));
+                                    ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(uurObject.getString("vak") + " valt uit");
+                                } else {
+                                    uur = inflater.inflate(R.layout.rooster_uur, null);
+                                    ((TextView) uur.findViewById(R.id.rooster_vak)).setText(uurObject.getString("vak"));
+                                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(uurObject.getString("leraar"));
+                                    ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(uurObject.getString("lokaal"));
+                                    ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
+                                }
+                                uur.setMinimumHeight((int) convertDPToPX(80, context));
+                                ll.addView(uur);
+                            } else {
+                                View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
+                                vrij.setMinimumHeight((int) convertDPToPX(80, context));
+                                ll.addView(vrij);
+                            }
+                        }
+                        ll.setPadding((int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context));
+                        ((MyPagerAdapter) viewPager.getAdapter()).addView(dagView);
+                    }
+                    if (!rightWeek) {
+                        TextView tv = new TextView(context);
+                        tv.setText("Helaas, de app kon geen rooster laden.");
+                        viewPager.addView(tv);
+                        viewPager.getAdapter().notifyDataSetChanged();
+                    } else {
+                        viewPager.getAdapter().notifyDataSetChanged();
+                        viewPager.setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            TextView tv = new TextView(context);
+            tv.setText("Helaas, de app kon geen rooster laden.");
+            viewPager.addView(tv);
+            viewPager.getAdapter().notifyDataSetChanged();
+        }
+    }
+
+    float convertDPToPX(float pixel, Context c) {
+        Resources r = c.getResources();
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, r.getDisplayMetrics());
+        return px;
+    }
+
+    String laadInternal() {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString("week", "error:Er is nog geen rooster in het geheugen opgeslagen");
+    }
+
+    void slaOp(String JSON) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week", JSON).commit();
+    }
+
+    String laadViaInternet() {
+        String apikey = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
         HttpClient httpclient = new DefaultHttpClient();
         HttpGet httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?key=" + apikey);
 
@@ -109,69 +224,5 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    protected void onPostExecute(String string) {
-        System.out.println("!!!Lessen: " + string);
-        if (string.startsWith("error:")) {
-            Toast.makeText(context, string.substring(6), Toast.LENGTH_LONG).show();
-        } else {
-            try {
-                JSONObject weekArray = new JSONObject(string);
-
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-                for (int day = 2; day < 7; day++) {
-
-                    JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day));
-                    View dagView = inflater.inflate(R.layout.rooster_dag, null);
-                    LinearLayout ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
-
-
-                    TextView t = new TextView(context);
-                    t.setText(getDayOfWeek(day));
-                    ll.addView(t);
-
-                    //Ga langs alle uren
-                    for (int y = 0; y < 7; y++) {
-                        if (dagArray.has(String.valueOf(y + 1))) {
-                            JSONObject uurObject = dagArray.getJSONArray(String.valueOf(y + 1)).getJSONObject(0);
-                            View uur = null;
-                            if (uurObject.getString("vervallen").equals("1")) {
-                                uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
-                                uur.setMinimumHeight((int) convertDPToPX(80, context));
-                                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(uurObject.getString("vak") + " valt uit");
-                            } else {
-                                uur = inflater.inflate(R.layout.rooster_uur, null);
-                                ((TextView) uur.findViewById(R.id.rooster_vak)).setText(uurObject.getString("vak"));
-                                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(uurObject.getString("leraar"));
-                                ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(uurObject.getString("lokaal"));
-                                ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
-                            }
-                            uur.setMinimumHeight((int) convertDPToPX(80, context));
-                            ll.addView(uur);
-                        } else {
-                            View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
-                            vrij.setMinimumHeight((int) convertDPToPX(80, context));
-                            ll.addView(vrij);
-                        }
-                    }
-                    ll.setPadding((int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context));
-                    ((MyPagerAdapter) viewPager.getAdapter()).addView(dagView);
-                }
-                viewPager.getAdapter().notifyDataSetChanged();
-                viewPager.setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    float convertDPToPX(float pixel, Context c) {
-        Resources r = c.getResources();
-        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, r.getDisplayMetrics());
-        return px;
     }
 }
