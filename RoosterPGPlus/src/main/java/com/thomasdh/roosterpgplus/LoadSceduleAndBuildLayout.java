@@ -1,9 +1,11 @@
 package com.thomasdh.roosterpgplus;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -18,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Scanner;
 
@@ -132,12 +133,14 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                     t.setText(getDayOfWeek(day));
                     ll.addView(t);
 
+                    //Ga langs alle uren
                     for (int y = 0; y < 7; y++) {
                         if (dagArray.has(String.valueOf(y + 1))) {
                             JSONObject uurObject = dagArray.getJSONArray(String.valueOf(y + 1)).getJSONObject(0);
                             View uur = null;
                             if (uurObject.getString("vervallen").equals("1")) {
                                 uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
+                                uur.setMinimumHeight((int) convertDPToPX(80, context));
                                 ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(uurObject.getString("vak") + " valt uit");
                             } else {
                                 uur = inflater.inflate(R.layout.rooster_uur, null);
@@ -146,12 +149,15 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                                 ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(uurObject.getString("lokaal"));
                                 ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
                             }
+                            uur.setMinimumHeight((int) convertDPToPX(80, context));
                             ll.addView(uur);
                         } else {
                             View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
+                            vrij.setMinimumHeight((int) convertDPToPX(80, context));
                             ll.addView(vrij);
                         }
                     }
+                    ll.setPadding((int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context));
                     ((MyPagerAdapter) viewPager.getAdapter()).addView(dagView);
                 }
                 viewPager.getAdapter().notifyDataSetChanged();
@@ -161,5 +167,11 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                 e.printStackTrace();
             }
         }
+    }
+
+    float convertDPToPX(float pixel, Context c) {
+        Resources r = c.getResources();
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, r.getDisplayMetrics());
+        return px;
     }
 }
