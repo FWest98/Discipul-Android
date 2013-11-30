@@ -8,5 +8,22 @@
         android:id="@+id/rooster_dag_linearlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"></LinearLayout>
+        android:orientation="vertical">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:orientation="vertical"
+
+            >
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Weekdag"
+                android:gravity="center_horizontal"
+                android:textSize="24sp"
+                android:id="@+id/weekdagnaam"
+                />
+        </RelativeLayout>
+        </LinearLayout>
 </ScrollView>

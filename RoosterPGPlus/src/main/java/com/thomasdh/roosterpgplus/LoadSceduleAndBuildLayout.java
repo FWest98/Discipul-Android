@@ -137,6 +137,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         if (!weekView) {
                             dagView = inflater.inflate(R.layout.rooster_dag, null);
                             ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
+                            ((TextView) ll.findViewById(R.id.weekdagnaam)).setText(getDayOfWeek(day));
                         } else {
                             dagView = new LinearLayout(context);
                             ll = (LinearLayout) dagView;
