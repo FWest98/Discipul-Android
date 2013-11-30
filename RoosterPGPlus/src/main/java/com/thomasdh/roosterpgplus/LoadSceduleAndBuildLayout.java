@@ -11,8 +11,10 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -106,6 +108,8 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String string) {
+        boolean weekView = context.getResources().getBoolean(R.bool.big_screen);
+
         Log.d(getClass().getSimpleName(), "The string is: " + string);
         viewPager.setVisibility(View.VISIBLE);
         RelativeLayout progressBar = (RelativeLayout) rootLayout.findViewById(R.id.progressbar);
@@ -115,6 +119,11 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                 Toast.makeText(context, string.substring(6), Toast.LENGTH_LONG).show();
             } else {
                 try {
+                    LinearLayout weekLinearLayout = null;
+                    if (weekView) {
+                        weekLinearLayout = new LinearLayout(context);
+                        weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
+                    }
                     JSONObject weekArray = new JSONObject(string);
                     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -123,8 +132,16 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                     for (int day = 2; day < 7; day++) {
 
                         JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day));
-                        View dagView = inflater.inflate(R.layout.rooster_dag, null);
-                        LinearLayout ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
+                        View dagView;
+                        LinearLayout ll;
+                        if (!weekView) {
+                            dagView = inflater.inflate(R.layout.rooster_dag, null);
+                            ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
+                        } else {
+                            dagView = new LinearLayout(context);
+                            ll = (LinearLayout) dagView;
+                            ll.setOrientation(LinearLayout.VERTICAL);
+                        }
 
                         //Ga langs alle uren
                         for (int y = 0; y < 7; y++) {
@@ -155,8 +172,14 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                                 ll.addView(vrij);
                             }
                         }
-                        ll.setPadding((int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context));
-                        ((MyPagerAdapter) viewPager.getAdapter()).addView(dagView);
+                        if (weekView) {
+                            ll.setPadding((int) convertDPToPX(3, context), (int) convertDPToPX(3, context), (int) convertDPToPX(3, context), (int) convertDPToPX(3, context));
+                            dagView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+                            weekLinearLayout.addView(dagView);
+                        } else {
+                            ll.setPadding((int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context));
+                            ((MyPagerAdapter) viewPager.getAdapter()).addView(dagView);
+                        }
                     }
                     if (!rightWeek) {
                         TextView tv = new TextView(context);
@@ -164,6 +187,12 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         viewPager.addView(tv);
                         viewPager.getAdapter().notifyDataSetChanged();
                     } else {
+                        if (weekView) {
+                            weekLinearLayout.invalidate();
+                            ScrollView weekScrollView = new ScrollView(context);
+                            weekScrollView.addView(weekLinearLayout);
+                            ((MyPagerAdapter) viewPager.getAdapter()).addView(weekScrollView);
+                        }
                         viewPager.getAdapter().notifyDataSetChanged();
                         viewPager.setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
                     }
