@@ -9,6 +9,9 @@
     <RelativeLayout
         android:layout_height="80dp"
         android:layout_width="match_parent"
-        android:background="@drawable/diagonal_stripes"></RelativeLayout>
+        android:background="@drawable/diagonal_stripes"
+        android:layout_margin="1dp">
+
+        </RelativeLayout>
 
 </RelativeLayout>

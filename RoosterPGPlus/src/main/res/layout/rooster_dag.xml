@@ -11,7 +11,10 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:text="Weekdag"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        />
 
     <ScrollView
         android:id="@+id/scrollview"
@@ -22,6 +25,7 @@
             android:id="@+id/rooster_dag_linearlayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical" />
+            android:orientation="vertical">
+        </LinearLayout>
     </ScrollView>
 </LinearLayout>

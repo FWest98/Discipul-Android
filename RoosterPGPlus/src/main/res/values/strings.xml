@@ -11,4 +11,9 @@
         <item>Week</item>
     </array>
 
+    <string name="logindialog_title">Log in</string>
+    <string name="logindialog_tabs_userpass">RoosterPG+-account</string>
+    <string name="logindialog_tabs_llnr">Leerlingnummer</string>
+    <string name="logindialog_loginbutton">Log in</string>
+    <string name="logindialog_cancelbutton">Annuleer</string>
 </resources>

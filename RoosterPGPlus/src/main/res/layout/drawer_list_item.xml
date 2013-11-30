@@ -4,10 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:minHeight="35sp"
-    android:paddingEnd="14.5sp"
-    android:paddingStart="14.5sp"
+    android:minHeight="56dp"
+    android:paddingLeft="16dp"
     android:text="Text"
-    android:textColor="#fff"
-    android:textSize="20sp" />
+    android:textColor="#313131"
+    android:textSize="24sp"/>
 

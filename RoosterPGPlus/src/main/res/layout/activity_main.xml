@@ -13,12 +13,12 @@
 
     <ListView
         android:id="@+id/drawer"
-        android:layout_width="240dp"
+        android:layout_width="260dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="#111"
+        android:background="#F5F5F5"
         android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"></ListView>
+        android:divider="@drawable/abc_list_divider_holo_light"
+        android:dividerHeight="1dp"></ListView>
 
 </android.support.v4.widget.DrawerLayout>

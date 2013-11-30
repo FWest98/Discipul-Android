@@ -1,5 +1,6 @@
 package com.thomasdh.roosterpgplus;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -24,7 +25,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TabHost;
 import android.widget.Toast;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -72,6 +76,7 @@ public class MainActivity extends ActionBarActivity {
                     fragmentManager.beginTransaction()
                             .replace(R.id.main_linearlayout, new PlaceholderFragment())
                             .commit();
+                    //TODO reload rooster (dus gewoon opnieuw de view aanmaken?)
                 } else if (position == 1) {
                     //TODO Ander rooster
                     Toast.makeText(getApplicationContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
@@ -138,7 +143,7 @@ public class MainActivity extends ActionBarActivity {
             // If the user apikey is already obtained
             if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
                 //Laat de gebruiker inloggen
-                showLoginDialog();
+                showLoginDialog(true);
             } else {
                 laadRooster(linearLayout, getActivity(), rootView);
             }
@@ -202,6 +207,9 @@ public class MainActivity extends ActionBarActivity {
         }
 
         private void login(String gebruikersnaam, String wachtwoord) {
+            login(gebruikersnaam, wachtwoord, false);
+        }
+        private void login(String gebruikersnaam, String wachtwoord, boolean laadRooster) {
             new AsyncTask<String, Void, String>() {
                 @Override
                 protected String doInBackground(String... params) {
@@ -268,26 +276,50 @@ public class MainActivity extends ActionBarActivity {
 
                     }
                     super.onPostExecute(s);
+
                 }
             }.execute(gebruikersnaam, wachtwoord);
         }
 
         private void showLoginDialog() {
-            final Dialog dialog = new Dialog(getActivity());
-            dialog.setTitle("Log in");
-            dialog.setContentView(R.layout.logindialog);
+            showLoginDialog(false);
+        }
+        private void showLoginDialog(final boolean laadRooster) {
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+            dialog.setTitle(R.string.logindialog_title);
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            final View dialogView = inflater.inflate(R.layout.logindialog, null);
 
-            final EditText gebruikersnaamEditText = (EditText) dialog.findViewById(R.id.logindialogusername);
-            final EditText wachtwoordEditText = (EditText) dialog.findViewById(R.id.logindialogpassword);
+            TabHost tabHost = (TabHost)dialogView.findViewById(R.id.DialogTabs);
+            tabHost.setup();
 
-            Button button = (Button) dialog.findViewById(R.id.dialogButtonOK);
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    login(gebruikersnaamEditText.getText().toString(), wachtwoordEditText.getText().toString());
-                    dialog.dismiss();
-                }
-            });
+            // create tabs
+            TabHost.TabSpec spec1 = tabHost.newTabSpec("tab1");
+            spec1.setContent(R.id.Tab_Textview1);
+            spec1.setIndicator(getString(R.string.logindialog_tabs_userpass));
+            tabHost.addTab(spec1);
+
+            TabHost.TabSpec spec2 = tabHost.newTabSpec("tab2");
+            spec2.setContent(R.id.Tab_Textview2);
+            spec2.setIndicator(getString(R.string.logindialog_tabs_llnr));
+            tabHost.addTab(spec2);
+
+            dialog.setView(dialogView)
+                    .setPositiveButton(R.string.logindialog_loginbutton, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            final EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
+                            final EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
+                            login(username.getText().toString(), password.getText().toString(), laadRooster);
+                            dialog.cancel();
+                        }
+                    })
+                    .setNegativeButton(R.string.logindialog_cancelbutton, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
             dialog.show();
         }
     }
