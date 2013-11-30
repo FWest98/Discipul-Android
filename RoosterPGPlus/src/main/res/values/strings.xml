@@ -3,6 +3,8 @@
 
     <string name="app_name">RoosterPG+</string>
     <string name="action_settings">Instellingen</string>
+    <string name="drawer_close">Sluit</string>
+    <string name="drawer_open">Open</string>
 
     <array name="dropdown">
         <item>Dag</item>
