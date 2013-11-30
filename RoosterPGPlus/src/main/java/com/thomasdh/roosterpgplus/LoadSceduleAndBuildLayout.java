@@ -36,12 +36,12 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
 
     public Context context;
     public ViewPager viewPager;
-    public View rootLayout;
+    public View rootView;
 
-    public LoadSceduleAndBuildLayout(Context context, ViewPager viewPager, View rootLayout) {
+    public LoadSceduleAndBuildLayout(Context context, ViewPager viewPager, View rootView) {
         this.context = context;
         this.viewPager = viewPager;
-        this.rootLayout = rootLayout;
+        this.rootView = rootView;
     }
 
     public static String getTijden(int x) {
@@ -112,7 +112,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
 
         Log.d(getClass().getSimpleName(), "The string is: " + string);
         viewPager.setVisibility(View.VISIBLE);
-        RelativeLayout progressBar = (RelativeLayout) rootLayout.findViewById(R.id.progressbar);
+        RelativeLayout progressBar = (RelativeLayout) rootView.findViewById(R.id.progressbar);
         progressBar.setVisibility(View.GONE);
         if (string != null) {
             if (string.startsWith("error:")) {
@@ -137,7 +137,9 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         if (!weekView) {
                             dagView = inflater.inflate(R.layout.rooster_dag, null);
                             ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
-                            ((TextView) ll.findViewById(R.id.weekdagnaam)).setText(getDayOfWeek(day));
+
+                            TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
+                            dagTextView.setText(getDayOfWeek(day));
                         } else {
                             dagView = new LinearLayout(context);
                             ll = (LinearLayout) dagView;
