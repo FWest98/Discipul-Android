@@ -273,6 +273,10 @@ public class MainActivity extends ActionBarActivity {
 
                         dialog.show();
                     } else {
+                        if(s.startsWith("nr1")) {
+                            Toast.makeText(getActivity(), "Al bestaande app-account gekozen", Toast.LENGTH_LONG).show();
+                            s = s.substring(4);
+                        }
                         try {
                             JSONObject object = new JSONObject(s);
                             SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
@@ -400,10 +404,10 @@ public class MainActivity extends ActionBarActivity {
                             final EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
                             final EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
                             final EditText llnr = (EditText) dialogView.findViewById(R.id.logindialogllnr);
-                            if(llnr == null) {
-                                login(username.getText().toString(), password.getText().toString(), laadRooster);
-                            } else {
+                            try {
                                 login(Integer.parseInt(llnr.getText().toString()), laadRooster);
+                            } catch (NumberFormatException e) {
+                                login(username.getText().toString(), password.getText().toString(), laadRooster);
                             }
                             dialog.cancel();
                         }
