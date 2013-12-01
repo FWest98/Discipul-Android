@@ -139,17 +139,17 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day));
                         View dagView;
                         LinearLayout ll;
-                        if (!weekView) {
+                        //if (!weekView) {
                             dagView = inflater.inflate(R.layout.rooster_dag, null);
                             ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
 
                             TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
                             dagTextView.setText(getDayOfWeek(day));
-                        } else {
-                            dagView = new LinearLayout(context);
-                            ll = (LinearLayout) dagView;
+                        /*} else {
+                            dagView = inflater.inflate(R.layout.rooster_dag, null);
+                            ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
                             ll.setOrientation(LinearLayout.VERTICAL);
-                        }
+                        }*/
 
                         //Ga langs alle uren
                         for (int y = 0; y < 7; y++) {
