@@ -4,6 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="80dp"
     android:layout_margin="3dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="4dp"
     android:background="@drawable/basic_rect_nobottom"
     android:orientation="vertical">
 
@@ -14,7 +16,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
         android:text="Vak"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:textColor="#FF0000"/>
 
     <TextView
         android:id="@+id/rooster_lokaal"
@@ -23,7 +26,8 @@
         android:layout_below="@id/rooster_vak"
         android:layout_marginLeft="3dp"
         android:text="Lokaal"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        android:textColor="#FF0000"/>
 
     <TextView
         android:id="@+id/rooster_leraar"
@@ -33,7 +37,8 @@
         android:layout_below="@id/rooster_vak"
         android:text="Leraar"
         android:layout_marginRight="3dp"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        android:textColor="#FF0000"/>
 
 
     <TextView
@@ -43,6 +48,7 @@
         android:layout_below="@id/rooster_lokaal"
         android:layout_margin="3dp"
         android:text="Tijden"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        android:textColor="#FF0000"/>
 
 </RelativeLayout>

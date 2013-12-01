@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="weekdag_fontSize">24sp</dimen>
+    <dimen name="weekdag_marginSize">10dp</dimen>
+</resources>

@@ -93,27 +93,21 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
         //Controleer of het apparaat een internetverbinding heeft
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnectedOrConnecting() && (itIsTimeToReload() || forceReload)) {
-            String JSON = laadViaInternet();
-            slaOp(JSON, Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-            Log.d(getClass().getSimpleName(), "Loaded from internet");
-            if (JSON == null) {
-                Log.d(getClass().getSimpleName(), "The string is null");
-            }
-            return JSON;
-        }
 
         String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         Log.d(getClass().getSimpleName(), "Loaded without internet");
-        return JSON;
-    }
 
-    boolean itIsTimeToReload() {
-        if (PreferenceManager.getDefaultSharedPreferences(context).getLong("lastRefreshTime", 0) +
-                context.getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis()) {
-            return true;
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            String JSON2 = laadViaInternet();
+            slaOp(JSON2, Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+            Log.d(getClass().getSimpleName(), "Loaded from internet");
+            if (JSON2 == null) {
+                Log.d(getClass().getSimpleName(), "The string is null");
+                return JSON;
+            }
+            return JSON2;
         }
-        return false;
+        return JSON;
     }
 
     @Override
@@ -172,17 +166,27 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                                     uur.setMinimumHeight((int) convertDPToPX(80, context));
                                     ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(uurObject.getString("vak") + " valt uit");
                                 } else {
-                                    uur = inflater.inflate(R.layout.rooster_uur, null);
+                                    if(uurObject.getString("verandering").equals("1")) {
+                                        uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
+                                    } else {
+                                        uur = inflater.inflate(R.layout.rooster_uur, null);
+                                    }
                                     ((TextView) uur.findViewById(R.id.rooster_vak)).setText(uurObject.getString("vak"));
                                     ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(uurObject.getString("leraar"));
                                     ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(uurObject.getString("lokaal"));
                                     ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
                                 }
-                                uur.setMinimumHeight((int) convertDPToPX(80, context));
+                                if(y == 6) {
+                                    uur.setBackgroundResource(R.drawable.basic_rect);
+                                }
+                                uur.setMinimumHeight((int) convertDPToPX(81, context));
                                 ll.addView(uur);
                             } else {
                                 View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
                                 vrij.setMinimumHeight((int) convertDPToPX(80, context));
+                                if(y == 6) {
+                                    vrij.setBackgroundResource(R.drawable.basic_rect);
+                                }
                                 ll.addView(vrij);
                             }
                         }

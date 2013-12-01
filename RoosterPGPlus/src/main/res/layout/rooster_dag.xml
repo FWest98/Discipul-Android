@@ -11,9 +11,9 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:text="Weekdag"
-        android:textSize="24sp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
+        android:textSize="@dimen/weekdag_fontSize"
+        android:layout_marginTop="@dimen/weekdag_marginSize"
+        android:layout_marginBottom="@dimen/weekdag_marginSize"
         />
 
     <ScrollView
