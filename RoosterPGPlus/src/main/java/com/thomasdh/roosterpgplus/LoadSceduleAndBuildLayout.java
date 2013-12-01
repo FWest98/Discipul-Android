@@ -134,6 +134,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         weekLinearLayout = new LinearLayout(context);
                         weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
                     }
+                    Log.e(this.getClass().getName(), "REPSONSE: "+string);
                     JSONObject weekArray = new JSONObject(string);
                     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 

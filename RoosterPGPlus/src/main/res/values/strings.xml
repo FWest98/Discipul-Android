@@ -12,8 +12,17 @@
     </array>
 
     <string name="logindialog_title">Log in</string>
-    <string name="logindialog_tabs_userpass">RoosterPG+-account</string>
+    <string name="logindialog_tabs_userpass">RoosterPG+</string>
     <string name="logindialog_tabs_llnr">Leerlingnummer</string>
     <string name="logindialog_loginbutton">Log in</string>
     <string name="logindialog_cancelbutton">Annuleer</string>
+    <string name="logindialog_userpass_desc">Log in met een bestaand RoosterPG+-account</string>
+    <string name="logindialog_username_hint">Gebruikersnaam</string>
+    <string name="logindialog_password_hint">Wachtwoord</string>
+    <string name="logindialog_llnr_desc">Log in met je leerlingnummer</string>
+    <string name="logindialog_llnr_hint">Leerlingnummer</string>
+    <string name="logindialog_warning_title">Doorgaan?</string>
+    <string name="logindialog_warning_text">Er bestaat al een RoosterPG+-account met dit leerlingnummer. Wilt u dat gebruiken?</string>
+    <string name="logindialog_warning_submitButton">Alsnog aanmaken</string>
+    <string name="logindialog_warning_cancelButton">Inloggen</string>
 </resources>

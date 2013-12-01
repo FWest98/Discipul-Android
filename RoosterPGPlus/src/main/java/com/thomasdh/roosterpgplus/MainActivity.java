@@ -1,7 +1,5 @@
 package com.thomasdh.roosterpgplus;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -21,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -206,6 +203,101 @@ public class MainActivity extends ActionBarActivity {
             new LoadSceduleAndBuildLayout(context, linearLayout, v, false).execute();
         }
 
+        /** Inloggen met leerlingnummer */
+        private void login(int leerlingnummer) {
+            login(leerlingnummer, false, false);
+        }
+        private void login(int leerlingnummer, boolean laadRooster) {
+            login(leerlingnummer, false, laadRooster);
+        }
+        private void login(final int leerlingnummer, boolean force, boolean laadRooster) {
+            new AsyncTask<String, Void, String>() {
+                @Override
+                protected String doInBackground(String... params) {
+                    HttpClient httpclient = new DefaultHttpClient();
+                    HttpPost httppost = new HttpPost(getString(R.string.API_base_url)+"account/login.php");
+                    String s = null;
+
+                    try {
+                        // LLNR toevoegen
+                        List<NameValuePair> getParameters = new ArrayList<NameValuePair>();
+
+                        getParameters.add(new BasicNameValuePair("llnr", params[0]));
+                        boolean push = params[1].equals("ja");
+                        if(push) {
+                            getParameters.add(new BasicNameValuePair("force", "true"));
+                        }
+                        UrlEncodedFormEntity form = new UrlEncodedFormEntity(getParameters);
+                        httppost.setEntity(form);
+
+                        // Uitvoeren
+                        HttpResponse response = httpclient.execute(httppost);
+                        int status = response.getStatusLine().getStatusCode();
+
+                        switch(status) {
+                            case 500: return "error:Serverfout";
+                            case 204: return "duplicate";
+                            case 200: return new Scanner(response.getEntity().getContent()).nextLine();
+                            default: return "error:Onbekende fout";
+                        }
+                    } catch (ClientProtocolException e) {
+                        s = "error:" + e.toString();
+                    } catch (IOException e) {
+                        s = "error:" + e.toString();
+                    }
+                    return s;
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    Log.e(this.getClass().getName(), "The string is: "+s);
+                    if(s.startsWith("error:")) {
+                        Toast.makeText(getActivity(), s.substring(6), Toast.LENGTH_LONG).show();
+                    } else if(s.equals("duplicate")) {
+                        // Maak een mooie notifybox en blablabla *sich*
+                        final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+                        dialog.setTitle(getString(R.string.logindialog_warning_title));
+                        dialog.setMessage(getString(R.string.logindialog_warning_text));
+                        dialog.setPositiveButton(getString(R.string.logindialog_warning_submitButton), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                login(leerlingnummer, true, true);
+                            }
+                        })
+                        .setNegativeButton(getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                showLoginDialog();
+                            }
+                        });
+
+                        dialog.show();
+                    } else {
+                        try {
+                            JSONObject object = new JSONObject(s);
+                            SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
+                            e.putString("key", object.getString("key"));
+                            System.out.println("The key: "+object.getString("key"));
+                            e.putString("naam", object.getString("klas"));
+                            if (object.has("klas")) {
+                                e.putString("klas", object.getString("klas"));
+                                e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
+                            } else {
+                                e.putString("code", object.getString("code"));
+                            }
+                            e.apply();
+                            Toast.makeText(getActivity(), "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        super.onPostExecute(s);
+                    }
+                }
+            }.execute(Integer.toString(leerlingnummer), (force ? "ja" : "nee"));
+        }
+
+
+        /** Inloggen met UserPass */
         private void login(String gebruikersnaam, String wachtwoord) {
             login(gebruikersnaam, wachtwoord, false);
         }
@@ -214,7 +306,7 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 protected String doInBackground(String... params) {
                     HttpClient httpclient = new DefaultHttpClient();
-                    HttpPost httppost = new HttpPost("http://rooster.fwest98.nl/api/account/login.php");
+                    HttpPost httppost = new HttpPost(getString(R.string.API_base_url)+"account/login.php");
                     String s = null;
                     try {
                         // Add your data
@@ -231,16 +323,12 @@ public class MainActivity extends ActionBarActivity {
                         HttpResponse response = httpclient.execute(httppost);
                         int status = response.getStatusLine().getStatusCode();
 
-                        if (status == 400) {
-                            return "error:Missende parameters";
-                        } else if (status == 401) {
-                            return "error:Ongeldige logingegevens";
-                        } else if (status == 500) {
-                            return "error:Serverfout";
-                        } else if (status == 200) {
-                            return new Scanner(response.getEntity().getContent()).nextLine();
-                        } else {
-                            return "error:Onbekende status: " + status;
+                        switch(status) {
+                            case 400: return "error:Missende parameters";
+                            case 401: return "error:Ongeldige logingegevens";
+                            case 500: return "error:Serverfout";
+                            case 200: return new Scanner(response.getEntity().getContent()).nextLine();
+                            default: return "error:Onbekende fout";
                         }
                     } catch (ClientProtocolException e) {
                         s = "error:" + e.toString();
@@ -286,8 +374,8 @@ public class MainActivity extends ActionBarActivity {
         }
         private void showLoginDialog(final boolean laadRooster) {
             final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-            dialog.setTitle(R.string.logindialog_title);
-            LayoutInflater inflater = getActivity().getLayoutInflater();
+            //dialog.setTitle(R.string.logindialog_title);
+            final LayoutInflater inflater = getActivity().getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.logindialog, null);
 
             TabHost tabHost = (TabHost)dialogView.findViewById(R.id.DialogTabs);
@@ -295,14 +383,15 @@ public class MainActivity extends ActionBarActivity {
 
             // create tabs
             TabHost.TabSpec spec1 = tabHost.newTabSpec("tab1");
-            spec1.setContent(R.id.Tab_Textview1);
+            spec1.setContent(R.id.Tab_UserPass);
             spec1.setIndicator(getString(R.string.logindialog_tabs_userpass));
             tabHost.addTab(spec1);
 
             TabHost.TabSpec spec2 = tabHost.newTabSpec("tab2");
-            spec2.setContent(R.id.Tab_Textview2);
+            spec2.setContent(R.id.Tab_LLNR);
             spec2.setIndicator(getString(R.string.logindialog_tabs_llnr));
             tabHost.addTab(spec2);
+
 
             dialog.setView(dialogView)
                     .setPositiveButton(R.string.logindialog_loginbutton, new DialogInterface.OnClickListener() {
@@ -310,8 +399,18 @@ public class MainActivity extends ActionBarActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             final EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
                             final EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
-                            login(username.getText().toString(), password.getText().toString(), laadRooster);
+                            final EditText llnr = (EditText) dialogView.findViewById(R.id.logindialogllnr);
+                            if(llnr == null) {
+                                login(username.getText().toString(), password.getText().toString(), laadRooster);
+                            } else {
+                                login(Integer.parseInt(llnr.getText().toString()), laadRooster);
+                            }
                             dialog.cancel();
+                        }
+                    })
+                    .setNeutralButton("Registreer", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Toast.makeText(inflater.getContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
                         }
                     })
                     .setNegativeButton(R.string.logindialog_cancelbutton, new DialogInterface.OnClickListener() {

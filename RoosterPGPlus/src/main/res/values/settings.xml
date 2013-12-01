@@ -4,4 +4,6 @@
 
     //Warning: changing this number will probably make all the already preloaded weeks unusable
     <integer name="number_of_saved_weeks">4</integer>
+
+    <string name="API_base_url">http://rooster.fwest98.nl/api/</string>
 </resources>
