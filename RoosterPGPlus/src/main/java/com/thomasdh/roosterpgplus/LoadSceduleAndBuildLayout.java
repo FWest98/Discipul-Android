@@ -127,6 +127,8 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                     if (weekView) {
                         weekLinearLayout = new LinearLayout(context);
                         weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
+                        int paddingLeftRight = (int) convertDPToPX(10, context);
+                        weekLinearLayout.setPadding(paddingLeftRight, 0, paddingLeftRight, 0);
                     }
                     Log.e(this.getClass().getName(), "REPSONSE: "+string);
                     JSONObject weekArray = new JSONObject(string);
@@ -139,17 +141,11 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day));
                         View dagView;
                         LinearLayout ll;
-                        //if (!weekView) {
-                            dagView = inflater.inflate(R.layout.rooster_dag, null);
-                            ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
+                        dagView = inflater.inflate(R.layout.rooster_dag, null);
+                        ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
 
-                            TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
-                            dagTextView.setText(getDayOfWeek(day));
-                        /*} else {
-                            dagView = inflater.inflate(R.layout.rooster_dag, null);
-                            ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
-                            ll.setOrientation(LinearLayout.VERTICAL);
-                        }*/
+                        TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
+                        dagTextView.setText(getDayOfWeek(day));
 
                         //Ga langs alle uren
                         for (int y = 0; y < 7; y++) {

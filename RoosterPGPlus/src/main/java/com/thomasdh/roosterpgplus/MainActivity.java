@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SpinnerAdapter;
 import android.widget.TabHost;
 import android.widget.Toast;
 import android.app.AlertDialog;
@@ -85,6 +86,9 @@ public class MainActivity extends ActionBarActivity {
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+
+        // Maak de SpinnerAdapter voor weekkeuze
+
     }
 
     @Override
@@ -190,6 +194,9 @@ public class MainActivity extends ActionBarActivity {
                                 JSONObject week = weekArray.getJSONObject(i);
                                 weken.add(week.getString("week"));
                             }
+
+                            /* TODO: Implement Actionbar Spinner */
+
 
                         } catch (JSONException e) {
                             e.printStackTrace();

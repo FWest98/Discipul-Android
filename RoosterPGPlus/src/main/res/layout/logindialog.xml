@@ -49,6 +49,7 @@
                         android:hint="@string/logindialog_username_hint"
                         android:fontFamily="sans-serif"
                         android:paddingBottom="10dp"
+                        android:singleLine="true"
                         />
 
                     <EditText
@@ -87,7 +88,8 @@
                         android:id="@+id/logindialogllnr"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/logindialog_llnr_hint"/>
+                        android:hint="@string/logindialog_llnr_hint"
+                        android:inputType="number"/>
 
                 </LinearLayout>
             </ScrollView>
