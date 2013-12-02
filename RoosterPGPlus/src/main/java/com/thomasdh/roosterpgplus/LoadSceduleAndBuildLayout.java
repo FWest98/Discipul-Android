@@ -87,7 +87,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
         return null;
     }
 
-    Override
+    @Override
     protected String doInBackground(String... params) {
 
         //Controleer of het apparaat een internetverbinding heeft
