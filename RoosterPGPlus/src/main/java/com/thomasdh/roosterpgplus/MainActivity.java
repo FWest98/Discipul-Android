@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.Toast;
@@ -31,9 +32,11 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -144,6 +147,59 @@ public class MainActivity extends ActionBarActivity {
 
             return rootView;
 
+        }
+
+        private void laadWeken(final LinearLayout linearLayout, final Context context) {
+            new AsyncTask<String, Void, String>() {
+                @Override
+                protected String doInBackground(String... params) {
+                    HttpClient httpclient = new DefaultHttpClient();
+                    HttpGet Get = new HttpGet("http://rooster.fwest98.nl/api/rooster/info?weken");
+
+                    try {
+                        HttpResponse response = httpclient.execute(Get);
+                        int status = response.getStatusLine().getStatusCode();
+
+                        if (status == 200) {
+                            String s = "";
+                            Scanner sc = new Scanner(response.getEntity().getContent());
+                            while (sc.hasNext()) {
+                                s += sc.nextLine();
+                            }
+                            return s;
+                        } else {
+                            return "error:Onbekende status: " + status;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(String string) {
+                    System.out.println("!!!!WEKENE:" + string);
+                    if (string.startsWith("error:")) {
+                        Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
+                    } else {
+                        try {
+                            JSONArray weekArray = new JSONArray(string);
+                            ArrayList<String> weken = new ArrayList<String>();
+
+                            for (int i = 0; i < weekArray.length(); i++) {
+                                JSONObject week = weekArray.getJSONObject(i);
+                                weken.add(week.getString("week"));
+                            }
+
+                            /* TODO: Implement Actionbar Spinner */
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.execute();
         }
 
         private void laadRooster(final ViewPager linearLayout, final Context context, final View v) {
