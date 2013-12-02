@@ -81,8 +81,6 @@ public class LayoutBuilder {
 
         Log.d(getClass().getSimpleName(), "The string is: " + roosterJSON);
         viewPager.setVisibility(View.VISIBLE);
-        RelativeLayout progressBar = (RelativeLayout) rootView.findViewById(R.id.progressbar);
-        progressBar.setVisibility(View.GONE);
         if (roosterJSON != null) {
             if (roosterJSON.startsWith("error:")) {
                 Toast.makeText(context, roosterJSON.substring(6), Toast.LENGTH_LONG).show();
