@@ -87,7 +87,8 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
         return null;
     }
 
-    Override
+    @Override
+
     protected String doInBackground(String... params) {
 
         //Controleer of het apparaat een internetverbinding heeft
@@ -136,7 +137,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         int paddingLeftRight = (int) convertDPToPX(10, context);
                         weekLinearLayout.setPadding(paddingLeftRight, 0, paddingLeftRight, 0);
                     }
-                    Log.e(this.getClass().getName(), "REPSONSE: "+string);
+                    Log.e(this.getClass().getName(), "REPSONSE: " + string);
                     JSONObject weekArray = new JSONObject(string);
                     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -147,11 +148,22 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day));
                         View dagView;
                         LinearLayout ll;
-                        dagView = inflater.inflate(R.layout.rooster_dag, null);
-                        ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
 
-                        TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
-                        dagTextView.setText(getDayOfWeek(day));
+                        //Omdat de rooster_dag_linearlayout een scrollview bevat, kun je die niet voor de weekview gebruiken.
+                        // Dit zou de app namelijk langzamer maken, maar het zorgt er ook voor dat de uren van de
+                        // verschillende dagen niet naast elkaar staan. Een dagnaam zou apart toegevoegd moeten worden door een
+                        // layout bestand te maken en dat te inflaten
+                        if (!weekView) {
+                            dagView = inflater.inflate(R.layout.rooster_dag, null);
+                            ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
+
+                            TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
+                            dagTextView.setText(getDayOfWeek(day));
+                        } else {
+                            dagView = new LinearLayout(context);
+                            ll = (LinearLayout) dagView;
+                            ll.setOrientation(LinearLayout.VERTICAL);
+                        }
 
                         //Ga langs alle uren
                         for (int y = 0; y < 7; y++) {
@@ -168,7 +180,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                                     uur.setMinimumHeight((int) convertDPToPX(80, context));
                                     ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(uurObject.getString("vak") + " valt uit");
                                 } else {
-                                    if(uurObject.getString("verandering").equals("1")) {
+                                    if (uurObject.getString("verandering").equals("1")) {
                                         uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
                                     } else {
                                         uur = inflater.inflate(R.layout.rooster_uur, null);
@@ -178,7 +190,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                                     ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(uurObject.getString("lokaal"));
                                     ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
                                 }
-                                if(y == 6) {
+                                if (y == 6) {
                                     uur.setBackgroundResource(R.drawable.basic_rect);
                                 }
                                 uur.setMinimumHeight((int) convertDPToPX(81, context));
@@ -186,7 +198,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                             } else {
                                 View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
                                 vrij.setMinimumHeight((int) convertDPToPX(80, context));
-                                if(y == 6) {
+                                if (y == 6) {
                                     vrij.setBackgroundResource(R.drawable.basic_rect);
                                 }
                                 ll.addView(vrij);
