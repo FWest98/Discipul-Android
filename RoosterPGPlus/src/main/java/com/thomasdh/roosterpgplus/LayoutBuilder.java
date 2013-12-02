@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -77,11 +76,13 @@ public class LayoutBuilder {
     }
 
     public void buildLayout(String roosterJSON) {
+
+        ((MyPagerAdapter) viewPager.getAdapter()).deleteItems();
         boolean weekView = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("weekview", context.getResources().getBoolean(R.bool.big_screen));
 
         Log.d(getClass().getSimpleName(), "The string is: " + roosterJSON);
 
-        
+
         if (roosterJSON != null) {
             if (roosterJSON.startsWith("error:")) {
                 Toast.makeText(context, roosterJSON.substring(6), Toast.LENGTH_LONG).show();

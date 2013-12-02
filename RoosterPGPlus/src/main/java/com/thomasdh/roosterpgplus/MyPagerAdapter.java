@@ -43,6 +43,10 @@ public class MyPagerAdapter extends PagerAdapter {
         container.removeView(views.get(position));
     }
 
+    public void deleteItems(){
+        views.clear();
+    }
+
     public int addView(View v) {
         int position = views.size();
         views.add(v);
