@@ -81,6 +81,7 @@ public class LayoutBuilder {
 
         Log.d(getClass().getSimpleName(), "The string is: " + roosterJSON);
 
+        
         if (roosterJSON != null) {
             if (roosterJSON.startsWith("error:")) {
                 Toast.makeText(context, roosterJSON.substring(6), Toast.LENGTH_LONG).show();
