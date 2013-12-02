@@ -21,14 +21,14 @@ import java.util.Scanner;
 /**
  * Created by Thomas on 27-11-13.
  */
-public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
+public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
 
     public Context context;
     public ViewPager viewPager;
     public View rootView;
     public boolean forceReload;
 
-    public LoadSceduleAndBuildLayout(Context context, ViewPager viewPager, View rootView, boolean forceReload) {
+    public DownloadRoosterInternet(Context context, ViewPager viewPager, View rootView, boolean forceReload) {
         this.context = context;
         this.viewPager = viewPager;
         this.rootView = rootView;
@@ -42,14 +42,8 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
-        String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-
-        if (!JSON.contains("\"week: \" \"" + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1) + "\"")) {
-            Log.d(getClass().getSimpleName(), "The wanted week is " + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1) + ", but the found week is something different.");
-        }
-
         if (netInfo != null && netInfo.isConnectedOrConnecting() && (itIsTimeToReload() || forceReload)) {
-            JSON = laadViaInternet();
+            String JSON = laadViaInternet();
             slaOp(JSON, Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
             Log.d(getClass().getSimpleName(), "Loaded from internet");
             if (JSON == null) {
@@ -57,10 +51,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
             }
             return JSON;
         }
-
-
-        Log.d(getClass().getSimpleName(), "Loaded without internet");
-        return JSON;
+        return null;
     }
 
     boolean itIsTimeToReload() {
@@ -73,15 +64,13 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String string) {
-        new LayoutBuilder(context, viewPager, rootView).buildLayout(string);
-    }
-
-    String laadInternal(int weeknr) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks), "error:Er is nog geen rooster in het geheugen opgeslagen");
+        if (string != null) {
+            new LayoutBuilder(context, viewPager, rootView).buildLayout(string);
+        }
     }
 
     void slaOp(String JSON, int weeknr) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week" + weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks), JSON).commit();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), JSON).commit();
     }
 
     String laadViaInternet() {

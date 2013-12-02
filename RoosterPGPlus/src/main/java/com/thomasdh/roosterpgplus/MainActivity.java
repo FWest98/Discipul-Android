@@ -42,6 +42,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
@@ -203,7 +204,22 @@ public class MainActivity extends ActionBarActivity {
         }
 
         private void laadRooster(final ViewPager linearLayout, final Context context, final View v) {
-            new LoadSceduleAndBuildLayout(context, linearLayout, v, false).execute();
+
+            //Probeer de string uit het geheugen te laden
+            String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR), getActivity());
+
+            //Als het de goede week is, gebruik hem
+            if (JSON.contains("\"week\":\"" + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) + "\"")) {
+                new LayoutBuilder(context, linearLayout, v).buildLayout(JSON);
+                Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
+            } else {
+                Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de week is nu " + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)));
+                Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
+            }
+
+            //Download het rooster
+            new DownloadRoosterInternet(context, linearLayout, v, false).execute();
+
         }
 
 
@@ -444,6 +460,10 @@ public class MainActivity extends ActionBarActivity {
                     });
 
             dialog.show();
+        }
+
+        String laadInternal(int weeknr, Context context) {
+            return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), "error:Er is nog geen rooster in het geheugen opgeslagen");
         }
     }
 }
