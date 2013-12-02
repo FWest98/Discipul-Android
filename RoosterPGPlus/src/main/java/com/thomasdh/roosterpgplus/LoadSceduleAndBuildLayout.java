@@ -87,27 +87,33 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
         return null;
     }
 
-    @Override
+    Override
     protected String doInBackground(String... params) {
 
         //Controleer of het apparaat een internetverbinding heeft
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting() && (itIsTimeToReload() || forceReload)) {
+            String JSON = laadViaInternet();
+            slaOp(JSON, Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+            Log.d(getClass().getSimpleName(), "Loaded from internet");
+            if (JSON == null) {
+                Log.d(getClass().getSimpleName(), "The string is null");
+            }
+            return JSON;
+        }
 
         String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         Log.d(getClass().getSimpleName(), "Loaded without internet");
-
-        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-            String JSON2 = laadViaInternet();
-            slaOp(JSON2, Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-            Log.d(getClass().getSimpleName(), "Loaded from internet");
-            if (JSON2 == null) {
-                Log.d(getClass().getSimpleName(), "The string is null");
-                return JSON;
-            }
-            return JSON2;
-        }
         return JSON;
+    }
+
+    boolean itIsTimeToReload() {
+        if (PreferenceManager.getDefaultSharedPreferences(context).getLong("lastRefreshTime", 0) +
+                context.getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
