@@ -154,7 +154,7 @@ public class MainActivity extends ActionBarActivity {
 
             // If the user apikey is already obtained
             if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
-                //Laat de gebruiker inloggen
+                //Laat de gebruiker inloggen -> wel rooster laden daarna
                 showLoginDialog(true);
             } else {
                 laadRooster(getActivity(), rootView);
@@ -247,7 +247,7 @@ public class MainActivity extends ActionBarActivity {
             login(leerlingnummer, false, laadRooster);
         }
 
-        private void login(final int leerlingnummer, boolean force, boolean laadRooster) {
+        private void login(final int leerlingnummer, boolean force, final boolean laadRooster) {
             new AsyncTask<String, Void, String>() {
                 @Override
                 protected String doInBackground(String... params) {
@@ -305,15 +305,16 @@ public class MainActivity extends ActionBarActivity {
                                 login(leerlingnummer, true, true);
                             }
                         })
-                                .setNegativeButton(getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        showLoginDialog();
-                                    }
-                                });
+                        .setNegativeButton(getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                // do nothing
+                            }
+                        });
 
                         dialog.show();
                     } else {
+                        hideLoginDialog();
                         if (s.startsWith("nr1")) {
                             Toast.makeText(getActivity(), "Al bestaande app-account gekozen", Toast.LENGTH_LONG).show();
                             s = s.substring(4);
@@ -332,8 +333,10 @@ public class MainActivity extends ActionBarActivity {
                             }
                             e.apply();
                             Toast.makeText(getActivity(), "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
-                            //Laad het rooster
-                            laadRooster(getActivity(), rootView);
+                            //Laad het rooster als de boolean true is
+                            if(laadRooster) {
+                                laadRooster(getActivity(), rootView);
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -350,7 +353,7 @@ public class MainActivity extends ActionBarActivity {
             login(gebruikersnaam, wachtwoord, false);
         }
 
-        private void login(String gebruikersnaam, String wachtwoord, boolean laadRooster) {
+        private void login(String gebruikersnaam, String wachtwoord, final boolean laadRooster) {
             new AsyncTask<String, Void, String>() {
                 @Override
                 protected String doInBackground(String... params) {
@@ -414,7 +417,9 @@ public class MainActivity extends ActionBarActivity {
                             Toast.makeText(getActivity(), "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
 
                             //Laad het rooster
-                            laadRooster(getActivity(), rootView);
+                            if(laadRooster) {
+                                laadRooster(getActivity(), rootView);
+                            }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -427,13 +432,17 @@ public class MainActivity extends ActionBarActivity {
             }.execute(gebruikersnaam, wachtwoord);
         }
 
+        private void hideLoginDialog() {
+            LoginDialog.dismiss();
+        }
         private void showLoginDialog() {
             showLoginDialog(false);
         }
 
+        private AlertDialog LoginDialog;
+
         private void showLoginDialog(final boolean laadRooster) {
-            final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-            //dialog.setTitle(R.string.logindialog_title);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             final LayoutInflater inflater = getActivity().getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.logindialog, null);
 
@@ -452,34 +461,53 @@ public class MainActivity extends ActionBarActivity {
             tabHost.addTab(spec2);
 
 
-            dialog.setView(dialogView)
+            builder.setView(dialogView)
                     .setPositiveButton(R.string.logindialog_loginbutton, new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            final EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
-                            final EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
-                            final EditText llnr = (EditText) dialogView.findViewById(R.id.logindialogllnr);
-                            username.requestFocus();
-                            try {
-                                login(Integer.parseInt(llnr.getText().toString()), laadRooster);
-                            } catch (Exception e) {
-                                login(username.getText().toString(), password.getText().toString(), laadRooster);
-                            }
-                            dialog.cancel();
+                        public void onClick(DialogInterface dialogInterface, int id) {
                         }
                     })
                     .setNeutralButton("Registreer", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Toast.makeText(inflater.getContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
+                        public void onClick(DialogInterface dialogInterface, int id) {
                         }
                     })
                     .setNegativeButton(R.string.logindialog_cancelbutton, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
+                        public void onClick(DialogInterface dialogInterface, int id) {
                         }
                     });
 
-            dialog.show();
+            LoginDialog = builder.create();
+            LoginDialog.show();
+            LoginDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(inflater.getContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
+                }
+            });
+            LoginDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO: Implementeren week-/klaskeuze
+                    LoginDialog.dismiss();
+                }
+            });
+            LoginDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
+                    final EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
+                    final EditText llnr = (EditText) dialogView.findViewById(R.id.logindialogllnr);
+                    username.requestFocus();
+                    try {
+                        login(Integer.parseInt(llnr.getText().toString()), laadRooster);
+                        // dismissen IN de login functie
+                    } catch (Exception e) {
+                        login(username.getText().toString(), password.getText().toString(), laadRooster);
+                        LoginDialog.dismiss();
+                    }
+
+                }
+            });
         }
 
         String laadInternal(int weeknr, Context context) {
