@@ -404,7 +404,7 @@ public class MainActivity extends ActionBarActivity {
             TabHost tabHost = (TabHost) dialogView.findViewById(R.id.DialogTabs);
             tabHost.setup();
 
-            // create tabs
+// create tabs
             TabHost.TabSpec spec1 = tabHost.newTabSpec("tab1");
             spec1.setContent(R.id.Tab_UserPass);
             spec1.setIndicator(getString(R.string.logindialog_tabs_userpass));
@@ -423,9 +423,10 @@ public class MainActivity extends ActionBarActivity {
                             final EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
                             final EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
                             final EditText llnr = (EditText) dialogView.findViewById(R.id.logindialogllnr);
+                            username.requestFocus();
                             try {
                                 login(Integer.parseInt(llnr.getText().toString()), laadRooster);
-                            } catch (NumberFormatException e) {
+                            } catch (Exception e) {
                                 login(username.getText().toString(), password.getText().toString(), laadRooster);
                             }
                             dialog.cancel();
