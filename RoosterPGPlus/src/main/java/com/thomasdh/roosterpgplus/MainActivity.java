@@ -96,7 +96,7 @@ public class MainActivity extends ActionBarActivity {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
         actionBarDrawerToggle.syncState();
-        new Notify(this);
+        // new Notify(this);
     }
 
     @Override
