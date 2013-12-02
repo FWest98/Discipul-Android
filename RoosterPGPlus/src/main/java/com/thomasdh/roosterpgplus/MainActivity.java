@@ -1,6 +1,8 @@
 package com.thomasdh.roosterpgplus;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
@@ -20,24 +22,18 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SpinnerAdapter;
 import android.widget.TabHost;
 import android.widget.Toast;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -107,7 +103,6 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
@@ -125,9 +120,6 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
     public static class PlaceholderFragment extends Fragment {
 
         public PlaceholderFragment() {
@@ -154,77 +146,28 @@ public class MainActivity extends ActionBarActivity {
 
         }
 
-        private void laadWeken(final LinearLayout linearLayout, final Context context) {
-            new AsyncTask<String, Void, String>() {
-                @Override
-                protected String doInBackground(String... params) {
-                    HttpClient httpclient = new DefaultHttpClient();
-                    HttpGet Get = new HttpGet("http://rooster.fwest98.nl/api/rooster/info?weken");
-
-                    try {
-                        HttpResponse response = httpclient.execute(Get);
-                        int status = response.getStatusLine().getStatusCode();
-
-                        if (status == 200) {
-                            String s = "";
-                            Scanner sc = new Scanner(response.getEntity().getContent());
-                            while (sc.hasNext()) {
-                                s += sc.nextLine();
-                            }
-                            return s;
-                        } else {
-                            return "error:Onbekende status: " + status;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(String string) {
-                    System.out.println("!!!!WEKENE:" + string);
-                    if (string.startsWith("error:")) {
-                        Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
-                    } else {
-                        try {
-                            JSONArray weekArray = new JSONArray(string);
-                            ArrayList<String> weken = new ArrayList<String>();
-
-                            for (int i = 0; i < weekArray.length(); i++) {
-                                JSONObject week = weekArray.getJSONObject(i);
-                                weken.add(week.getString("week"));
-                            }
-
-                            /* TODO: Implement Actionbar Spinner */
-
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }.execute();
-        }
-
         private void laadRooster(final ViewPager linearLayout, final Context context, final View v) {
             new LoadSceduleAndBuildLayout(context, linearLayout, v, false).execute();
         }
 
-        /** Inloggen met leerlingnummer */
+
+        // Inloggen met leerlingnummer
+
         private void login(int leerlingnummer) {
             login(leerlingnummer, false, false);
         }
+
         private void login(int leerlingnummer, boolean laadRooster) {
             login(leerlingnummer, false, laadRooster);
         }
+
         private void login(final int leerlingnummer, boolean force, boolean laadRooster) {
             new AsyncTask<String, Void, String>() {
                 @Override
                 protected String doInBackground(String... params) {
                     HttpClient httpclient = new DefaultHttpClient();
-                    HttpPost httppost = new HttpPost(getString(R.string.API_base_url)+"account/login.php");
-                    String s = null;
+                    HttpPost httppost = new HttpPost(getString(R.string.API_base_url) + "account/login.php");
+                    String s;
 
                     try {
                         // LLNR toevoegen
@@ -232,7 +175,7 @@ public class MainActivity extends ActionBarActivity {
 
                         getParameters.add(new BasicNameValuePair("llnr", params[0]));
                         boolean push = params[1].equals("ja");
-                        if(push) {
+                        if (push) {
                             getParameters.add(new BasicNameValuePair("force", "true"));
                         }
                         UrlEncodedFormEntity form = new UrlEncodedFormEntity(getParameters);
@@ -242,11 +185,15 @@ public class MainActivity extends ActionBarActivity {
                         HttpResponse response = httpclient.execute(httppost);
                         int status = response.getStatusLine().getStatusCode();
 
-                        switch(status) {
-                            case 500: return "error:Serverfout";
-                            case 204: return "duplicate";
-                            case 200: return new Scanner(response.getEntity().getContent()).nextLine();
-                            default: return "error:Onbekende fout";
+                        switch (status) {
+                            case 500:
+                                return "error:Serverfout";
+                            case 204:
+                                return "duplicate";
+                            case 200:
+                                return new Scanner(response.getEntity().getContent()).nextLine();
+                            default:
+                                return "error:Onbekende fout";
                         }
                     } catch (ClientProtocolException e) {
                         s = "error:" + e.toString();
@@ -258,10 +205,10 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 protected void onPostExecute(String s) {
-                    Log.e(this.getClass().getName(), "The string is: "+s);
-                    if(s.startsWith("error:")) {
+                    Log.e(this.getClass().getName(), "The string is: " + s);
+                    if (s.startsWith("error:")) {
                         Toast.makeText(getActivity(), s.substring(6), Toast.LENGTH_LONG).show();
-                    } else if(s.equals("duplicate")) {
+                    } else if (s.equals("duplicate")) {
                         // Maak een mooie notifybox en blablabla *sich*
                         final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
                         dialog.setTitle(getString(R.string.logindialog_warning_title));
@@ -272,16 +219,16 @@ public class MainActivity extends ActionBarActivity {
                                 login(leerlingnummer, true, true);
                             }
                         })
-                        .setNegativeButton(getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                showLoginDialog();
-                            }
-                        });
+                                .setNegativeButton(getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        showLoginDialog();
+                                    }
+                                });
 
                         dialog.show();
                     } else {
-                        if(s.startsWith("nr1")) {
+                        if (s.startsWith("nr1")) {
                             Toast.makeText(getActivity(), "Al bestaande app-account gekozen", Toast.LENGTH_LONG).show();
                             s = s.substring(4);
                         }
@@ -289,7 +236,7 @@ public class MainActivity extends ActionBarActivity {
                             JSONObject object = new JSONObject(s);
                             SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
                             e.putString("key", object.getString("key"));
-                            System.out.println("The key: "+object.getString("key"));
+                            System.out.println("The key: " + object.getString("key"));
                             e.putString("naam", object.getString("klas"));
                             if (object.has("klas")) {
                                 e.putString("klas", object.getString("klas"));
@@ -308,18 +255,20 @@ public class MainActivity extends ActionBarActivity {
             }.execute(Integer.toString(leerlingnummer), (force ? "ja" : "nee"));
         }
 
-
-        /** Inloggen met UserPass */
+        /**
+         * Inloggen met UserPass
+         */
         private void login(String gebruikersnaam, String wachtwoord) {
             login(gebruikersnaam, wachtwoord, false);
         }
+
         private void login(String gebruikersnaam, String wachtwoord, boolean laadRooster) {
             new AsyncTask<String, Void, String>() {
                 @Override
                 protected String doInBackground(String... params) {
                     HttpClient httpclient = new DefaultHttpClient();
-                    HttpPost httppost = new HttpPost(getString(R.string.API_base_url)+"account/login.php");
-                    String s = null;
+                    HttpPost httppost = new HttpPost(getString(R.string.API_base_url) + "account/login.php");
+                    String s;
                     try {
                         // Add your data
                         List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
@@ -335,12 +284,17 @@ public class MainActivity extends ActionBarActivity {
                         HttpResponse response = httpclient.execute(httppost);
                         int status = response.getStatusLine().getStatusCode();
 
-                        switch(status) {
-                            case 400: return "error:Missende parameters";
-                            case 401: return "error:Ongeldige logingegevens";
-                            case 500: return "error:Serverfout";
-                            case 200: return new Scanner(response.getEntity().getContent()).nextLine();
-                            default: return "error:Onbekende fout";
+                        switch (status) {
+                            case 400:
+                                return "error:Missende parameters";
+                            case 401:
+                                return "error:Ongeldige logingegevens";
+                            case 500:
+                                return "error:Serverfout";
+                            case 200:
+                                return new Scanner(response.getEntity().getContent()).nextLine();
+                            default:
+                                return "error:Onbekende fout";
                         }
                     } catch (ClientProtocolException e) {
                         s = "error:" + e.toString();
@@ -384,13 +338,14 @@ public class MainActivity extends ActionBarActivity {
         private void showLoginDialog() {
             showLoginDialog(false);
         }
+
         private void showLoginDialog(final boolean laadRooster) {
             final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
             //dialog.setTitle(R.string.logindialog_title);
             final LayoutInflater inflater = getActivity().getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.logindialog, null);
 
-            TabHost tabHost = (TabHost)dialogView.findViewById(R.id.DialogTabs);
+            TabHost tabHost = (TabHost) dialogView.findViewById(R.id.DialogTabs);
             tabHost.setup();
 
             // create tabs
