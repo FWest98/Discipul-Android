@@ -133,8 +133,8 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-            ViewPager linearLayout = (ViewPager) rootView.findViewById(R.id.viewPager);
-            linearLayout.setAdapter(new MyPagerAdapter());
+            ViewPager viewPager = (ViewPager) rootView.findViewById(R.id.viewPager);
+            viewPager.setAdapter(new MyPagerAdapter());
 
 
             // If the user apikey is already obtained
@@ -142,7 +142,7 @@ public class MainActivity extends ActionBarActivity {
                 //Laat de gebruiker inloggen
                 showLoginDialog(true);
             } else {
-                laadRooster(linearLayout, getActivity(), rootView);
+                laadRooster(viewPager, getActivity(), rootView);
             }
 
             return rootView;
