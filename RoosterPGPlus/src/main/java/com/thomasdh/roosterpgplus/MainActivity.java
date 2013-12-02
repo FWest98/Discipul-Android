@@ -120,11 +120,15 @@ public class MainActivity extends ActionBarActivity {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 return true;
+            case R.id.menu_item_refresh:
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     public static class PlaceholderFragment extends Fragment {
+
+        public View rootView;
 
         public PlaceholderFragment() {
         }
@@ -145,7 +149,7 @@ public class MainActivity extends ActionBarActivity {
             } else {
                 laadRooster(viewPager, getActivity(), rootView);
             }
-
+            this.rootView = rootView;
             return rootView;
 
         }
@@ -318,6 +322,8 @@ public class MainActivity extends ActionBarActivity {
                             }
                             e.apply();
                             Toast.makeText(getActivity(), "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+                            //Laad het rooster
+                            laadRooster((ViewPager) rootView.findViewById(R.id.viewPager), getActivity(), rootView);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -396,6 +402,10 @@ public class MainActivity extends ActionBarActivity {
                             }
                             e.apply();
                             Toast.makeText(getActivity(), "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+
+                            //Laad het rooster
+                            laadRooster((ViewPager) rootView.findViewById(R.id.viewPager), getActivity(), rootView);
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
