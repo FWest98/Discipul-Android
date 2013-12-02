@@ -88,14 +88,20 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
     }
 
     @Override
-
     protected String doInBackground(String... params) {
 
         //Controleer of het apparaat een internetverbinding heeft
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
+
+        String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+
+        if (!JSON.contains("\"week: \" \"" + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1) + "\"")) {
+            Log.d(getClass().getSimpleName(), "The wanted week is " + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1) + ", but the found week is something different.");
+        }
+
         if (netInfo != null && netInfo.isConnectedOrConnecting() && (itIsTimeToReload() || forceReload)) {
-            String JSON = laadViaInternet();
+            JSON = laadViaInternet();
             slaOp(JSON, Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
             Log.d(getClass().getSimpleName(), "Loaded from internet");
             if (JSON == null) {
@@ -104,7 +110,7 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
             return JSON;
         }
 
-        String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+
         Log.d(getClass().getSimpleName(), "Loaded without internet");
         return JSON;
     }
@@ -137,12 +143,9 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                         int paddingLeftRight = (int) convertDPToPX(10, context);
                         weekLinearLayout.setPadding(paddingLeftRight, 0, paddingLeftRight, 0);
                     }
-                    Log.e(this.getClass().getName(), "REPSONSE: " + string);
                     JSONObject weekArray = new JSONObject(string);
                     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-                    boolean rightWeek = true;
-                    roostermaker:
                     for (int day = 2; day < 7; day++) {
 
                         JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day));
@@ -170,11 +173,6 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                             if (dagArray.has(String.valueOf(y + 1))) {
                                 JSONObject uurObject = dagArray.getJSONArray(String.valueOf(y + 1)).getJSONObject(0);
                                 View uur = null;
-                                if (uurObject.getInt("week") != Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1) {
-                                    rightWeek = false;
-                                    Log.d(getClass().getSimpleName(), "The wanted week is " + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1) + ", but the found week is " + uurObject.getInt("week"));
-                                    break roostermaker;
-                                }
                                 if (uurObject.getString("vervallen").equals("1")) {
                                     uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
                                     uur.setMinimumHeight((int) convertDPToPX(80, context));
@@ -213,22 +211,15 @@ public class LoadSceduleAndBuildLayout extends AsyncTask<String, Void, String> {
                             ((MyPagerAdapter) viewPager.getAdapter()).addView(dagView);
                         }
                     }
-                    if (!rightWeek) {
-                        TextView tv = new TextView(context);
-                        tv.setText("Helaas, de app kon geen rooster laden.");
-                        viewPager.addView(tv);
-                        viewPager.getAdapter().notifyDataSetChanged();
-                    } else {
-                        if (weekView) {
-                            weekLinearLayout.invalidate();
-                            ScrollView weekScrollView = new ScrollView(context);
-                            weekScrollView.addView(weekLinearLayout);
-                            ((MyPagerAdapter) viewPager.getAdapter()).addView(weekScrollView);
-                        }
-                        viewPager.getAdapter().notifyDataSetChanged();
-                        viewPager.setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
+                    if (weekView) {
+                        weekLinearLayout.invalidate();
+                        ScrollView weekScrollView = new ScrollView(context);
+                        weekScrollView.addView(weekLinearLayout);
+                        ((MyPagerAdapter) viewPager.getAdapter()).addView(weekScrollView);
                     }
-
+                    viewPager.getAdapter().notifyDataSetChanged();
+                    if (!weekView)
+                        viewPager.setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
