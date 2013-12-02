@@ -5,8 +5,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 
 import org.apache.http.HttpResponse;
@@ -24,15 +26,15 @@ import java.util.Scanner;
 public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
 
     public Context context;
-    public ViewPager viewPager;
     public View rootView;
     public boolean forceReload;
+    public MenuItem menuItem;
 
-    public DownloadRoosterInternet(Context context, ViewPager viewPager, View rootView, boolean forceReload) {
+    public DownloadRoosterInternet(Context context, View rootView, boolean forceReload, MenuItem menuItem) {
         this.context = context;
-        this.viewPager = viewPager;
         this.rootView = rootView;
         this.forceReload = forceReload;
+        this.menuItem = menuItem;
     }
 
     @Override
@@ -65,7 +67,10 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String string) {
         if (string != null) {
-            new LayoutBuilder(context, viewPager, rootView).buildLayout(string);
+            new LayoutBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView).buildLayout(string);
+        }
+        if (menuItem != null) {
+            MenuItemCompat.setActionView(menuItem, null);
         }
     }
 
@@ -74,6 +79,10 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
     }
 
     String laadViaInternet() {
+        if (menuItem != null) {
+            MenuItemCompat.setActionView(menuItem, R.layout.actionbar_refresh_progress);
+        }
+
         String apikey = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
         HttpClient httpclient = new DefaultHttpClient();
         HttpGet httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?key=" + apikey);

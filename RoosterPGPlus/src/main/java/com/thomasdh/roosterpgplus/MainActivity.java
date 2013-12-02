@@ -48,6 +48,7 @@ import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
 
+    public static MenuItem refreshItem;
     public ActionBarDrawerToggle actionBarDrawerToggle;
 
     @Override
@@ -57,7 +58,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new PlaceholderFragment(), "Main_Fragment")
                     .commit();
         }
 
@@ -72,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
                 if (position == 0) {
                     android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
-                            .replace(R.id.main_linearlayout, new PlaceholderFragment())
+                            .replace(R.id.main_linearlayout, new PlaceholderFragment(), "Main_Fragment")
                             .commit();
                     //TODO reload rooster (dus gewoon opnieuw de view aanmaken?)
                 } else if (position == 1) {
@@ -109,6 +110,15 @@ public class MainActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        refreshItem = menu.findItem(R.id.menu_item_refresh);
+        refreshItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                PlaceholderFragment myFragment = (PlaceholderFragment) getSupportFragmentManager().findFragmentByTag("Main_Fragment");
+                new DownloadRoosterInternet(getApplicationContext(), myFragment.rootView, true, item);
+                return true;
+            }
+        });
         return true;
     }
 
@@ -147,7 +157,7 @@ public class MainActivity extends ActionBarActivity {
                 //Laat de gebruiker inloggen
                 showLoginDialog(true);
             } else {
-                laadRooster(viewPager, getActivity(), rootView);
+                laadRooster(getActivity(), rootView);
             }
             this.rootView = rootView;
             return rootView;
@@ -207,14 +217,14 @@ public class MainActivity extends ActionBarActivity {
             }.execute();
         }
 
-        private void laadRooster(final ViewPager linearLayout, final Context context, final View v) {
+        private void laadRooster(final Context context, final View v) {
 
             //Probeer de string uit het geheugen te laden
             String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR), getActivity());
 
             //Als het de goede week is, gebruik hem
             if (JSON.contains("\"week\":\"" + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) + "\"")) {
-                new LayoutBuilder(context, linearLayout, v).buildLayout(JSON);
+                new LayoutBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v).buildLayout(JSON);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
             } else {
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de week is nu " + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)));
@@ -222,7 +232,7 @@ public class MainActivity extends ActionBarActivity {
             }
 
             //Download het rooster
-            new DownloadRoosterInternet(context, linearLayout, v, false).execute();
+            new DownloadRoosterInternet(context, v, false, refreshItem).execute();
 
         }
 
@@ -323,7 +333,7 @@ public class MainActivity extends ActionBarActivity {
                             e.apply();
                             Toast.makeText(getActivity(), "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
                             //Laad het rooster
-                            laadRooster((ViewPager) rootView.findViewById(R.id.viewPager), getActivity(), rootView);
+                            laadRooster(getActivity(), rootView);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -404,7 +414,7 @@ public class MainActivity extends ActionBarActivity {
                             Toast.makeText(getActivity(), "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
 
                             //Laad het rooster
-                            laadRooster((ViewPager) rootView.findViewById(R.id.viewPager), getActivity(), rootView);
+                            laadRooster(getActivity(), rootView);
 
                         } catch (JSONException e) {
                             e.printStackTrace();
