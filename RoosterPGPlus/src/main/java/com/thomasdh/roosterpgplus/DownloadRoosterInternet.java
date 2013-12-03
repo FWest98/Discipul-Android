@@ -35,6 +35,10 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
         this.rootView = rootView;
         this.forceReload = forceReload;
         this.menuItem = menuItem;
+        
+        if (menuItem != null) {
+            MenuItemCompat.setActionView(menuItem, R.layout.actionbar_refresh_progress);
+        }
     }
 
     @Override
@@ -79,10 +83,6 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
     }
 
     String laadViaInternet() {
-        if (menuItem != null) {
-            // TODO: Fix dit. Dit zorgt voor een "Only the original thread that created a view hierarchy can touch its views
-            //MenuItemCompat.setActionView(menuItem, R.layout.actionbar_refresh_progress);
-        }
 
         String apikey = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
         HttpClient httpclient = new DefaultHttpClient();
