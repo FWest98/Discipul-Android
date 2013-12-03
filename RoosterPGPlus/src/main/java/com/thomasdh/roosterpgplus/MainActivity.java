@@ -9,7 +9,6 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -119,7 +118,7 @@ public class MainActivity extends ActionBarActivity {
             case R.id.action_settings:
                 return true;
             case R.id.menu_item_refresh:
-                new DownloadRoosterInternet(this, mainFragment.rootView, true, item).execute();
+                new RoosterDownloader(this, mainFragment.rootView, true, item).execute();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -213,7 +212,7 @@ public class MainActivity extends ActionBarActivity {
 
             //Als het de goede week is, gebruik hem
             if (JSON.contains("\"week\":\"" + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) + "\"")) {
-                new LayoutBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v).buildLayout(JSON);
+                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v).buildLayout(JSON);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
             } else {
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de week is nu " + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)));
@@ -221,7 +220,7 @@ public class MainActivity extends ActionBarActivity {
             }
 
             //Download het rooster
-            new DownloadRoosterInternet(context, v, false, refreshItem).execute();
+            new RoosterDownloader(context, v, false, refreshItem).execute();
 
         }
 

@@ -22,13 +22,13 @@ import java.util.Calendar;
 /**
  * Created by Thomas on 2-12-13.
  */
-public class LayoutBuilder {
+public class RoosterBuilder {
 
     public Context context;
     public ViewPager viewPager;
     public View rootView;
 
-    public LayoutBuilder(Context context, ViewPager viewPager, View rootView) {
+    public RoosterBuilder(Context context, ViewPager viewPager, View rootView) {
         this.context = context;
         this.viewPager = viewPager;
         this.rootView = rootView;
@@ -114,20 +114,21 @@ public class LayoutBuilder {
                         for (int y = 0; y < 7; y++) {
                             if (dagArray.has(String.valueOf(y + 1))) {
                                 JSONObject uurObject = dagArray.getJSONArray(String.valueOf(y + 1)).getJSONObject(0);
-                                View uur = null;
+                                Lesuur lesuur = new Lesuur(uurObject);
+                                View uur;
                                 if (uurObject.getString("vervallen").equals("1")) {
                                     uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
                                     uur.setMinimumHeight((int) convertDPToPX(80, context));
-                                    ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(uurObject.getString("vak") + " valt uit");
+                                    ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
                                 } else {
                                     if (uurObject.getString("verandering").equals("1")) {
                                         uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
                                     } else {
                                         uur = inflater.inflate(R.layout.rooster_uur, null);
                                     }
-                                    ((TextView) uur.findViewById(R.id.rooster_vak)).setText(uurObject.getString("vak"));
-                                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(uurObject.getString("leraar"));
-                                    ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(uurObject.getString("lokaal"));
+                                    ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
+                                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
+                                    ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(lesuur.lokaal);
                                     ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
                                 }
                                 if (y == 6) {

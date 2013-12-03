@@ -24,14 +24,14 @@ import java.util.Scanner;
 /**
  * Created by Thomas on 27-11-13.
  */
-public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
+public class RoosterDownloader extends AsyncTask<String, Void, String> {
 
     public Context context;
     public View rootView;
     public boolean forceReload;
     public MenuItem menuItem;
 
-    public DownloadRoosterInternet(Context context, View rootView, boolean forceReload, MenuItem menuItem) {
+    public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem) {
         this.context = context;
         this.rootView = rootView;
         this.forceReload = forceReload;
@@ -82,7 +82,7 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
                 Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
             }
 
-            new LayoutBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView).buildLayout(string);
+            new RoosterBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView).buildLayout(string);
         } else {
             Log.d(getClass().getSimpleName(), "Got a null string.");
         }
