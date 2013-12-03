@@ -36,6 +36,7 @@ public class LoginDialogClass {
 
     private Context context;
     private AlertDialog LoginDialog;
+    private AlertDialog RegisterDialog;
     private View rootView;
     private MainActivity.PlaceholderFragment mainFragment;
 
@@ -45,14 +46,16 @@ public class LoginDialogClass {
         this.mainFragment = mainFragment;
     }
 
+    /**
+     * Inloggen met leerlingnummer
+     */
+
     private void login(int leerlingnummer) {
         login(leerlingnummer, false, false);
     }
-
     private void login(int leerlingnummer, boolean laadRooster) {
         login(leerlingnummer, false, laadRooster);
     }
-
     private void login(final int leerlingnummer, boolean force, final boolean laadRooster) {
         new AsyncTask<String, Void, String>() {
             @Override
@@ -158,7 +161,6 @@ public class LoginDialogClass {
     private void login(String gebruikersnaam, String wachtwoord) {
         login(gebruikersnaam, wachtwoord, false);
     }
-
     private void login(String gebruikersnaam, String wachtwoord, final boolean laadRooster) {
         new AsyncTask<String, Void, String>() {
             @Override
@@ -238,6 +240,26 @@ public class LoginDialogClass {
         }.execute(gebruikersnaam, wachtwoord);
     }
 
+
+    /**
+     * Registreren
+     */
+    private void hideRegisterDialog() {
+        RegisterDialog.dismiss();
+    }
+
+    private void register() {
+        register(false);
+    }
+    private void register(final boolean laadRooster) {
+
+    }
+
+
+
+    /**
+     * Dialogstuff
+     */
     private void hideLoginDialog() {
         LoginDialog.dismiss();
     }
@@ -286,7 +308,7 @@ public class LoginDialogClass {
         LoginDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(inflater.getContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
+                register(laadRooster);
             }
         });
         LoginDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
