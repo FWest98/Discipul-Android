@@ -32,7 +32,7 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
     public MenuItem menuItem;
     private int week;
 
-    public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem) {
+    public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
         this.context = context;
         this.rootView = rootView;
         this.forceReload = forceReload;
@@ -91,7 +91,7 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
     }
 
     void slaOp(String JSON, int weeknr) {
-        if (weeknr == -1){
+        if (weeknr == -1) {
             weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), JSON).commit();
