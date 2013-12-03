@@ -136,7 +136,7 @@ public class MainActivity extends ActionBarActivity {
             case R.id.action_settings:
                 return true;
             case R.id.menu_item_refresh:
-                new DownloadRoosterInternet(this, mainFragment.rootView, true, item, selectedWeek).execute();
+                new RoosterDownloader(this, mainFragment.rootView, true, item, selectedWeek).execute();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -259,9 +259,9 @@ public class MainActivity extends ActionBarActivity {
 
             //Als het de goede week is, gebruik hem
             if (JSON.contains("\"week\":\"" + (selectedWeek) + "\"")) {
-                new LayoutBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v).buildLayout(JSON);
+                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v).buildLayout(JSON);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
-                new DownloadRoosterInternet(context, v, false, refreshItem, selectedWeek).execute();
+                new RoosterDownloader(context, v, false, refreshItem, selectedWeek).execute();
             } else {
                 if (JSON.startsWith("error:")) {
                     Log.w("MainActivity", JSON.substring(6));
@@ -269,7 +269,7 @@ public class MainActivity extends ActionBarActivity {
                     Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de gewilde week is " + selectedWeek);
                     Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
                 }
-                new DownloadRoosterInternet(context, v, true, refreshItem, selectedWeek).execute();
+                new RoosterDownloader(context, v, true, refreshItem, selectedWeek).execute();
             }
         }
 

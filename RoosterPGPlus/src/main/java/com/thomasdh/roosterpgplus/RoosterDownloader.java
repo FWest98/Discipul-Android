@@ -24,7 +24,7 @@ import java.util.Scanner;
 /**
  * Created by Thomas on 27-11-13.
  */
-public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
+public class RoosterDownloader extends AsyncTask<String, Void, String> {
 
     public Context context;
     public View rootView;
@@ -32,7 +32,7 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
     public MenuItem menuItem;
     private int week;
 
-    public DownloadRoosterInternet(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
+    public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
         this.context = context;
         this.rootView = rootView;
         this.forceReload = forceReload;
@@ -84,14 +84,14 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
                 Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
             }
 
-            new LayoutBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView).buildLayout(string);
+            new RoosterBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView).buildLayout(string);
         } else {
             Log.d(getClass().getSimpleName(), "Got a null string.");
         }
     }
 
     void slaOp(String JSON, int weeknr) {
-        if (weeknr == -1){
+        if (weeknr == -1) {
             weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), JSON).commit();
