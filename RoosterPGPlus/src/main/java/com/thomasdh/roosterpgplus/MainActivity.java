@@ -65,6 +65,8 @@ public class MainActivity extends ActionBarActivity {
         // Maak de navigation drawer
         String[] keuzes = {"Persoonlijk rooster", "Andere roosters"};
 
+        final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerlayout);
+        
         ListView drawerList = (ListView) findViewById(R.id.drawer);
         drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, keuzes));
         drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -80,9 +82,11 @@ public class MainActivity extends ActionBarActivity {
                     //TODO Ander rooster
                     Toast.makeText(getApplicationContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
                 }
+                drawerLayout.setItemChecked(position, true);
+                drawerLayout.closeDrawer(drawerList);
             }
         });
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerlayout);
+        
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
