@@ -76,8 +76,8 @@ public class LayoutBuilder {
     }
 
     public void buildLayout(String roosterJSON) {
+        viewPager.setAdapter(new MyPagerAdapter());
 
-        ((MyPagerAdapter) viewPager.getAdapter()).deleteItems();
         boolean weekView = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("weekview", context.getResources().getBoolean(R.bool.big_screen));
 
         Log.d(getClass().getSimpleName(), "The string is: " + roosterJSON);
