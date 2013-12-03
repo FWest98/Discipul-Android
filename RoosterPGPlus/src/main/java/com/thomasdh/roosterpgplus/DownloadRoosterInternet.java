@@ -70,7 +70,6 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
                 context.getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis()) {
             return true;
         }
-
         return false;
     }
 
