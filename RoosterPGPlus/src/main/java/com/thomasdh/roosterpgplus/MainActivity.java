@@ -50,15 +50,18 @@ public class MainActivity extends ActionBarActivity {
 
     public static MenuItem refreshItem;
     public ActionBarDrawerToggle actionBarDrawerToggle;
+    public PlaceholderFragment mainFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mainFragment = new PlaceholderFragment();
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment(), "Main_Fragment")
+                    .add(R.id.container, mainFragment)
                     .commit();
         }
 
@@ -66,27 +69,27 @@ public class MainActivity extends ActionBarActivity {
         String[] keuzes = {"Persoonlijk rooster", "Andere roosters"};
 
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerlayout);
-        
-        ListView drawerList = (ListView) findViewById(R.id.drawer);
+
+        final ListView drawerList = (ListView) findViewById(R.id.drawer);
         drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, keuzes));
         drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
+                    mainFragment = new PlaceholderFragment();
                     android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
-                            .replace(R.id.main_linearlayout, new PlaceholderFragment(), "Main_Fragment")
+                            .replace(R.id.main_linearlayout, mainFragment, "Main_Fragment")
                             .commit();
                     //TODO reload rooster (dus gewoon opnieuw de view aanmaken?)
                 } else if (position == 1) {
                     //TODO Ander rooster
                     Toast.makeText(getApplicationContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
                 }
-                drawerLayout.setItemChecked(position, true);
                 drawerLayout.closeDrawer(drawerList);
             }
         });
-        
+
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -114,15 +117,6 @@ public class MainActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        refreshItem = menu.findItem(R.id.menu_item_refresh);
-        refreshItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                PlaceholderFragment myFragment = (PlaceholderFragment) getSupportFragmentManager().findFragmentByTag("Main_Fragment");
-                new DownloadRoosterInternet(getApplicationContext(), myFragment.rootView, true, item);
-                return true;
-            }
-        });
         return true;
     }
 
@@ -135,6 +129,7 @@ public class MainActivity extends ActionBarActivity {
             case R.id.action_settings:
                 return true;
             case R.id.menu_item_refresh:
+                new DownloadRoosterInternet(this, mainFragment.rootView, true, item).execute();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -143,6 +138,7 @@ public class MainActivity extends ActionBarActivity {
     public static class PlaceholderFragment extends Fragment {
 
         public View rootView;
+        private AlertDialog LoginDialog;
 
         public PlaceholderFragment() {
         }
@@ -221,6 +217,9 @@ public class MainActivity extends ActionBarActivity {
             }.execute();
         }
 
+
+        // Inloggen met leerlingnummer
+
         private void laadRooster(final Context context, final View v) {
 
             //Probeer de string uit het geheugen te laden
@@ -239,9 +238,6 @@ public class MainActivity extends ActionBarActivity {
             new DownloadRoosterInternet(context, v, false, refreshItem).execute();
 
         }
-
-
-        // Inloggen met leerlingnummer
 
         private void login(int leerlingnummer) {
             login(leerlingnummer, false, false);
@@ -309,12 +305,12 @@ public class MainActivity extends ActionBarActivity {
                                 login(leerlingnummer, true, true);
                             }
                         })
-                        .setNegativeButton(getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                // do nothing
-                            }
-                        });
+                                .setNegativeButton(getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // do nothing
+                                    }
+                                });
 
                         dialog.show();
                     } else {
@@ -338,7 +334,7 @@ public class MainActivity extends ActionBarActivity {
                             e.apply();
                             Toast.makeText(getActivity(), "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
                             //Laad het rooster als de boolean true is
-                            if(laadRooster) {
+                            if (laadRooster) {
                                 laadRooster(getActivity(), rootView);
                             }
                         } catch (JSONException e) {
@@ -421,7 +417,7 @@ public class MainActivity extends ActionBarActivity {
                             Toast.makeText(getActivity(), "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
 
                             //Laad het rooster
-                            if(laadRooster) {
+                            if (laadRooster) {
                                 laadRooster(getActivity(), rootView);
                             }
 
@@ -439,11 +435,10 @@ public class MainActivity extends ActionBarActivity {
         private void hideLoginDialog() {
             LoginDialog.dismiss();
         }
+
         private void showLoginDialog() {
             showLoginDialog(false);
         }
-
-        private AlertDialog LoginDialog;
 
         private void showLoginDialog(final boolean laadRooster) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
