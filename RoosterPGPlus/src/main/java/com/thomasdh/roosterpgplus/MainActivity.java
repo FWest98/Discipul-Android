@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -102,6 +103,7 @@ public class MainActivity extends ActionBarActivity {
                 };
         actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>());
         //Voeg beide toe
+        actionBarSpinnerAdapter.addItem("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         getSupportActionBar().setListNavigationCallbacks(actionBarSpinnerAdapter, onNavigationListener);
 
     }
@@ -203,28 +205,49 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 protected void onPostExecute(String string) {
                     System.out.println("!!!!WEKENE:" + string);
-                    if (string.startsWith("error:")) {
+                    if (string != null && string.startsWith("error:")) {
                         Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
                     } else {
                         try {
-                            JSONArray weekArray = new JSONArray(string);
-                            ArrayList<String> weken = new ArrayList<String>();
-
-                            for (int i = 0; i < weekArray.length(); i++) {
-                                JSONObject week = weekArray.getJSONObject(i);
-                                weken.add(week.getString("week"));
-                            }
                             ArrayList<String> strings = new ArrayList<String>();
-                            //Get the index of the current week
-                            int indexCurrentWeek = -1;
-                            for (int u = 0; u < weken.size(); u++) {
-                                if (Integer.parseInt(weken.get(u)) == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
-                                    indexCurrentWeek = u;
-                                    break;
-                                }
+                            if(string == null) {
+                                string = PreferenceManager.getDefaultSharedPreferences(context).getString("weken", null);
                             }
-                            for (int c = 0; c < 3; c++) {
-                                strings.add("Week " + weken.get(indexCurrentWeek + c % weken.size()));
+                            if(string != null) {
+
+                                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("weken", string).commit();
+
+                                JSONArray weekArray = new JSONArray(string);
+                                ArrayList<Integer> weken = new ArrayList<Integer>();
+                                ArrayList<Integer> vakantieweken = new ArrayList<Integer>();
+
+                                for (int i = 0; i < weekArray.length(); i++) {
+                                    JSONObject week = weekArray.getJSONObject(i);
+                                    weken.add(week.getInt("week"));
+                                    if(week.getBoolean("vakantieweek")) {
+                                        vakantieweken.add(week.getInt("week"));
+                                    }
+                                }
+
+                                //Get the index of the current week
+                                int getweek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+                                for (int c = 0; c < 3; c++) {
+                                    if(getweek > 52) {
+                                        getweek = 1;
+
+                                    }
+                                    if(vakantieweken.contains(getweek)) {
+                                        Log.e("Volgende", Integer.toString(getweek));
+                                        getweek++;
+                                        continue;
+                                    }
+                                    strings.add("Week " + getweek);
+                                    getweek++;
+                                }
+
+                                Log.e("Ophalen", vakantieweken.toString());
+                            } else {
+                                strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
                             }
 
                             //TODO Een andere week kan hiermee worden toegevoegd
