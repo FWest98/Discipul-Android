@@ -205,40 +205,50 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 protected void onPostExecute(String string) {
                     System.out.println("!!!!WEKENE:" + string);
-                    if (string.startsWith("error:")) {
+                    if (string != null && string.startsWith("error:")) {
                         Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
                     } else {
                         try {
-                            JSONArray weekArray = new JSONArray(string);
-                            ArrayList<Integer> weken = new ArrayList<Integer>();
-                            ArrayList<Integer> vakantieweken = new ArrayList<Integer>();
-
-                            for (int i = 0; i < weekArray.length(); i++) {
-                                JSONObject week = weekArray.getJSONObject(i);
-                                weken.add(week.getInt("week"));
-                                if(week.getBoolean("vakantieweek")) {
-                                    vakantieweken.add(week.getInt("week"));
-                                }
-                            }
-
                             ArrayList<String> strings = new ArrayList<String>();
-                            //Get the index of the current week
-                            int getweek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
-                            for (int c = 0; c < 3; c++) {
-                                if(getweek > 52) {
-                                    getweek = 1;
-
-                                }
-                                if(vakantieweken.contains(getweek)) {
-                                    Log.e("Volgende", Integer.toString(getweek));
-                                    getweek++;
-                                    continue;
-                                }
-                                strings.add("Week " + getweek);
-                                getweek++;
+                            if(string == null) {
+                                string = PreferenceManager.getDefaultSharedPreferences(context).getString("weken", null);
                             }
+                            if(string != null) {
 
-                            Log.e("Ophalen", vakantieweken.toString());
+                                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("weken", string).commit();
+
+                                JSONArray weekArray = new JSONArray(string);
+                                ArrayList<Integer> weken = new ArrayList<Integer>();
+                                ArrayList<Integer> vakantieweken = new ArrayList<Integer>();
+
+                                for (int i = 0; i < weekArray.length(); i++) {
+                                    JSONObject week = weekArray.getJSONObject(i);
+                                    weken.add(week.getInt("week"));
+                                    if(week.getBoolean("vakantieweek")) {
+                                        vakantieweken.add(week.getInt("week"));
+                                    }
+                                }
+
+                                //Get the index of the current week
+                                int getweek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+                                for (int c = 0; c < 3; c++) {
+                                    if(getweek > 52) {
+                                        getweek = 1;
+
+                                    }
+                                    if(vakantieweken.contains(getweek)) {
+                                        Log.e("Volgende", Integer.toString(getweek));
+                                        getweek++;
+                                        continue;
+                                    }
+                                    strings.add("Week " + getweek);
+                                    getweek++;
+                                }
+
+                                Log.e("Ophalen", vakantieweken.toString());
+                            } else {
+                                strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+                            }
 
                             //TODO Een andere week kan hiermee worden toegevoegd
                             // strings.add("Andere week");
