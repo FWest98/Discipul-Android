@@ -114,7 +114,9 @@ public class RoosterBuilder {
                         for (int y = 0; y < 7; y++) {
                             if (dagArray.has(String.valueOf(y + 1))) {
                                 JSONObject uurObject = dagArray.getJSONArray(String.valueOf(y + 1)).getJSONObject(0);
+
                                 Lesuur lesuur = new Lesuur(uurObject);
+
                                 View uur;
                                 if (uurObject.getString("vervallen").equals("1")) {
                                     uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);

@@ -39,7 +39,7 @@ public class Lesuur {
             this.verandering = JSON.getInt("verandering") == 1;
             this.vervallen = JSON.getInt("vervallen") == 1;
             this.huiswerk = JSON.getString("huiswerk");
-            this.bijlage_id = JSON.getInt("bijlage-id");
+            //this.bijlage_id = JSON.getInt("bijlage-id");
             this.so = JSON.getInt("so") == 1;
             this.pw = JSON.getInt("pw") == 1;
             this.master = JSON.getInt("master") == 1;
