@@ -88,6 +88,7 @@ public class MainActivity extends ActionBarActivity {
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Schakel List navigatie in
         getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);

@@ -71,9 +71,9 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        TextView textView = (TextView) View.inflate(context, android.R.layout.simple_spinner_item, null);
-        textView.setText(data.get(position));
-        return textView;
+        View view = View.inflate(context, R.layout.action_bar_list_view, null);
+        ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
+        return view;
     }
 
     @Override
