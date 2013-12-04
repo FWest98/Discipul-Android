@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -209,24 +210,35 @@ public class MainActivity extends ActionBarActivity {
                     } else {
                         try {
                             JSONArray weekArray = new JSONArray(string);
-                            ArrayList<String> weken = new ArrayList<String>();
+                            ArrayList<Integer> weken = new ArrayList<Integer>();
+                            ArrayList<Integer> vakantieweken = new ArrayList<Integer>();
 
                             for (int i = 0; i < weekArray.length(); i++) {
                                 JSONObject week = weekArray.getJSONObject(i);
-                                weken.add(week.getString("week"));
-                            }
-                            ArrayList<String> strings = new ArrayList<String>();
-                            //Get the index of the current week
-                            int indexCurrentWeek = -1;
-                            for (int u = 0; u < weken.size(); u++) {
-                                if (Integer.parseInt(weken.get(u)) == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
-                                    indexCurrentWeek = u;
-                                    break;
+                                weken.add(week.getInt("week"));
+                                if(week.getBoolean("vakantieweek")) {
+                                    vakantieweken.add(week.getInt("week"));
                                 }
                             }
+
+                            ArrayList<String> strings = new ArrayList<String>();
+                            //Get the index of the current week
+                            int getweek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
                             for (int c = 0; c < 3; c++) {
-                                strings.add("Week " + weken.get(indexCurrentWeek + c % weken.size()));
+                                if(getweek > 52) {
+                                    getweek = 1;
+
+                                }
+                                if(vakantieweken.contains(getweek)) {
+                                    Log.e("Volgende", Integer.toString(getweek));
+                                    getweek++;
+                                    continue;
+                                }
+                                strings.add("Week " + getweek);
+                                getweek++;
                             }
+
+                            Log.e("Ophalen", vakantieweken.toString());
 
                             //TODO Een andere week kan hiermee worden toegevoegd
                             // strings.add("Andere week");
