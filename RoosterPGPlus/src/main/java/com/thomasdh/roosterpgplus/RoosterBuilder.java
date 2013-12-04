@@ -129,7 +129,11 @@ public class RoosterBuilder {
                                         uur = inflater.inflate(R.layout.rooster_uur, null);
                                     }
                                     ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
-                                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
+                                    if(lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
+                                        ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
+                                    } else {
+                                        ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
+                                    }
                                     ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(lesuur.lokaal);
                                     ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
                                 }
