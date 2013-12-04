@@ -102,6 +102,7 @@ public class MainActivity extends ActionBarActivity {
                 };
         actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>());
         //Voeg beide toe
+        actionBarSpinnerAdapter.addItem("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         getSupportActionBar().setListNavigationCallbacks(actionBarSpinnerAdapter, onNavigationListener);
 
     }
