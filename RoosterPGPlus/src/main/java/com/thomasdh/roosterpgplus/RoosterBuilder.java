@@ -14,10 +14,17 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import com.thomasdh.roosterpgplus.JoinableList;
 
 /**
  * Created by Thomas on 2-12-13.
@@ -95,7 +102,7 @@ public class RoosterBuilder {
                         int paddingLeftRight = (int) convertDPToPX(10, context);
                         weekLinearLayout.setPadding(paddingLeftRight, 0, paddingLeftRight, 0);
                     }
-                    Log.e(this.getClass().getName(), "REPSONSE: " + roosterJSON);
+                    Log.e(this.getClass().getName(), "RESPONSE: " + roosterJSON);
                     JSONObject weekArray = new JSONObject(roosterJSON);
                     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -113,15 +120,34 @@ public class RoosterBuilder {
                         //Ga langs alle uren
                         for (int y = 0; y < 7; y++) {
                             if (dagArray.has(String.valueOf(y + 1))) {
-                                JSONObject uurObject = dagArray.getJSONArray(String.valueOf(y + 1)).getJSONObject(0);
-
+                                JSONArray uurArray = dagArray.getJSONArray(String.valueOf(y + 1));
+                                JSONObject uurObject = uurArray.getJSONObject(0);
                                 Lesuur lesuur = new Lesuur(uurObject);
+                                JoinableList vervallenVakken = new JoinableList();
+
+                                // Bepalen welk uur van de (eventueel meerdere) hij moet nemen
+                                if(lesuur.vervallen && uurArray.length() > 1) {
+                                    int uurCounter = 1;
+                                    while(lesuur.vervallen && uurCounter < uurArray.length()) { // vervallen les, en er moet nog één beschikbaar zijn
+                                        vervallenVakken.add(lesuur.vak);
+                                        uurObject = uurArray.getJSONObject(uurCounter);
+                                        lesuur = new Lesuur(uurObject);
+                                        uurCounter++;
+                                    }
+                                }
+
 
                                 View uur;
                                 if (uurObject.getString("vervallen").equals("1")) {
                                     uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
                                     uur.setMinimumHeight((int) convertDPToPX(80, context));
-                                    ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
+                                    if(vervallenVakken.size() > 0) {
+                                        vervallenVakken.add(lesuur.vak);
+                                        String vakken = vervallenVakken.join(" & ");
+                                        ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(vakken + " vallen uit");
+                                    } else {
+                                        ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
+                                    }
                                 } else {
                                     if (uurObject.getString("verandering").equals("1")) {
                                         uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
