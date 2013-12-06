@@ -31,6 +31,7 @@ public class RoosterBuilder {
     public WeakReference<View> rootView;
     private int week;
 
+
     public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
@@ -191,14 +192,39 @@ public class RoosterBuilder {
                     }
                     viewPager.get().getAdapter().notifyDataSetChanged();
                     if (!weekView)
-                        if (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) == week) {
+                        if (PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("geselecteerdeweek", -1) == week) {
+                            Log.d(getClass().getSimpleName(), "De geselecteerde week is niet veranderd, de dag blijft " + PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("dagvandeweeklaatst", 0));
+                            viewPager.get().setCurrentItem(PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("dagvandeweeklaatst", 0));
+                        } else if (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) == week) {
+                            Log.d(getClass().getSimpleName(), "De geselecteerde week is veranderd, en is deze week, de dag wordt " + (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2));
                             viewPager.get().setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
-                        }else{
+                            PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("dagvandeweek", Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2).commit();
+                        } else {
+                            Log.d(getClass().getSimpleName(), "De geselecteerde week is veranderd en is niet deze week, de dag wordt maandag.");
                             viewPager.get().setCurrentItem(0);
+                            PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("dagvandeweek", 0).commit();
                         }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
+                viewPager.get().setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                    @Override
+                    public void onPageScrolled(int i, float v, int i2) {
+                    }
+
+                    @Override
+                    public void onPageSelected(int i) {
+                        PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("dagvandeweeklaatst", i).commit();
+                    }
+
+                    @Override
+                    public void onPageScrollStateChanged(int i) {
+
+                    }
+                });
+
+                PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("geselecteerdeweek", week).commit();
             }
         } else {
             TextView tv = new TextView(context.get());
