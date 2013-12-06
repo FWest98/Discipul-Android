@@ -118,7 +118,7 @@ public class RoosterBuilder {
                         TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
                         dagTextView.setText(getDayOfWeek(day));
 
-                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy ww WW");
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");
                         Calendar now = Calendar.getInstance();
                         Calendar date = Calendar.getInstance();
                         date.setTime(new Date());
