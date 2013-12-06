@@ -1,6 +1,8 @@
 package com.thomasdh.roosterpgplus;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,10 +11,13 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.MissingFormatArgumentException;
 
 public class ActionBarSpinnerAdapter implements SpinnerAdapter {
+    static public TextView andereWeekTextView;
     private Context context;
     private List<String> data;
+
 
     public ActionBarSpinnerAdapter(Context context, List<String> data) {
         this.context = context;

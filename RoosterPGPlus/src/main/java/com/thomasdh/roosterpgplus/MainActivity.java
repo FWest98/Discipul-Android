@@ -1,6 +1,8 @@
 package com.thomasdh.roosterpgplus;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -40,7 +42,8 @@ public class MainActivity extends ActionBarActivity {
     public static MenuItem refreshItem;
     public static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
     public static ActionBar actionBar;
-    private static int selectedWeek = -1;
+    public static int selectedWeek = -1;
+    private static ArrayList<String> weken;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     public PlaceholderFragment mainFragment;
 
@@ -91,6 +94,7 @@ public class MainActivity extends ActionBarActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Schakel List navigatie in
+
         getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
         ActionBar.OnNavigationListener onNavigationListener = new
@@ -208,7 +212,9 @@ public class MainActivity extends ActionBarActivity {
                         Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
                     } else {
                         try {
-                            ArrayList<String> strings = new ArrayList<String>();
+                            weken = new ArrayList<String>();
+                            final ArrayList<String> strings = new ArrayList<String>();
+
                             if (string == null) {
                                 string = PreferenceManager.getDefaultSharedPreferences(context).getString("weken", null);
                             }
@@ -217,7 +223,6 @@ public class MainActivity extends ActionBarActivity {
                                 PreferenceManager.getDefaultSharedPreferences(context).edit().putString("weken", string).commit();
 
                                 JSONArray weekArray = new JSONArray(string);
-                                ArrayList<String> weken = new ArrayList<String>();
 
                                 for (int i = 0; i < weekArray.length(); i++) {
                                     JSONObject week = weekArray.getJSONObject(i);
@@ -238,18 +243,22 @@ public class MainActivity extends ActionBarActivity {
                                 strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
                             }
 
-                            //TODO Een andere week kan hiermee worden toegevoegd
-                            // strings.add("Andere week");
+                            //Andere week
+                            strings.add("Andere week");
 
                             actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
                             actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
+                                final ActionBar.OnNavigationListener onNavigationListener = this;
+
                                 @Override
                                 public boolean onNavigationItemSelected(int i, long l) {
-                                    if (i != 3) {
+                                    if (i < 3) {
                                         String itemString = (String) actionBarSpinnerAdapter.getItem(i);
                                         int week = Integer.parseInt(itemString.substring(5));
                                         selectedWeek = week;
                                         laadRooster(context, rootView);
+                                    } else {
+                                        buildDialogForActionBarSpinner();
                                     }
                                     return true;
                                 }
@@ -261,6 +270,22 @@ public class MainActivity extends ActionBarActivity {
                     }
                 }
             }.execute();
+        }
+
+        public void buildDialogForActionBarSpinner() {
+            if (weken != null) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Andere week");
+                builder.setItems(weken.toArray(new String[0]), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        selectedWeek = Integer.parseInt(weken.get(which));
+                        laadRooster(getActivity(), rootView);
+                    }
+                });
+                builder.setNegativeButton("Annuleren", null);
+                builder.show();
+            }
         }
 
         public void laadRooster(final Context context, final View v) {
