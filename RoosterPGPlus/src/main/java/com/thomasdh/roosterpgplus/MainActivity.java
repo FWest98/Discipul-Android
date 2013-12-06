@@ -298,7 +298,7 @@ public class MainActivity extends ActionBarActivity {
 
             //Als het de goede week is, gebruik hem
             if (JSON.contains("\"week\":\"" + (selectedWeek) + "\"")) {
-                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v).buildLayout(JSON);
+                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v, selectedWeek).buildLayout(JSON);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
                 new RoosterDownloader(context, v, false, refreshItem, selectedWeek).execute();
             } else {
