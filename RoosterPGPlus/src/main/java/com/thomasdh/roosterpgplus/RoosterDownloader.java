@@ -85,7 +85,7 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
                 Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
             }
             if (context != null && rootView.get() != null) {
-                new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get()).buildLayout(string);
+                new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(string);
             }
         } else {
             Log.d(getClass().getSimpleName(), "Got a null string.");

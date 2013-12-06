@@ -29,11 +29,13 @@ public class RoosterBuilder {
     public WeakReference<Context> context;
     public WeakReference<ViewPager> viewPager;
     public WeakReference<View> rootView;
+    private int week;
 
-    public RoosterBuilder(Context context, ViewPager viewPager, View rootView) {
+    public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
         this.rootView = new WeakReference<View>(rootView);
+        this.week = week;
     }
 
     public static String getTijden(int x) {
@@ -189,7 +191,11 @@ public class RoosterBuilder {
                     }
                     viewPager.get().getAdapter().notifyDataSetChanged();
                     if (!weekView)
-                        viewPager.get().setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
+                        if (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) == week) {
+                            viewPager.get().setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
+                        }else{
+                            viewPager.get().setCurrentItem(0);
+                        }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
