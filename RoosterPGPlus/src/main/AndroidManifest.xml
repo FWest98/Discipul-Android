@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.thomasdh.roosterpgplus.RoosterPreferenceActivity"
+            android:name=".PreferencesActivity"
             android:label="@string/action_settings" />
     </application>
 

@@ -2,4 +2,6 @@
 <resources>
     <dimen name="weekdag_fontSize">24sp</dimen>
     <dimen name="weekdag_marginSize">10dp</dimen>
+    <dimen name="weekdag_datum_textSize">14sp</dimen>
+    <dimen name="weekdag_datum_marginTop">9dp</dimen>
 </resources>

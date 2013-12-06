@@ -5,16 +5,31 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/weekdagnaam"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="Weekdag"
-        android:textSize="@dimen/weekdag_fontSize"
-        android:layout_marginTop="@dimen/weekdag_marginSize"
-        android:layout_marginBottom="@dimen/weekdag_marginSize"
-        />
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/weekdag_marginSize"
+        android:paddingBottom="@dimen/weekdag_marginSize">
+        <TextView
+            android:id="@+id/weekdagnaam"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Weekdag"
+            android:textSize="@dimen/weekdag_fontSize"
+            android:layout_centerHorizontal="true"
+            />
+        <TextView
+            android:id="@+id/weekdagdatum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Datum"
+            android:textSize="@dimen/weekdag_datum_textSize"
+            android:textColor="#888"
+            android:layout_marginTop="@dimen/weekdag_datum_marginTop"
+            android:layout_marginLeft="4dp"
+            android:layout_toRightOf="@+id/weekdagnaam"/>
+    </RelativeLayout>
 
     <View
         android:layout_width="match_parent"

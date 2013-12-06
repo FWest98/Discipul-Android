@@ -140,7 +140,7 @@ public class MainActivity extends ActionBarActivity {
         }
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Intent optiesIntent = new Intent(this, RoosterPreferenceActivity.class);
+                Intent optiesIntent = new Intent(this, PreferencesActivity.class);
                 startActivity(optiesIntent);
                 return true;
             case R.id.menu_item_refresh:

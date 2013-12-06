@@ -8,6 +8,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -19,7 +20,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by Thomas on 2-12-13.
@@ -114,6 +117,29 @@ public class RoosterBuilder {
 
                         TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
                         dagTextView.setText(getDayOfWeek(day));
+
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy ww WW");
+                        Calendar now = Calendar.getInstance();
+                        Calendar date = Calendar.getInstance();
+                        date.setTime(new Date());
+                        if(now.get(Calendar.WEEK_OF_YEAR)  > 30) {
+                            if(week < 30) {
+                                date.set(Calendar.YEAR, now.get(Calendar.YEAR) + 1);
+                            } else {
+                                date.set(Calendar.YEAR, now.get(Calendar.YEAR));
+                            }
+                        } else {
+                            if(week < 30) {
+                                date.set(Calendar.YEAR, now.get(Calendar.YEAR));
+                            } else {
+                                date.set(Calendar.YEAR, now.get(Calendar.YEAR) - 1);
+                            }
+                        }
+                        date.set(Calendar.WEEK_OF_YEAR, week);
+                        date.set(Calendar.DAY_OF_WEEK, day);
+                        ((TextView) dagView.findViewById(R.id.weekdagdatum)).setText(dateFormat.format(date.getTime()));
+
+                        Log.e("OPHALEN", Integer.toString(week));
 
                         //Ga langs alle uren
                         for (int y = 0; y < 7; y++) {

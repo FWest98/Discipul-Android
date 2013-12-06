@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by Thomas on 6-12-13.
  */
-public class RoosterPreferenceActivity extends PreferenceActivity {
+public class PreferencesActivity extends PreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +19,7 @@ public class RoosterPreferenceActivity extends PreferenceActivity {
 
         // Voor android versies voor 3.0
         String action = getIntent().getAction();
-        if (action != null && action.equals("com.thomasdh.roosterpgplus.RoosterPreferenceActivity$InfoFragment")) {
+        if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment")) {
             addPreferencesFromResource(R.xml.preferences_info);
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
