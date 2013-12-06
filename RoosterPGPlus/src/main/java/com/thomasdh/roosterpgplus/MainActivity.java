@@ -3,6 +3,7 @@ package com.thomasdh.roosterpgplus;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -139,6 +140,8 @@ public class MainActivity extends ActionBarActivity {
         }
         switch (item.getItemId()) {
             case R.id.action_settings:
+                Intent optiesIntent = new Intent(this, RoosterPreferenceActivity.class);
+                startActivity(optiesIntent);
                 return true;
             case R.id.menu_item_refresh:
                 new RoosterDownloader(this, mainFragment.rootView, true, item, selectedWeek).execute();
