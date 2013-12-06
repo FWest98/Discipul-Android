@@ -18,27 +18,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import com.thomasdh.roosterpgplus.JoinableList;
 
 /**
  * Created by Thomas on 2-12-13.
  */
 public class RoosterBuilder {
 
-    public Context context;
-    public ViewPager viewPager;
-    public View rootView;
+    public WeakReference<Context> context;
+    public WeakReference<ViewPager> viewPager;
+    public WeakReference<View> rootView;
 
     public RoosterBuilder(Context context, ViewPager viewPager, View rootView) {
-        this.context = context;
-        this.viewPager = viewPager;
-        this.rootView = rootView;
+        this.context = new WeakReference<Context>(context);
+        this.viewPager = new WeakReference<ViewPager>(viewPager);
+        this.rootView = new WeakReference<View>(rootView);
     }
 
     public static String getTijden(int x) {
@@ -83,28 +78,28 @@ public class RoosterBuilder {
     }
 
     public void buildLayout(String roosterJSON) {
-        viewPager.setAdapter(new MyPagerAdapter());
+        viewPager.get().setAdapter(new MyPagerAdapter());
 
-        boolean weekView = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("weekview", context.getResources().getBoolean(R.bool.big_screen));
+        boolean weekView = PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("weekview", context.get().getResources().getBoolean(R.bool.big_screen));
 
         Log.d(getClass().getSimpleName(), "The string is: " + roosterJSON);
 
 
         if (roosterJSON != null) {
             if (roosterJSON.startsWith("error:")) {
-                Toast.makeText(context, roosterJSON.substring(6), Toast.LENGTH_LONG).show();
+                Toast.makeText(context.get(), roosterJSON.substring(6), Toast.LENGTH_LONG).show();
             } else {
                 try {
                     LinearLayout weekLinearLayout = null;
                     if (weekView) {
-                        weekLinearLayout = new LinearLayout(context);
+                        weekLinearLayout = new LinearLayout(context.get());
                         weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
-                        int paddingLeftRight = (int) convertDPToPX(10, context);
+                        int paddingLeftRight = (int) convertDPToPX(10, context.get());
                         weekLinearLayout.setPadding(paddingLeftRight, 0, paddingLeftRight, 0);
                     }
                     Log.e(this.getClass().getName(), "RESPONSE: " + roosterJSON);
                     JSONObject weekArray = new JSONObject(roosterJSON);
-                    LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater inflater = (LayoutInflater) context.get().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
                     for (int day = 2; day < 7; day++) {
 
@@ -126,9 +121,9 @@ public class RoosterBuilder {
                                 JoinableList vervallenVakken = new JoinableList();
 
                                 // Bepalen welk uur van de (eventueel meerdere) hij moet nemen
-                                if(lesuur.vervallen && uurArray.length() > 1) {
+                                if (lesuur.vervallen && uurArray.length() > 1) {
                                     int uurCounter = 1;
-                                    while(lesuur.vervallen && uurCounter < uurArray.length()) { // vervallen les, en er moet nog één beschikbaar zijn
+                                    while (lesuur.vervallen && uurCounter < uurArray.length()) { // vervallen les, en er moet nog één beschikbaar zijn
                                         vervallenVakken.add(lesuur.vak);
                                         uurObject = uurArray.getJSONObject(uurCounter);
                                         lesuur = new Lesuur(uurObject);
@@ -140,8 +135,8 @@ public class RoosterBuilder {
                                 View uur;
                                 if (uurObject.getString("vervallen").equals("1")) {
                                     uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
-                                    uur.setMinimumHeight((int) convertDPToPX(80, context));
-                                    if(vervallenVakken.size() > 0) {
+                                    uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
+                                    if (vervallenVakken.size() > 0) {
                                         vervallenVakken.add(lesuur.vak);
                                         String vakken = vervallenVakken.join(" & ");
                                         ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(vakken + " vallen uit");
@@ -155,7 +150,7 @@ public class RoosterBuilder {
                                         uur = inflater.inflate(R.layout.rooster_uur, null);
                                     }
                                     ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
-                                    if(lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
+                                    if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
                                         ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
                                     } else {
                                         ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
@@ -166,11 +161,11 @@ public class RoosterBuilder {
                                 if (y == 6) {
                                     uur.setBackgroundResource(R.drawable.basic_rect);
                                 }
-                                uur.setMinimumHeight((int) convertDPToPX(81, context));
+                                uur.setMinimumHeight((int) convertDPToPX(81, context.get()));
                                 ll.addView(uur);
                             } else {
                                 View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
-                                vrij.setMinimumHeight((int) convertDPToPX(80, context));
+                                vrij.setMinimumHeight((int) convertDPToPX(80, context.get()));
                                 if (y == 6) {
                                     vrij.setBackgroundResource(R.drawable.basic_rect);
                                 }
@@ -178,32 +173,32 @@ public class RoosterBuilder {
                             }
                         }
                         if (weekView) {
-                            ll.setPadding((int) convertDPToPX(3, context), (int) convertDPToPX(3, context), (int) convertDPToPX(3, context), (int) convertDPToPX(3, context));
+                            ll.setPadding((int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()));
                             dagView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                             weekLinearLayout.addView(dagView);
                         } else {
-                            ll.setPadding((int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context), (int) convertDPToPX(10, context));
-                            ((MyPagerAdapter) viewPager.getAdapter()).addView(dagView);
+                            ll.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
+                            ((MyPagerAdapter) viewPager.get().getAdapter()).addView(dagView);
                         }
                     }
                     if (weekView) {
                         weekLinearLayout.invalidate();
-                        ScrollView weekScrollView = new ScrollView(context);
+                        ScrollView weekScrollView = new ScrollView(context.get());
                         weekScrollView.addView(weekLinearLayout);
-                        ((MyPagerAdapter) viewPager.getAdapter()).addView(weekScrollView);
+                        ((MyPagerAdapter) viewPager.get().getAdapter()).addView(weekScrollView);
                     }
-                    viewPager.getAdapter().notifyDataSetChanged();
+                    viewPager.get().getAdapter().notifyDataSetChanged();
                     if (!weekView)
-                        viewPager.setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
+                        viewPager.get().setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         } else {
-            TextView tv = new TextView(context);
+            TextView tv = new TextView(context.get());
             tv.setText("Helaas, de app kon geen rooster laden.");
-            viewPager.addView(tv);
-            viewPager.getAdapter().notifyDataSetChanged();
+            viewPager.get().addView(tv);
+            viewPager.get().getAdapter().notifyDataSetChanged();
         }
     }
 

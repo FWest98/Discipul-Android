@@ -18,6 +18,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Scanner;
 
@@ -27,14 +28,14 @@ import java.util.Scanner;
 public class RoosterDownloader extends AsyncTask<String, Void, String> {
 
     public Context context;
-    public View rootView;
+    public WeakReference<View> rootView;
     public boolean forceReload;
     public MenuItem menuItem;
     private int week;
 
     public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
         this.context = context;
-        this.rootView = rootView;
+        this.rootView = new WeakReference<View>(rootView);
         this.forceReload = forceReload;
         this.menuItem = menuItem;
         this.week = week;
@@ -83,8 +84,8 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
             } else {
                 Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
             }
-            if (context != null && rootView != null) {
-                new RoosterBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView).buildLayout(string);
+            if (context != null && rootView.get() != null) {
+                new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get()).buildLayout(string);
             }
         } else {
             Log.d(getClass().getSimpleName(), "Got a null string.");
