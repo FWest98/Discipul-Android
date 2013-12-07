@@ -224,6 +224,8 @@ public class LoginDialogClass {
                         e.commit();
                         Toast.makeText(context, "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
 
+                        LoginDialog.dismiss();
+
                         //Laad het rooster
                         if (laadRooster) {
                             mainFragment.laadRooster(context, rootView);
@@ -252,6 +254,15 @@ public class LoginDialogClass {
         register(false);
     }
     private void register(final boolean laadRooster) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        final LayoutInflater inflater = LayoutInflater.from(context);
+        final View dialogView = inflater.inflate(R.layout.registerdialog, null);
+
+        TabHost tabHost = (TabHost) dialogView.findViewById(R.id.DialogTabs);
+        tabHost.setup();
+
+        /* Create tabs */
+        TabHost.TabSpec tab1 = tabHost.newTabSpec("tab1");
 
     }
 
@@ -330,7 +341,7 @@ public class LoginDialogClass {
                     // dismissen IN de login functie
                 } catch (Exception e) {
                     login(username.getText().toString(), password.getText().toString(), laadRooster);
-                    LoginDialog.dismiss();
+                    // dismiss IN login functie
                 }
 
             }
