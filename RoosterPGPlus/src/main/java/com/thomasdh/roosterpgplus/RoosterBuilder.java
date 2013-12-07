@@ -121,24 +121,31 @@ public class RoosterBuilder {
                         Calendar now = Calendar.getInstance();
                         Calendar date = Calendar.getInstance();
                         date.setTime(new Date());
+
+                        //Als de huidige week hoger dan 30 is (Schooljaar x/x+1)
                         if (now.get(Calendar.WEEK_OF_YEAR) > 30) {
+                            // Als de gevraagde week lager dan dertig is
                             if (week < 30) {
+                                // ga naar het volgende jaar
                                 date.set(Calendar.YEAR, now.get(Calendar.YEAR) + 1);
                             } else {
                                 date.set(Calendar.YEAR, now.get(Calendar.YEAR));
                             }
+                            //Als de huidige week lager dan 30 is (Schooljaar x-1/x)
                         } else {
                             if (week < 30) {
                                 date.set(Calendar.YEAR, now.get(Calendar.YEAR));
                             } else {
+                                // Als de gevraagde week hoger dan 30 is
                                 date.set(Calendar.YEAR, now.get(Calendar.YEAR) - 1);
                             }
                         }
-                        date.set(Calendar.WEEK_OF_YEAR, week);
+
                         date.set(Calendar.DAY_OF_WEEK, day);
+                        date.set(Calendar.WEEK_OF_YEAR, week);
                         ((TextView) dagView.findViewById(R.id.weekdagdatum)).setText(dateFormat.format(date.getTime()));
 
-                        Log.e("OPHALEN", Integer.toString(week));
+                        Log.e("OPHALEN", dateFormat.format(date.getTime()));
 
                         //Ga langs alle uren
                         for (int y = 0; y < 7; y++) {
@@ -191,7 +198,7 @@ public class RoosterBuilder {
                                 }
                                 if (y == 6) {
                                     uur.setBackgroundResource(R.drawable.basic_rect);
-                                    if (!paddingRight){
+                                    if (!paddingRight) {
                                         uur.setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
                                     }
                                 }
@@ -223,6 +230,7 @@ public class RoosterBuilder {
                     }
                     viewPager.get().getAdapter().notifyDataSetChanged();
                     if (!weekView)
+                        // Ga naar de gewilde dag
                         if (PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("geselecteerdeweek", -1) == week) {
                             Log.d(getClass().getSimpleName(), "De geselecteerde week is niet veranderd, de dag blijft " + PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("dagvandeweeklaatst", 0));
                             viewPager.get().setCurrentItem(PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("dagvandeweeklaatst", 0));
