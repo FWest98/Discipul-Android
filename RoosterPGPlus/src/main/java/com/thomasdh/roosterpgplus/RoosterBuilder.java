@@ -8,7 +8,6 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -122,14 +121,14 @@ public class RoosterBuilder {
                         Calendar now = Calendar.getInstance();
                         Calendar date = Calendar.getInstance();
                         date.setTime(new Date());
-                        if(now.get(Calendar.WEEK_OF_YEAR)  > 30) {
-                            if(week < 30) {
+                        if (now.get(Calendar.WEEK_OF_YEAR) > 30) {
+                            if (week < 30) {
                                 date.set(Calendar.YEAR, now.get(Calendar.YEAR) + 1);
                             } else {
                                 date.set(Calendar.YEAR, now.get(Calendar.YEAR));
                             }
                         } else {
-                            if(week < 30) {
+                            if (week < 30) {
                                 date.set(Calendar.YEAR, now.get(Calendar.YEAR));
                             } else {
                                 date.set(Calendar.YEAR, now.get(Calendar.YEAR) - 1);
@@ -162,6 +161,7 @@ public class RoosterBuilder {
 
 
                                 View uur;
+                                boolean paddingRight = true;
                                 if (uurObject.getString("vervallen").equals("1")) {
                                     uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
                                     uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
@@ -174,8 +174,10 @@ public class RoosterBuilder {
                                     }
                                 } else {
                                     if (uurObject.getString("verandering").equals("1")) {
+                                        paddingRight = false;
                                         uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
                                     } else {
+                                        paddingRight = false;
                                         uur = inflater.inflate(R.layout.rooster_uur, null);
                                     }
                                     ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
@@ -189,6 +191,9 @@ public class RoosterBuilder {
                                 }
                                 if (y == 6) {
                                     uur.setBackgroundResource(R.drawable.basic_rect);
+                                    if (!paddingRight){
+                                        uur.setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
+                                    }
                                 }
                                 uur.setMinimumHeight((int) convertDPToPX(81, context.get()));
                                 ll.addView(uur);
