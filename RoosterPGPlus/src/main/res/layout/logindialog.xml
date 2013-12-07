@@ -34,7 +34,8 @@
                     android:paddingLeft="10dp"
                     android:paddingTop="6dp"
                     android:text="@string/logindialog_userpass_desc"
-                    android:textSize="17sp" />
+                    android:textSize="17sp"
+                    android:textColor="@color/logindialog_textcolor"/>
 
                 <EditText
                     android:id="@+id/logindialogusername"
@@ -69,7 +70,8 @@
                     android:paddingLeft="10dp"
                     android:paddingTop="6dp"
                     android:text="@string/logindialog_llnr_desc"
-                    android:textSize="17sp" />
+                    android:textSize="17sp"
+                    android:textColor="@color/logindialog_textcolor"/>
 
                 <EditText
                     android:id="@+id/logindialogllnr"

@@ -137,7 +137,7 @@ public class LoginDialogClass {
                         } else {
                             e.putString("code", object.getString("code"));
                         }
-                        e.apply();
+                        e.commit();
                         Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
                         //Laad het rooster als de boolean true is
                         if (laadRooster) {
@@ -219,7 +219,7 @@ public class LoginDialogClass {
                         } else {
                             e.putString("code", jsonObject.getString("code"));
                         }
-                        e.apply();
+                        e.commit();
                         Toast.makeText(context, "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
 
                         //Laad het rooster
