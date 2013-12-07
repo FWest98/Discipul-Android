@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="?attr/actionBarSize"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="16sp"
+        android:id="@+id/action_bar_app_name"/>
+
+    <TextView
+        android:id="@+id/action_bar_text_field"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:text="Week"
+        android:layout_below="@+id/action_bar_app_name"/>
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:textSize="12sp"
+        android:text=" - Eigen rooster"
+        android:layout_toRightOf="@+id/action_bar_text_field"
+        android:layout_below="@+id/action_bar_app_name"
+        android:textColor="#888"/>
+
+</RelativeLayout>

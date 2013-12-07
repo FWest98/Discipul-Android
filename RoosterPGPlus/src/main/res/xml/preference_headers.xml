@@ -1,0 +1,6 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <header
+        android:fragment="com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment"
+        android:title="Info" />
+</preference-headers>

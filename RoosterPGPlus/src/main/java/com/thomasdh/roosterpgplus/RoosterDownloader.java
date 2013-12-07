@@ -18,24 +18,27 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Scanner;
 
 /**
  * Created by Thomas on 27-11-13.
  */
-public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
+public class RoosterDownloader extends AsyncTask<String, Void, String> {
 
     public Context context;
-    public View rootView;
+    public WeakReference<View> rootView;
     public boolean forceReload;
     public MenuItem menuItem;
+    private int week;
 
-    public DownloadRoosterInternet(Context context, View rootView, boolean forceReload, MenuItem menuItem) {
+    public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
         this.context = context;
-        this.rootView = rootView;
+        this.rootView = new WeakReference<View>(rootView);
         this.forceReload = forceReload;
         this.menuItem = menuItem;
+        this.week = week;
 
         if (this.menuItem != null) {
             LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -55,7 +58,7 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
         if (netInfo != null && netInfo.isConnectedOrConnecting() && (itIsTimeToReload() || forceReload)) {
             Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
             String JSON = laadViaInternet();
-            slaOp(JSON, Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+            slaOp(JSON, week);
             Log.d(getClass().getSimpleName(), "Loaded from internet");
             if (JSON == null) {
                 Log.d(getClass().getSimpleName(), "The string is null");
@@ -81,14 +84,18 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
             } else {
                 Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
             }
-
-            new LayoutBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView).buildLayout(string);
+            if (context != null && rootView.get() != null) {
+                new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(string);
+            }
         } else {
             Log.d(getClass().getSimpleName(), "Got a null string.");
         }
     }
 
     void slaOp(String JSON, int weeknr) {
+        if (weeknr == -1) {
+            weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        }
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), JSON).commit();
     }
 
@@ -96,7 +103,10 @@ public class DownloadRoosterInternet extends AsyncTask<String, Void, String> {
 
         String apikey = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
         HttpClient httpclient = new DefaultHttpClient();
-        HttpGet httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?key=" + apikey);
+        if (week == -1) {
+            week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        }
+        HttpGet httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?key=" + apikey + "&week=" + week);
 
         // Execute HTTP Post Request
         try {

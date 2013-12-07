@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="big_screen">true</bool>
+
+    <dimen name="weekdag_datum_marginTop">6dp</dimen>
+</resources>

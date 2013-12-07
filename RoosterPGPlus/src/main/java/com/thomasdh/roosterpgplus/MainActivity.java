@@ -1,6 +1,9 @@
 package com.thomasdh.roosterpgplus;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,7 +22,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -39,6 +41,10 @@ import java.util.Scanner;
 public class MainActivity extends ActionBarActivity {
 
     public static MenuItem refreshItem;
+    public static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
+    public static ActionBar actionBar;
+    public static int selectedWeek = -1;
+    private static ArrayList<String> weken;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     public PlaceholderFragment mainFragment;
 
@@ -46,6 +52,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        actionBar = getSupportActionBar();
 
         mainFragment = new PlaceholderFragment();
 
@@ -84,8 +92,23 @@ public class MainActivity extends ActionBarActivity {
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        // Schakel List navigatie in
 
+        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+
+        ActionBar.OnNavigationListener onNavigationListener = new
+
+                ActionBar.OnNavigationListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(int i, long l) {
+                        return false;
+                    }
+                };
+        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>());
+        //Voeg beide toe
+        getSupportActionBar().setListNavigationCallbacks(actionBarSpinnerAdapter, onNavigationListener);
 
     }
 
@@ -117,9 +140,11 @@ public class MainActivity extends ActionBarActivity {
         }
         switch (item.getItemId()) {
             case R.id.action_settings:
+                Intent optiesIntent = new Intent(this, PreferencesActivity.class);
+                startActivity(optiesIntent);
                 return true;
             case R.id.menu_item_refresh:
-                new DownloadRoosterInternet(this, mainFragment.rootView, true, item).execute();
+                new RoosterDownloader(this, mainFragment.rootView, true, item, selectedWeek).execute();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -149,11 +174,14 @@ public class MainActivity extends ActionBarActivity {
                 laadRooster(getActivity(), rootView);
             }
             this.rootView = rootView;
+
+            laadWeken(getActivity());
+
             return rootView;
 
         }
 
-        private void laadWeken(final LinearLayout linearLayout, final Context context) {
+        private void laadWeken(final Context context) {
             new AsyncTask<String, Void, String>() {
                 @Override
                 protected String doInBackground(String... params) {
@@ -183,20 +211,61 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 protected void onPostExecute(String string) {
                     System.out.println("!!!!WEKENE:" + string);
-                    if (string.startsWith("error:")) {
+                    if (string != null && string.startsWith("error:")) {
                         Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
                     } else {
                         try {
-                            JSONArray weekArray = new JSONArray(string);
-                            ArrayList<String> weken = new ArrayList<String>();
+                            weken = new ArrayList<String>();
+                            final ArrayList<String> strings = new ArrayList<String>();
 
-                            for (int i = 0; i < weekArray.length(); i++) {
-                                JSONObject week = weekArray.getJSONObject(i);
-                                weken.add(week.getString("week"));
+                            if (string == null) {
+                                string = PreferenceManager.getDefaultSharedPreferences(context).getString("weken", null);
+                            }
+                            if (string != null) {
+
+                                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("weken", string).commit();
+
+                                JSONArray weekArray = new JSONArray(string);
+
+                                for (int i = 0; i < weekArray.length(); i++) {
+                                    JSONObject week = weekArray.getJSONObject(i);
+                                    weken.add(week.getString("week"));
+                                }
+                                //Get the index of the current week
+                                int indexCurrentWeek = -1;
+                                for (int u = 0; u < weken.size(); u++) {
+                                    if (Integer.parseInt(weken.get(u)) == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
+                                        indexCurrentWeek = u;
+                                        break;
+                                    }
+                                }
+                                for (int c = 0; c < 3; c++) {
+                                    strings.add("Week " + weken.get(indexCurrentWeek + c % weken.size()));
+                                }
+                            } else {
+                                strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
                             }
 
-                            /* TODO: Implement Actionbar Spinner */
+                            //Andere week
+                            strings.add("Andere week");
 
+                            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
+                            actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
+                                final ActionBar.OnNavigationListener onNavigationListener = this;
+
+                                @Override
+                                public boolean onNavigationItemSelected(int i, long l) {
+                                    if (i < 3) {
+                                        String itemString = (String) actionBarSpinnerAdapter.getItem(i);
+                                        int week = Integer.parseInt(itemString.substring(5));
+                                        selectedWeek = week;
+                                        laadRooster(context, rootView);
+                                    } else {
+                                        buildDialogForActionBarSpinner();
+                                    }
+                                    return true;
+                                }
+                            });
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -206,27 +275,48 @@ public class MainActivity extends ActionBarActivity {
             }.execute();
         }
 
+        public void buildDialogForActionBarSpinner() {
+            if (weken != null) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Andere week");
+                builder.setItems(weken.toArray(new String[0]), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        selectedWeek = Integer.parseInt(weken.get(which));
+                        laadRooster(getActivity(), rootView);
+                    }
+                });
+                builder.setNegativeButton("Annuleren", null);
+                builder.show();
+            }
+        }
+
         public void laadRooster(final Context context, final View v) {
 
             //Probeer de string uit het geheugen te laden
-            String JSON = laadInternal(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR), getActivity());
+            String JSON = laadInternal(selectedWeek, getActivity());
 
             //Als het de goede week is, gebruik hem
-            if (JSON.contains("\"week\":\"" + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) + "\"")) {
-                new LayoutBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v).buildLayout(JSON);
+            if (JSON.contains("\"week\":\"" + (selectedWeek) + "\"")) {
+                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v, selectedWeek).buildLayout(JSON);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
+                new RoosterDownloader(context, v, false, refreshItem, selectedWeek).execute();
             } else {
-                Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de week is nu " + (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)));
-                Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
+                if (JSON.startsWith("error:")) {
+                    Log.w("MainActivity", JSON.substring(6));
+                } else {
+                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de gewilde week is " + selectedWeek);
+                    Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
+                }
+                new RoosterDownloader(context, v, true, refreshItem, selectedWeek).execute();
             }
-
-            //Download het rooster
-            new DownloadRoosterInternet(context, v, false, refreshItem).execute();
-
         }
 
         String laadInternal(int weeknr, Context context) {
-            return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), "error:Er is nog geen rooster in het geheugen opgeslagen");
+            if (weeknr == -1) {
+                weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+            }
+            return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), "error:Er is nog geen rooster in het geheugen opgeslagen voor week " + weeknr);
         }
     }
 }
