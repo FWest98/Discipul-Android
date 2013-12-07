@@ -1,8 +1,6 @@
 package com.thomasdh.roosterpgplus;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
@@ -234,20 +232,24 @@ public class MainActivity extends ActionBarActivity {
                                 //Get the index of the current week
                                 int indexCurrentWeek = -1;
                                 for (int u = 0; u < weken.size(); u++) {
-                                    if (Integer.parseInt(weken.get(u)) == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
+
+                                    int correctionForWeekends = 0;
+                                    if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7){
+                                        correctionForWeekends = 1;
+                                    }
+
+                                    if (Integer.parseInt(weken.get(u)) == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + correctionForWeekends) {
                                         indexCurrentWeek = u;
                                         break;
                                     }
                                 }
-                                for (int c = 0; c < 3; c++) {
-                                    strings.add("Week " + weken.get(indexCurrentWeek + c % weken.size()));
+                                final int NUMBER_OF_WEEKS_IN_SPINNER = 10;
+                                for (int c = 0; c < NUMBER_OF_WEEKS_IN_SPINNER; c++) {
+                                    strings.add("Week " + weken.get((indexCurrentWeek + c) % weken.size()));
                                 }
                             } else {
                                 strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
                             }
-
-                            //Andere week
-                            strings.add("Andere week");
 
                             actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
                             actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
@@ -255,14 +257,10 @@ public class MainActivity extends ActionBarActivity {
 
                                 @Override
                                 public boolean onNavigationItemSelected(int i, long l) {
-                                    if (i < 3) {
-                                        String itemString = (String) actionBarSpinnerAdapter.getItem(i);
-                                        int week = Integer.parseInt(itemString.substring(5));
-                                        selectedWeek = week;
-                                        laadRooster(context, rootView);
-                                    } else {
-                                        buildDialogForActionBarSpinner();
-                                    }
+                                    String itemString = (String) actionBarSpinnerAdapter.getItem(i);
+                                    int week = Integer.parseInt(itemString.substring(5));
+                                    selectedWeek = week;
+                                    laadRooster(context, rootView);
                                     return true;
                                 }
                             });
@@ -273,22 +271,6 @@ public class MainActivity extends ActionBarActivity {
                     }
                 }
             }.execute();
-        }
-
-        public void buildDialogForActionBarSpinner() {
-            if (weken != null) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Andere week");
-                builder.setItems(weken.toArray(new String[0]), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        selectedWeek = Integer.parseInt(weken.get(which));
-                        laadRooster(getActivity(), rootView);
-                    }
-                });
-                builder.setNegativeButton("Annuleren", null);
-                builder.show();
-            }
         }
 
         public void laadRooster(final Context context, final View v) {

@@ -241,6 +241,7 @@ public class RoosterBuilder {
 
                     @Override
                     public void onPageSelected(int i) {
+                        //De laatst geselecteerde week wordt opgeslagen
                         PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("dagvandeweeklaatst", i).commit();
                     }
 

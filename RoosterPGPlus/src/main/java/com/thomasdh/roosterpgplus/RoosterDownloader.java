@@ -94,7 +94,13 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
 
     void slaOp(String JSON, int weeknr) {
         if (weeknr == -1) {
-            weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+            Log.d(getClass().getSimpleName(), "Got -1 as week");
+            // De huidige week moet worden geladen
+            if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7) {
+                weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 1;
+            } else {
+                weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+            }
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), JSON).commit();
     }
