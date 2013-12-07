@@ -213,11 +213,21 @@ public class RoosterBuilder {
                                 ll.addView(vrij);
                             }
                         }
+
                         if (weekView) {
                             ll.setPadding((int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()));
                             dagView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                             weekLinearLayout.addView(dagView);
                         } else {
+
+                            TextView dataTextView = new TextView(context.get());
+                            Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
+                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                            dataTextView.setText("Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate));
+                            ll.addView(dataTextView);
+
+                            PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("geselecteerdeweek", week).commit();
+
                             ll.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
                             ((MyPagerAdapter) viewPager.get().getAdapter()).addView(dagView);
                         }
@@ -263,8 +273,6 @@ public class RoosterBuilder {
 
                     }
                 });
-
-                PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("geselecteerdeweek", week).commit();
             }
         } else {
             TextView tv = new TextView(context.get());

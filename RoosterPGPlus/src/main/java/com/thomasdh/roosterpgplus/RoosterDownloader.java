@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -88,6 +89,7 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
                 new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(string);
             }
         } else {
+            Toast.makeText(context, "Het rooster is niet geupdate", Toast.LENGTH_SHORT);
             Log.d(getClass().getSimpleName(), "Got a null string.");
         }
     }
