@@ -25,5 +25,12 @@
     <string name="logindialog_warning_text">Er bestaat al een RoosterPG+-account met dit leerlingnummer. Wilt u dat gebruiken?</string>
     <string name="logindialog_warning_submitButton">Alsnog aanmaken</string>
     <string name="logindialog_warning_cancelButton">Inloggen</string>
-    <string name="register_dialog_leerling_text">Registreer je als leerling</string>
+
+
+    <string name="registerdialog_leerling_text">Registreer je als leerling</string>
+    <string name="registerdialog_leerling_tab">Leerling</string>
+    <string name="registerdialog_leraar_text">Registreer je als leraar</string>
+    <string name="registerdialog_leraar_tab">Leraar</string>
+    <string name="registerdialog_registerbutton">Registreer</string>
+    <string name="registerdialog_cancelbutton">Annuleer</string>
 </resources>

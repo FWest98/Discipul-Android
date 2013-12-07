@@ -34,7 +34,7 @@
                     android:paddingBottom="10dp"
                     android:paddingLeft="10dp"
                     android:paddingTop="6dp"
-                    android:text="@string/register_dialog_leerling_text"
+                    android:text="@string/registerdialog_leerling_text"
                     android:textSize="17sp"
                     android:textColor="@color/logindialog_textcolor"/>
 

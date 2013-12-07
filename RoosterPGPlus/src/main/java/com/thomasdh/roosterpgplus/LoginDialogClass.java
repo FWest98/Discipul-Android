@@ -263,7 +263,36 @@ public class LoginDialogClass {
 
         /* Create tabs */
         TabHost.TabSpec tab1 = tabHost.newTabSpec("tab1");
+        tab1.setContent(R.id.Tab_Leerling);
+        tab1.setIndicator(context.getResources().getString(R.string.registerdialog_leerling_tab));
+        tabHost.addTab(tab1);
 
+        TabHost.TabSpec tab2 = tabHost.newTabSpec("tab2");
+        tab2.setContent(R.id.Tab_Leraar);
+        tab2.setIndicator(context.getResources().getString(R.string.registerdialog_leraar_tab));
+        tabHost.addTab(tab2);
+
+        builder.setView(dialogView)
+                .setPositiveButton(R.string.registerdialog_registerbutton, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .setNegativeButton(R.string.registerdialog_cancelbutton, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        RegisterDialog = builder.create();
+        RegisterDialog.show();
+        RegisterDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /* Alle velden en verwerken */
+            }
+        });
     }
 
 
