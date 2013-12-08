@@ -168,8 +168,6 @@ public class MainActivity extends ActionBarActivity {
             if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
                 //Laat de gebruiker inloggen -> wel rooster laden daarna
                 new LoginDialogClass(getActivity(), rootView, this).showLoginDialog(true);
-            } else {
-                laadRooster(getActivity(), rootView);
             }
             this.rootView = rootView;
 
@@ -234,7 +232,7 @@ public class MainActivity extends ActionBarActivity {
                                 for (int u = 0; u < weken.size(); u++) {
 
                                     int correctionForWeekends = 0;
-                                    if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7){
+                                    if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7) {
                                         correctionForWeekends = 1;
                                     }
 
@@ -257,10 +255,12 @@ public class MainActivity extends ActionBarActivity {
 
                                 @Override
                                 public boolean onNavigationItemSelected(int i, long l) {
-                                    String itemString = (String) actionBarSpinnerAdapter.getItem(i);
-                                    int week = Integer.parseInt(itemString.substring(5));
-                                    selectedWeek = week;
-                                    laadRooster(context, rootView);
+                                    if (PreferenceManager.getDefaultSharedPreferences(context).getString("key", null) != null) {
+                                        String itemString = (String) actionBarSpinnerAdapter.getItem(i);
+                                        int week = Integer.parseInt(itemString.substring(5));
+                                        selectedWeek = week;
+                                        laadRooster(context, rootView);
+                                    }
                                     return true;
                                 }
                             });

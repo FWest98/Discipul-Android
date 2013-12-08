@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -57,6 +59,14 @@ public class LoginDialogClass {
         new AsyncTask<String, Void, String>() {
             @Override
             protected String doInBackground(String... params) {
+
+                //Controleer of het apparaat een internetverbinding heeft
+                ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo netInfo = cm.getActiveNetworkInfo();
+                if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+                    return "error:De app kon geen verbinding maken met het internet";
+                }
+
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(context.getResources().getString(R.string.API_base_url) + "account/login.php");
                 String s;
@@ -130,7 +140,7 @@ public class LoginDialogClass {
                         SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
                         e.putString("key", object.getString("key"));
                         System.out.println("The key: " + object.getString("key"));
-                        e.putString("naam", object.getString("klas"));
+                        e.putString("naam", object.getString("naam"));
                         if (object.has("klas")) {
                             e.putString("klas", object.getString("klas"));
                             e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));

@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 
 import java.util.List;
 
@@ -21,6 +22,8 @@ public class PreferencesActivity extends PreferenceActivity {
         String action = getIntent().getAction();
         if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment")) {
             addPreferencesFromResource(R.xml.preferences_info);
+        } else if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferenceActivity$UserFragment")) {
+            addPreferencesFromResource(R.xml.preferences_user);
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
         }
@@ -48,6 +51,20 @@ public class PreferencesActivity extends PreferenceActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class UserFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.preferences_user);
+
+            findPreference("mijn_account").setSummary(
+                    "Naam: " + PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("naam", "-") + ", " +
+                            "Klas: " + PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("klas", "-")
+            );
         }
     }
 
