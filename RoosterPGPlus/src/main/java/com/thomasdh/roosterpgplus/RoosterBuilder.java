@@ -233,9 +233,22 @@ public class RoosterBuilder {
                         }
                     }
                     if (weekView) {
-                        weekLinearLayout.invalidate();
+                        LinearLayout completeLinearLayout = new LinearLayout(context.get());
+                        completeLinearLayout.setOrientation(LinearLayout.VERTICAL);
+                        completeLinearLayout.addView(weekLinearLayout);
+
+                        // Maak het laatstgeupdate vak
+                        TextView dataTextView = new TextView(context.get());
+                        Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                        dataTextView.setText("Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate));
+                        dataTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                        dataTextView.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
+
+                        completeLinearLayout.addView(dataTextView);
+
                         ScrollView weekScrollView = new ScrollView(context.get());
-                        weekScrollView.addView(weekLinearLayout);
+                        weekScrollView.addView(completeLinearLayout);
                         ((MyPagerAdapter) viewPager.get().getAdapter()).addView(weekScrollView);
                     }
                     viewPager.get().getAdapter().notifyDataSetChanged();
