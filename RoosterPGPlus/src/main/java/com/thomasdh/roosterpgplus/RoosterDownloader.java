@@ -56,17 +56,20 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
-        if (netInfo != null && netInfo.isConnectedOrConnecting() && (itIsTimeToReload() || forceReload)) {
-            Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
-            String JSON = laadViaInternet();
-            slaOp(JSON, week);
-            Log.d(getClass().getSimpleName(), "Loaded from internet");
-            if (JSON == null) {
-                Log.d(getClass().getSimpleName(), "The string is null");
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            if ((itIsTimeToReload() || forceReload)) {
+                Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
+                String JSON = laadViaInternet();
+                slaOp(JSON, week);
+                Log.d(getClass().getSimpleName(), "Loaded from internet");
+                if (JSON == null) {
+                    Log.d(getClass().getSimpleName(), "The string is null");
+                }
+                return JSON;
             }
-            return JSON;
+            return "error:Het rooster is uit het geheugen galaden";
         }
-        return null;
+        return "error:Geen internetverbinding";
     }
 
     boolean itIsTimeToReload() {
@@ -80,17 +83,17 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String string) {
         if (string != null) {
+
             if (this.menuItem != null) {
                 MenuItemCompat.setActionView(this.menuItem, null);
             } else {
                 Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
             }
-            if (context != null && rootView.get() != null) {
+            if (string.startsWith("error:")) {
+                Toast.makeText(context, string.substring(6), Toast.LENGTH_SHORT).show();
+            } else if (context != null && rootView.get() != null) {
                 new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(string);
             }
-        } else {
-            Toast.makeText(context, "Het rooster is niet geupdate", Toast.LENGTH_SHORT);
-            Log.d(getClass().getSimpleName(), "Got a null string.");
         }
     }
 
