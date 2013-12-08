@@ -63,7 +63,7 @@ public class LoginDialogClass {
                 //Controleer of het apparaat een internetverbinding heeft
                 ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo netInfo = cm.getActiveNetworkInfo();
-                if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+                if (netInfo == null && !netInfo.isConnectedOrConnecting()) {
                     return "error:De app kon geen verbinding maken met het internet";
                 }
 
