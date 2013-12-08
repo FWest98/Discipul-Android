@@ -32,13 +32,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
 
-    public static MenuItem refreshItem;
+    public static WeakReference<MenuItem> refreshItem;
     public static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
     public static ActionBar actionBar;
     public static int selectedWeek = -1;
@@ -128,6 +129,7 @@ public class MainActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        refreshItem = new WeakReference<MenuItem>(menu.findItem(R.id.menu_item_refresh));
         return true;
     }
 
@@ -282,7 +284,7 @@ public class MainActivity extends ActionBarActivity {
             if (JSON.contains("\"week\":\"" + (selectedWeek) + "\"")) {
                 new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v, selectedWeek).buildLayout(JSON);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
-                new RoosterDownloader(context, v, false, refreshItem, selectedWeek).execute();
+                new RoosterDownloader(context, v, false, refreshItem.get(), selectedWeek).execute();
             } else {
                 if (JSON.startsWith("error:")) {
                     Log.w("MainActivity", JSON.substring(6));
@@ -290,7 +292,7 @@ public class MainActivity extends ActionBarActivity {
                     Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de gewilde week is " + selectedWeek);
                     Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
                 }
-                new RoosterDownloader(context, v, true, refreshItem, selectedWeek).execute();
+                new RoosterDownloader(context, v, true, refreshItem.get(), selectedWeek).execute();
             }
         }
 
