@@ -3,6 +3,7 @@ package com.thomasdh.roosterpgplus;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -65,6 +66,14 @@ public class PreferencesActivity extends PreferenceActivity {
                     "Naam: " + PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("naam", "-") + ", " +
                             "Klas: " + PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("klas", "-")
             );
+
+            findPreference("log_in").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    new LoginDialogClass(getActivity(), null, null).showLoginDialog();
+                    return true;
+                }
+            });
         }
     }
 
