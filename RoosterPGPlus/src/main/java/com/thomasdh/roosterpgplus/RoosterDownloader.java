@@ -82,13 +82,12 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String string) {
+        if (this.menuItem != null) {
+            MenuItemCompat.setActionView(this.menuItem, null);
+        } else {
+            Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
+        }
         if (string != null) {
-
-            if (this.menuItem != null) {
-                MenuItemCompat.setActionView(this.menuItem, null);
-            } else {
-                Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
-            }
             if (string.startsWith("error:")) {
                 Toast.makeText(context, string.substring(6), Toast.LENGTH_SHORT).show();
             } else if (context != null && rootView.get() != null) {
