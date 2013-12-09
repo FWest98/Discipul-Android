@@ -83,8 +83,11 @@ public class RoosterBuilder {
     }
 
     public void buildLayout(String roosterJSON) {
-        viewPager.get().setAdapter(new MyPagerAdapter());
-
+        if (viewPager.get() != null) {
+            viewPager.get().setAdapter(new MyPagerAdapter());
+        } else {
+            Log.w(getClass().getSimpleName(), "Viewpager is null");
+        }
         boolean weekView = PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("weekview", context.get().getResources().getBoolean(R.bool.big_screen));
 
         Log.d(getClass().getSimpleName(), "The string is: " + roosterJSON);

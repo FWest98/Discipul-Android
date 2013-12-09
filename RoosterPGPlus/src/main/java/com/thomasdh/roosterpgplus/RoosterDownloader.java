@@ -32,14 +32,29 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
     public WeakReference<View> rootView;
     public boolean forceReload;
     public MenuItem menuItem;
+    MainActivity.PlaceholderFragment.Type type;
     private int week;
+    private ViewPager viewPager;
+    private String klas;
+    private String docent;
 
-    public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
+    //Voor docenten
+    public RoosterDownloader(Context context, View rooView, ViewPager viewPager, boolean forceReload, MenuItem menuItem, int week, String klas, String docentOfLeerling, MainActivity.PlaceholderFragment.Type type) {
+        this(context, rooView, viewPager, forceReload, menuItem, week);
+        this.type = type;
+        this.klas = klas;
+        this.docent = docentOfLeerling;
+    }
+
+
+    public RoosterDownloader(Context context, View rootView, ViewPager viewPager, boolean forceReload, MenuItem menuItem, int week) {
+        type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
         this.context = context;
         this.rootView = new WeakReference<View>(rootView);
         this.forceReload = forceReload;
         this.menuItem = menuItem;
         this.week = week;
+        this.viewPager = viewPager;
 
         if (this.menuItem != null) {
             LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -92,7 +107,7 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
             if (string.startsWith("error:")) {
                 Toast.makeText(context, string.substring(6), Toast.LENGTH_SHORT).show();
             } else if (context != null && rootView.get() != null) {
-                new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(string);
+                new RoosterBuilder(context, viewPager, rootView.get(), week).buildLayout(string);
             }
         }
     }
@@ -117,7 +132,14 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
         if (week == -1) {
             week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         }
-        HttpGet httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?key=" + apikey + "&week=" + week);
+        HttpGet httpGet = null;
+        if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
+            httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?key=" + apikey + "&week=" + week);
+        } else if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
+            httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?leraar=" + docent);
+        }else if (type == MainActivity.PlaceholderFragment.Type.LEERLINGROOSTER){
+            httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?klas=" + klas);
+        }
 
         // Execute HTTP Post Request
         try {

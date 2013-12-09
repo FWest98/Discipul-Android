@@ -21,6 +21,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -44,8 +47,8 @@ public class MainActivity extends ActionBarActivity {
     public static ActionBar actionBar;
     public static int selectedWeek = -1;
     private static ArrayList<String> weken;
-    public ActionBarDrawerToggle actionBarDrawerToggle;
     public PlaceholderFragment mainFragment;
+    public ActionBarDrawerToggle actionBarDrawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +57,7 @@ public class MainActivity extends ActionBarActivity {
 
         actionBar = getSupportActionBar();
 
-        mainFragment = new PlaceholderFragment();
-
+        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, mainFragment)
@@ -63,7 +65,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // Maak de navigation drawer
-        String[] keuzes = {"Persoonlijk rooster", "Andere roosters"};
+        String[] keuzes = {"Persoonlijk rooster", "Leerlingrooster", "Docentenrooster"};
 
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerlayout);
 
@@ -73,15 +75,23 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
-                    mainFragment = new PlaceholderFragment();
+                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
                     android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
-                            .replace(R.id.main_linearlayout, mainFragment, "Main_Fragment")
+                            .replace(R.id.main_linearlayout, mainFragment, "Persoonlijk roosterFragment")
                             .commit();
-                    //TODO reload rooster (dus gewoon opnieuw de view aanmaken?)
                 } else if (position == 1) {
-                    //TODO Ander rooster
-                    Toast.makeText(getApplicationContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
+                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.LEERLINGROOSTER);
+                    android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.main_linearlayout, mainFragment, "LeerlingroosterFragment")
+                            .commit();
+                } else if (position == 2) {
+                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.DOCENTENROOSTER);
+                    android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.main_linearlayout, mainFragment, "DocentenroosterFragment")
+                            .commit();
                 }
                 drawerLayout.closeDrawer(drawerList);
             }
@@ -144,7 +154,9 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(optiesIntent);
                 return true;
             case R.id.menu_item_refresh:
-                new RoosterDownloader(this, mainFragment.rootView, true, item, selectedWeek).execute();
+                if (mainFragment.type == PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
+                    new RoosterDownloader(this, mainFragment.rootView, mainFragment.viewPager, true, item, selectedWeek).execute();
+                }
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -153,25 +165,59 @@ public class MainActivity extends ActionBarActivity {
     public static class PlaceholderFragment extends Fragment {
 
         public View rootView;
+        public ViewPager viewPager;
+        public Type type;
 
-        public PlaceholderFragment() {
+        public PlaceholderFragment(Type type) {
+            this.type = type;
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            if (type == Type.PERSOONLIJK_ROOSTER) {
+                rootView = inflater.inflate(R.layout.fragment_main, container, false);
+                viewPager = (ViewPager) rootView.findViewById(R.id.viewPager);
+                viewPager.setAdapter(new MyPagerAdapter());
 
-            ViewPager viewPager = (ViewPager) rootView.findViewById(R.id.viewPager);
-            viewPager.setAdapter(new MyPagerAdapter());
+                if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
+                    //Laat de gebruiker inloggen -> wel rooster laden daarna
+                    new LoginDialogClass(getActivity(), rootView, this).showLoginDialog(true);
+                }
 
 
-            // If the user apikey is already obtained
-            if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
-                //Laat de gebruiker inloggen -> wel rooster laden daarna
-                new LoginDialogClass(getActivity(), rootView, this).showLoginDialog(true);
+            } else if (type == Type.DOCENTENROOSTER) {
+                rootView = inflater.inflate(R.layout.fragment_main_docenten, container, false);
+                viewPager = (ViewPager) rootView.findViewById(R.id.viewPager_docenten);
+                viewPager.setAdapter(new MyPagerAdapter());
+
+
+
+            } else if (type == Type.LEERLINGROOSTER) {
+                rootView = inflater.inflate(R.layout.fragment_main_leerling, container, false);
+                viewPager = (ViewPager) rootView.findViewById(R.id.viewPager_leerling);
+                viewPager.setAdapter(new MyPagerAdapter());
+
+                Spinner klasspinner = (Spinner) rootView.findViewById(R.id.main_fragment_spinner_klas);
+                ArrayList<String> klassen = new ArrayList<String>();
+                klassen.add("5F");
+                klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[0])){
+
+                });
+                klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        new RoosterDownloader(getActivity(), rootView, viewPager, true, refreshItem.get(), selectedWeek,
+                                ((TextView) view).getText().toString(), "Thomas den Hollander", Type.LEERLINGROOSTER);
+                    }
+
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
             }
-            this.rootView = rootView;
 
             laadWeken(getActivity());
 
@@ -261,7 +307,7 @@ public class MainActivity extends ActionBarActivity {
                                         String itemString = (String) actionBarSpinnerAdapter.getItem(i);
                                         int week = Integer.parseInt(itemString.substring(5));
                                         selectedWeek = week;
-                                        laadRooster(context, rootView);
+                                        laadRooster(context, viewPager, rootView);
                                     }
                                     return true;
                                 }
@@ -275,16 +321,16 @@ public class MainActivity extends ActionBarActivity {
             }.execute();
         }
 
-        public void laadRooster(final Context context, final View v) {
+        public void laadRooster(Context context, ViewPager viewPager, View rootView) {
 
             //Probeer de string uit het geheugen te laden
             String JSON = laadInternal(selectedWeek, getActivity());
 
             //Als het de goede week is, gebruik hem
             if (JSON.contains("\"week\":\"" + (selectedWeek) + "\"")) {
-                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v, selectedWeek).buildLayout(JSON);
+                new RoosterBuilder(context, viewPager, rootView, selectedWeek).buildLayout(JSON);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
-                new RoosterDownloader(context, v, false, refreshItem.get(), selectedWeek).execute();
+                new RoosterDownloader(context, rootView, viewPager, false, refreshItem.get(), selectedWeek).execute();
             } else {
                 if (JSON.startsWith("error:")) {
                     Log.w("MainActivity", JSON.substring(6));
@@ -292,7 +338,7 @@ public class MainActivity extends ActionBarActivity {
                     Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de gewilde week is " + selectedWeek);
                     Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
                 }
-                new RoosterDownloader(context, v, true, refreshItem.get(), selectedWeek).execute();
+                new RoosterDownloader(context, rootView, viewPager, true, refreshItem.get(), selectedWeek).execute();
             }
         }
 
@@ -302,5 +348,12 @@ public class MainActivity extends ActionBarActivity {
             }
             return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), "error:Er is nog geen rooster in het geheugen opgeslagen voor week " + weeknr);
         }
+
+        public static enum Type {
+            PERSOONLIJK_ROOSTER,
+            LEERLINGROOSTER,
+            DOCENTENROOSTER,
+        }
     }
+
 }
