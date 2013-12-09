@@ -9,8 +9,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_weight="0">
+        android:orientation="horizontal">
 
         <Spinner
             android:id="@+id/main_fragment_spinner_klas"
@@ -27,7 +26,6 @@
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager_leerling"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

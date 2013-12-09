@@ -78,19 +78,19 @@ public class MainActivity extends ActionBarActivity {
                     mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
                     android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
-                            .replace(R.id.main_linearlayout, mainFragment, "Persoonlijk roosterFragment")
+                            .replace(R.id.container, mainFragment, "Persoonlijk roosterFragment")
                             .commit();
                 } else if (position == 1) {
                     mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.LEERLINGROOSTER);
                     android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
-                            .replace(R.id.main_linearlayout, mainFragment, "LeerlingroosterFragment")
+                            .replace(R.id.container, mainFragment, "LeerlingroosterFragment")
                             .commit();
                 } else if (position == 2) {
                     mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.DOCENTENROOSTER);
                     android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
-                            .replace(R.id.main_linearlayout, mainFragment, "DocentenroosterFragment")
+                            .replace(R.id.container, mainFragment, "DocentenroosterFragment")
                             .commit();
                 }
                 drawerLayout.closeDrawer(drawerList);
@@ -200,15 +200,18 @@ public class MainActivity extends ActionBarActivity {
 
                 Spinner klasspinner = (Spinner) rootView.findViewById(R.id.main_fragment_spinner_klas);
                 ArrayList<String> klassen = new ArrayList<String>();
+                klassen.add("5A");
+                klassen.add("5B");
+                klassen.add("5C");
+                klassen.add("5D");
+                klassen.add("5E");
                 klassen.add("5F");
-                klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[0])){
-
-                });
+                klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[0])));
                 klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         new RoosterDownloader(getActivity(), rootView, viewPager, true, refreshItem.get(), selectedWeek,
-                                ((TextView) view).getText().toString(), "Thomas den Hollander", Type.LEERLINGROOSTER);
+                                ((TextView) view).getText().toString(), "Thomas den Hollander", Type.LEERLINGROOSTER).execute();
                     }
 
 
