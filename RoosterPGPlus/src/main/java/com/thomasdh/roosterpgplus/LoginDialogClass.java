@@ -111,7 +111,7 @@ public class LoginDialogClass {
                     dialog.setPositiveButton(context.getResources().getString(R.string.logindialog_warning_submitButton), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int id) {
-                            login(leerlingnummer, true, true);
+                            login(leerlingnummer, laadRooster, true);
                         }
                     })
                             .setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
@@ -258,19 +258,7 @@ public class LoginDialogClass {
         final LayoutInflater inflater = LayoutInflater.from(context);
         final View dialogView = inflater.inflate(R.layout.registerdialog, null);
 
-        TabHost tabHost = (TabHost) dialogView.findViewById(R.id.DialogTabs);
-        tabHost.setup();
-
-        /* Create tabs */
-        TabHost.TabSpec tab1 = tabHost.newTabSpec("tab1");
-        tab1.setContent(R.id.Tab_Leerling);
-        tab1.setIndicator(context.getResources().getString(R.string.registerdialog_leerling_tab));
-        tabHost.addTab(tab1);
-
-        TabHost.TabSpec tab2 = tabHost.newTabSpec("tab2");
-        tab2.setContent(R.id.Tab_Leraar);
-        tab2.setIndicator(context.getResources().getString(R.string.registerdialog_leraar_tab));
-        tabHost.addTab(tab2);
+        builder.setTitle("Registreer");
 
         builder.setView(dialogView)
                 .setPositiveButton(R.string.registerdialog_registerbutton, new DialogInterface.OnClickListener() {
@@ -291,8 +279,134 @@ public class LoginDialogClass {
             @Override
             public void onClick(View v) {
                 /* Alle velden en verwerken */
+                final EditText username = (EditText) dialogView.findViewById(R.id.registerdialog_username);
+                final EditText password = (EditText) dialogView.findViewById(R.id.registerdialog_password);
+                final EditText repass = (EditText) dialogView.findViewById(R.id.registerdialog_passwordcheck);
+                final EditText llnr = (EditText) dialogView.findViewById(R.id.registerdialog_llnr);
+                final EditText email = (EditText) dialogView.findViewById(R.id.registerdialog_email);
+                username.requestFocus();
+                if(username.getText().toString().equals("")) {
+                    Toast.makeText(context, "Gebruikersnaam is verplicht!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(password.getText().toString().equals("")) {
+                    Toast.makeText(context, "Wachtwoord is verplicht!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(!password.getText().toString().equals(repass.getText().toString())) {
+                    Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText().toString() + "  " + repass.getText().toString(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(llnr.getText().toString().equals("")) {
+                    Toast.makeText(context, "Leerlingnummer is verplicht!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                register(username.getText().toString(), password.getText().toString(), Integer.parseInt(llnr.getText().toString()), email.getText().toString(), laadRooster, false);
+                // dismissen in functie
             }
         });
+    }
+
+    private void register(final String username, final String password, final int llnr, final String email) {
+        register(username, password, llnr, email, false, false);
+    }
+
+    private void register(final String username, final String password, final int llnr, final String email, final Boolean laadRooster, final boolean force) {
+        new AsyncTask<String, Void, String>() {
+            @Override
+            protected String doInBackground(String... params) {
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpPost httpPost = new HttpPost(context.getResources().getString(R.string.API_base_url) + "account/register.php");
+                String s;
+                try {
+                    List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+
+                    // TODO: Beveiliging!
+                    postParameters.add(new BasicNameValuePair("username", params[0]));
+                    postParameters.add(new BasicNameValuePair("password", params[1]));
+                    postParameters.add(new BasicNameValuePair("llnr", Integer.toString(llnr)));
+                    postParameters.add(new BasicNameValuePair("email", params[2]));
+                    if(force) {
+                        postParameters.add(new BasicNameValuePair("force", "true"));
+                    }
+                    UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
+                    httpPost.setEntity(form);
+
+                    HttpResponse response = httpClient.execute(httpPost);
+                    int status = response.getStatusLine().getStatusCode();
+
+                    switch(status) {
+                        case 204:
+                            return "duplicate";
+                        case 500:
+                            return "error:Serverfout";
+                        case 409:
+                            return "conflict";
+                        case 200:
+                            return new Scanner(response.getEntity().getContent()).nextLine();
+                        default:
+                            return "error:Onbekende fout";
+                    }
+                } catch (ClientProtocolException e) {
+                    s = "error:" + e.toString();
+                } catch (IOException e) {
+                    s = "error:" + e.toString();
+                }
+                return s;
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                Log.e(this.getClass().getName(), "The string is: "+s);
+                if(s.startsWith("error:")) {
+                    Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
+                } else if(s.equals("conflict")) {
+                    Toast.makeText(context, "Deze gebruikersnaam is al in gebruik", Toast.LENGTH_LONG).show();
+                } else if(s.equals("duplicate")) {
+                    final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                    dialog.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
+                    dialog.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
+                    dialog.setPositiveButton(context.getResources().getString(R.string.logindialog_warning_submitButton), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            register(username, password, llnr, email, laadRooster, true);
+                        }
+                    })
+                    .setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // nothing
+                        }
+                    });
+                    dialog.show();
+                } else {
+                    hideRegisterDialog();
+                    hideLoginDialog();
+                    try {
+                        JSONObject object = new JSONObject(s);
+                        SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
+                        e.putString("key", object.getString("key"));
+                        System.out.println("The key: " + object.getString("key"));
+                        e.putString("naam", object.getString("klas"));
+                        if (object.has("klas")) {
+                            e.putString("klas", object.getString("klas"));
+                            e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
+                        } else {
+                            e.putString("code", object.getString("code"));
+                        }
+                        e.commit();
+                        Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+                        //Laad het rooster als de boolean true is
+                        if (laadRooster) {
+                            mainFragment.laadRooster(context, rootView);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    super.onPostExecute(s);
+                }
+            }
+        }.execute(username, password, email);
     }
 
 
