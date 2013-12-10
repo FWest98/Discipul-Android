@@ -1,6 +1,7 @@
 package com.thomasdh.roosterpgplus;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -88,11 +89,8 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
     }
 
     boolean itIsTimeToReload() {
-        if (PreferenceManager.getDefaultSharedPreferences(context).getLong("lastRefreshTime", 0) +
-                context.getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis()) {
-            return true;
-        }
-        return false;
+        return PreferenceManager.getDefaultSharedPreferences(context).getLong("lastRefreshTime", 0) +
+                context.getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis();
     }
 
     @Override
@@ -134,11 +132,11 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
         }
         HttpGet httpGet = null;
         if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
-            httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?key=" + apikey + "&week=" + week);
+            httpGet = new HttpGet(Settings.API_Base_URL+"rooster/?key=" + apikey + "&week=" + week);
         } else if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
-            httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?leraar=" + docent);
-        }else if (type == MainActivity.PlaceholderFragment.Type.LEERLINGROOSTER){
-            httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?klas=" + klas);
+            httpGet = new HttpGet(Settings.API_Base_URL+"rooster/?leraar=" + docent);
+        }else if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER){
+            httpGet = new HttpGet(Settings.API_Base_URL+"rooster/?klas=" + klas);
         }
 
         // Execute HTTP Post Request
