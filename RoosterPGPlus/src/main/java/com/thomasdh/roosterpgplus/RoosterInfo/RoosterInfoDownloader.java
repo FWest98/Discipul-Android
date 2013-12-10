@@ -60,7 +60,7 @@ public class RoosterInfoDownloader {
         } catch (JSONException e) {
             Log.e("Errors:", e.getStackTrace().toString());
             e.printStackTrace();
-            throw new IOException("Parsefout " + e.getCause());
+            throw new IOException("Parsefout " + e.getCause() + e.getMessage());
         }
     }
 
