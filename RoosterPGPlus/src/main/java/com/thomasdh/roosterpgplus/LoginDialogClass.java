@@ -71,7 +71,7 @@ public class LoginDialogClass {
                 }
 
                 HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(context.getResources().getString(R.string.API_base_url) + "account/login.php");
+                HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/login.php");
                 String s;
 
                 try {
@@ -176,7 +176,7 @@ public class LoginDialogClass {
             @Override
             protected String doInBackground(String... params) {
                 HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(context.getResources().getString(R.string.API_base_url) + "account/login.php");
+                HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/login.php");
                 String s;
                 try {
                     // Add your data
@@ -326,7 +326,7 @@ public class LoginDialogClass {
             @Override
             protected String doInBackground(String... params) {
                 HttpClient httpClient = new DefaultHttpClient();
-                HttpPost httpPost = new HttpPost(context.getResources().getString(R.string.API_base_url) + "account/register.php");
+                HttpPost httpPost = new HttpPost(Settings.API_Base_URL + "account/register.php");
                 String s;
                 try {
                     List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
