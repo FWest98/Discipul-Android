@@ -277,6 +277,7 @@ public class RoosterBuilder {
         }
     }
 
+    @Deprecated
     public void buildLayout(String roosterJSON) {
         viewPager.get().setAdapter(new MyPagerAdapter());
 
