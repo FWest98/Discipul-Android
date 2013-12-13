@@ -13,6 +13,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -92,7 +94,7 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
             if (string.startsWith("error:")) {
                 Toast.makeText(context, string.substring(6), Toast.LENGTH_SHORT).show();
             } else if (context != null && rootView.get() != null) {
-                new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(string);
+                new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string));
             }
         }
     }
