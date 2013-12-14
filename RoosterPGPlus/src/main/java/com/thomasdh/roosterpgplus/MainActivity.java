@@ -27,6 +27,8 @@ import android.widget.Toast;
 
 import com.thomasdh.roosterpgplus.RoosterInfo.RoosterInfoDownloader;
 
+import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -48,8 +50,8 @@ public class MainActivity extends ActionBarActivity {
     public static ActionBar actionBar;
     public static int selectedWeek = -1;
     private static ArrayList<String> weken;
-    public PlaceholderFragment mainFragment;
     public ActionBarDrawerToggle actionBarDrawerToggle;
+    public PlaceholderFragment mainFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -369,29 +371,21 @@ public class MainActivity extends ActionBarActivity {
         public void laadRooster(Context context, ViewPager viewPager, View rootView) {
 
             //Probeer de string uit het geheugen te laden
-            String JSON = laadInternal(selectedWeek, getActivity());
+            RoosterWeek roosterWeek = RoosterWeek.laadUitGeheugen(selectedWeek, getActivity());
 
             //Als het de goede week is, gebruik hem
-            if (JSON.contains("\"week\":\"" + (selectedWeek) + "\"")) {
-                new RoosterBuilder(context, viewPager, rootView, selectedWeek).buildLayout(JSON);
+            if (roosterWeek != null && roosterWeek.getWeek() == selectedWeek) {
+                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v, selectedWeek).buildLayout(roosterWeek);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
                 new RoosterDownloader(context, rootView, viewPager, false, refreshItem.get(), selectedWeek).execute();
             } else {
-                if (JSON.startsWith("error:")) {
-                    Log.w("MainActivity", JSON.substring(6));
+                if (roosterWeek == null) {
+                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is null");
                 } else {
-                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de gewilde week is " + selectedWeek);
-                    Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
+                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is van week " + roosterWeek.getWeek() + ", de gewilde week is " + selectedWeek);
                 }
                 new RoosterDownloader(context, rootView, viewPager, true, refreshItem.get(), selectedWeek).execute();
             }
-        }
-
-        String laadInternal(int weeknr, Context context) {
-            if (weeknr == -1) {
-                weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
-            }
-            return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), "error:Er is nog geen rooster in het geheugen opgeslagen voor week " + weeknr);
         }
 
         public static enum Type {
@@ -400,5 +394,4 @@ public class MainActivity extends ActionBarActivity {
             DOCENTENROOSTER,
         }
     }
-
 }
