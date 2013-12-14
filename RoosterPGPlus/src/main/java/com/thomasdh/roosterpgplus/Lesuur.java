@@ -3,10 +3,15 @@ package com.thomasdh.roosterpgplus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 /**
  * Created by Floris on 3-12-13.
  */
-public class Lesuur {
+public class Lesuur implements Serializable{
+
+    private static final long serialVersionUID = 7526472295622776147L;
+
     public String unique;
     public int dag;
     public int uur;

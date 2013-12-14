@@ -7,12 +7,13 @@ import com.thomasdh.roosterpgplus.Lesuur;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Calendar;
 
 /**
  * Created by Thomas on 13-12-13.
  */
-public class RoosterWeek {
+public class RoosterWeek implements Serializable {
 
     public static final int MAANDAG = 2;
     public static final int DINSDAG = 3;
@@ -21,6 +22,7 @@ public class RoosterWeek {
     public static final int VRIJDAG = 6;
     public static final int ZATERDAG = 7;
     public static final int ZONDAG = 1;
+    private static final long serialVersionUID = 1029472134713472957L;
     private Lesuur[][][] uren;
 
     public RoosterWeek(String roosterJSON) {
@@ -65,11 +67,28 @@ public class RoosterWeek {
         return null;
     }
 
+    public int getWeek() {
+        for (Lesuur[][] lesuur1 : uren) {
+            if (lesuur1 != null) {
+                for (Lesuur[] lesuur2 : lesuur1) {
+                    if (lesuur2 != null) {
+                        for (Lesuur lesuur3 : lesuur2) {
+                            if (lesuur3 != null) {
+                                return lesuur3.week;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
     public Lesuur[] getUren(int dag, int uur) {
         try {
             return uren[dag - 2][uur];
         } catch (NullPointerException e) {
-            Log.e(getClass().getSimpleName(), "De dag " + dag + " in combinatie met het uur " + uur + " bestaat niet.", e);
+            Log.e("RoosterWeek", "De dag " + dag + " in combinatie met het uur " + uur + " bestaat niet.", e);
         }
         return null;
     }

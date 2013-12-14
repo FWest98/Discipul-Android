@@ -23,6 +23,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -31,7 +33,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -280,29 +284,40 @@ public class MainActivity extends ActionBarActivity {
         public void laadRooster(final Context context, final View v) {
 
             //Probeer de string uit het geheugen te laden
-            String JSON = laadInternal(selectedWeek, getActivity());
+            RoosterWeek roosterWeek = laadInternal(selectedWeek, getActivity());
 
             //Als het de goede week is, gebruik hem
-            if (JSON.contains("\"week\":\"" + (selectedWeek) + "\"")) {
-                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v, selectedWeek).buildLayout(JSON);
+            if (roosterWeek != null && roosterWeek.getWeek() == selectedWeek) {
+                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v, selectedWeek).buildLayout(roosterWeek);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
                 new RoosterDownloader(context, v, false, refreshItem.get(), selectedWeek).execute();
             } else {
-                if (JSON.startsWith("error:")) {
-                    Log.w("MainActivity", JSON.substring(6));
+                if (roosterWeek == null) {
+                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is null");
                 } else {
-                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de gewilde week is " + selectedWeek);
-                    Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
+                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is van week " + roosterWeek.getWeek() + ", de gewilde week is " + selectedWeek);
                 }
                 new RoosterDownloader(context, v, true, refreshItem.get(), selectedWeek).execute();
             }
         }
 
-        String laadInternal(int weeknr, Context context) {
-            if (weeknr == -1) {
-                weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        RoosterWeek laadInternal(int week, Context context) {
+            if (week == -1) {
+                week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
             }
-            return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), "error:Er is nog geen rooster in het geheugen opgeslagen voor week " + weeknr);
+            RoosterWeek roosterWeek;
+            try {
+                FileInputStream fis = context.openFileInput("roosterWeek" + (week % 4));
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                roosterWeek = (RoosterWeek) ois.readObject();
+                ois.close();
+                fis.close();
+                return roosterWeek;
+            } catch (Exception e) {
+                Log.e("MainActivity", "Kon het rooster niet laden", e);
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 }
