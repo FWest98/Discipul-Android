@@ -30,14 +30,14 @@ import java.util.Scanner;
  */
 public class RoosterDownloader extends AsyncTask<String, Void, String> {
 
-    public Context context;
+    public WeakReference<Context> context;
     public WeakReference<View> rootView;
     public boolean forceReload;
     public MenuItem menuItem;
     private int week;
 
     public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
-        this.context = context;
+        this.context = new WeakReference<Context>(context);
         this.rootView = new WeakReference<View>(rootView);
         this.forceReload = forceReload;
         this.menuItem = menuItem;
@@ -51,11 +51,17 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
         }
     }
 
+    public RoosterDownloader(Context context, boolean forceReload, int week) {
+        this.context = new WeakReference<Context>(context);
+        this.forceReload = forceReload;
+        this.week = week;
+    }
+
     @Override
     protected String doInBackground(String... params) {
 
         //Controleer of het apparaat een internetverbinding heeft
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) context.get().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
         if (netInfo != null && netInfo.isConnectedOrConnecting()) {
@@ -75,8 +81,8 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
     }
 
     boolean itIsTimeToReload() {
-        if (PreferenceManager.getDefaultSharedPreferences(context).getLong("lastRefreshTime", 0) +
-                context.getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis()) {
+        if (PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0) +
+                context.get().getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis()) {
             return true;
         }
         return false;
@@ -91,18 +97,20 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
         }
         if (string != null) {
             if (string.startsWith("error:")) {
-                Toast.makeText(context, string.substring(6), Toast.LENGTH_SHORT).show();
-            } else if (context != null && rootView.get() != null) {
+                Toast.makeText(context.get(), string.substring(6), Toast.LENGTH_SHORT).show();
+            } else {
                 RoosterWeek roosterWeek = new RoosterWeek(string);
-                roosterWeek.slaOp(context);
-                new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                roosterWeek.slaOp(context.get());
+                if (context != null && rootView.get() != null) {
+                    new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                }
             }
         }
     }
 
     String laadViaInternet() {
 
-        String apikey = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
+        String apikey = PreferenceManager.getDefaultSharedPreferences(context.get()).getString("key", null);
         HttpClient httpclient = new DefaultHttpClient();
         if (week == -1) {
             week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
@@ -128,7 +136,7 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
                 }
 
                 // Sla de tijd op wanneer het rooster voor het laatst gedownload is.
-                PreferenceManager.getDefaultSharedPreferences(context).edit().putLong("lastRefreshTime", System.currentTimeMillis()).commit();
+                PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putLong("lastRefreshTime", System.currentTimeMillis()).commit();
 
                 return s;
             } else {
