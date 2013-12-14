@@ -1,7 +1,6 @@
 package com.thomasdh.roosterpgplus;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -76,7 +75,9 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
             if ((itIsTimeToReload() || forceReload)) {
                 Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
                 String JSON = laadViaInternet();
-                slaOp(JSON, week);
+                if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER){
+                    slaOp(JSON, week);
+                }
                 Log.d(getClass().getSimpleName(), "Loaded from internet");
                 if (JSON == null) {
                     Log.d(getClass().getSimpleName(), "The string is null");
@@ -96,7 +97,6 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String string) {
         if (string != null) {
-
             if (this.menuItem != null) {
                 MenuItemCompat.setActionView(this.menuItem, null);
             } else {
@@ -132,11 +132,11 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
         }
         HttpGet httpGet = null;
         if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
-            httpGet = new HttpGet(Settings.API_Base_URL+"rooster/?key=" + apikey + "&week=" + week);
+            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?key=" + apikey + "&week=" + week);
         } else if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
-            httpGet = new HttpGet(Settings.API_Base_URL+"rooster/?leraar=" + docent);
-        }else if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER){
-            httpGet = new HttpGet(Settings.API_Base_URL+"rooster/?klas=" + klas);
+            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?leraar=" + docent);
+        } else if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER) {
+            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?klas=" + klas);
         }
 
         // Execute HTTP Post Request

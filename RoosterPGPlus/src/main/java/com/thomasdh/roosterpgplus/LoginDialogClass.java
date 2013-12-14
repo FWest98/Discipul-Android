@@ -332,6 +332,7 @@ public class LoginDialogClass {
                     List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
 
                     // TODO: Beveiliging!
+
                     postParameters.add(new BasicNameValuePair("username", params[0]));
                     postParameters.add(new BasicNameValuePair("password", params[1]));
                     postParameters.add(new BasicNameValuePair("llnr", Integer.toString(llnr)));
