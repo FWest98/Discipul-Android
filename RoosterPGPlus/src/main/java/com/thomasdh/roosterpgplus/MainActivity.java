@@ -227,7 +227,9 @@ public class MainActivity extends ActionBarActivity {
 
                                 for (int i = 0; i < weekArray.length(); i++) {
                                     JSONObject week = weekArray.getJSONObject(i);
-                                    weken.add(week.getString("week"));
+                                    if (!week.getBoolean("vakantieweek")) {
+                                        weken.add(week.getString("week"));
+                                    }
                                 }
                                 //Get the index of the current week
                                 int indexCurrentWeek = -1;
