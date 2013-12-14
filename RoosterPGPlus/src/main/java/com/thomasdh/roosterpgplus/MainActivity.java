@@ -33,9 +33,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -284,7 +282,7 @@ public class MainActivity extends ActionBarActivity {
         public void laadRooster(final Context context, final View v) {
 
             //Probeer de string uit het geheugen te laden
-            RoosterWeek roosterWeek = laadInternal(selectedWeek, getActivity());
+            RoosterWeek roosterWeek = RoosterWeek.laadUitGeheugen(selectedWeek, getActivity());
 
             //Als het de goede week is, gebruik hem
             if (roosterWeek != null && roosterWeek.getWeek() == selectedWeek) {
@@ -299,25 +297,6 @@ public class MainActivity extends ActionBarActivity {
                 }
                 new RoosterDownloader(context, v, true, refreshItem.get(), selectedWeek).execute();
             }
-        }
-
-        RoosterWeek laadInternal(int week, Context context) {
-            if (week == -1) {
-                week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
-            }
-            RoosterWeek roosterWeek;
-            try {
-                FileInputStream fis = context.openFileInput("roosterWeek" + (week % 4));
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                roosterWeek = (RoosterWeek) ois.readObject();
-                ois.close();
-                fis.close();
-                return roosterWeek;
-            } catch (Exception e) {
-                Log.e("MainActivity", "Kon het rooster niet laden", e);
-                e.printStackTrace();
-            }
-            return null;
         }
     }
 }

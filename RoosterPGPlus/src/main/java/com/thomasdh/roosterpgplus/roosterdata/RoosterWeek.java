@@ -1,5 +1,6 @@
 package com.thomasdh.roosterpgplus.roosterdata;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.thomasdh.roosterpgplus.Lesuur;
@@ -7,6 +8,10 @@ import com.thomasdh.roosterpgplus.Lesuur;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Calendar;
 
@@ -65,6 +70,40 @@ public class RoosterWeek implements Serializable {
 
         }
         return null;
+    }
+
+    public static RoosterWeek laadUitGeheugen(int week, Context context) {
+        if (week == -1) {
+            week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        }
+        RoosterWeek roosterWeek;
+        try {
+            FileInputStream fis = context.openFileInput("roosterWeek" + (week % 4));
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            roosterWeek = (RoosterWeek) ois.readObject();
+            ois.close();
+            fis.close();
+            return roosterWeek;
+        } catch (Exception e) {
+            Log.e("MainActivity", "Kon het rooster niet laden", e);
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void slaOp(Context context) {
+        if (getWeek() != -1) {
+            try {
+                FileOutputStream fos = context.openFileOutput("roosterWeek" + (getWeek() % 4), Context.MODE_PRIVATE);
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(this);
+                oos.close();
+                fos.close();
+            } catch (Exception e) {
+                Log.e("RoosterWeek", "Kon het bestand niet opslaan", e);
+                e.printStackTrace();
+            }
+        }
     }
 
     public int getWeek() {

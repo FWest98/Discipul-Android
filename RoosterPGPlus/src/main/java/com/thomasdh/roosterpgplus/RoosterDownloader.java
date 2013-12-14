@@ -20,9 +20,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Scanner;
@@ -96,23 +94,8 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
                 Toast.makeText(context, string.substring(6), Toast.LENGTH_SHORT).show();
             } else if (context != null && rootView.get() != null) {
                 RoosterWeek roosterWeek = new RoosterWeek(string);
-                slaOp(roosterWeek, week);
+                roosterWeek.slaOp(context);
                 new RoosterBuilder(context, (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string));
-            }
-        }
-    }
-
-    void slaOp(RoosterWeek object, int week) {
-        if (week != -1) {
-            try {
-                FileOutputStream fos = context.openFileOutput("roosterWeek" + (week % 4), Context.MODE_PRIVATE);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                oos.writeObject(object);
-                oos.close();
-                fos.close();
-            } catch (Exception e) {
-                Log.e(getClass().getSimpleName(), "Kon het bestand niet opslaan", e);
-                e.printStackTrace();
             }
         }
     }
