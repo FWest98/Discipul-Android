@@ -35,13 +35,15 @@ public class RoosterWeek implements Serializable {
             JSONObject weekArray = new JSONObject(roosterJSON);
             uren = new Lesuur[5][7][];
             for (int day = 0; day < 5; day++) {
-                JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day + 2));
-                for (int hour = 0; hour < 7; hour++) {
-                    if (dagArray.has(String.valueOf(hour + 1))) {
-                        JSONArray uurArray = dagArray.getJSONArray(String.valueOf(hour + 1));
-                        uren[day][hour] = new Lesuur[uurArray.length()];
-                        for (int p = 0; p < uurArray.length(); p++) {
-                            uren[day][hour][p] = new Lesuur(uurArray.getJSONObject(p));
+                if (weekArray.has(getDayOfWeek(day + 2))) {
+                    JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day + 2));
+                    for (int hour = 0; hour < 7; hour++) {
+                        if (dagArray.has(String.valueOf(hour + 1))) {
+                            JSONArray uurArray = dagArray.getJSONArray(String.valueOf(hour + 1));
+                            uren[day][hour] = new Lesuur[uurArray.length()];
+                            for (int p = 0; p < uurArray.length(); p++) {
+                                uren[day][hour][p] = new Lesuur(uurArray.getJSONObject(p));
+                            }
                         }
                     }
                 }
@@ -107,13 +109,15 @@ public class RoosterWeek implements Serializable {
     }
 
     public int getWeek() {
-        for (Lesuur[][] lesuur1 : uren) {
-            if (lesuur1 != null) {
-                for (Lesuur[] lesuur2 : lesuur1) {
-                    if (lesuur2 != null) {
-                        for (Lesuur lesuur3 : lesuur2) {
-                            if (lesuur3 != null) {
-                                return lesuur3.week;
+        if (uren != null) {
+            for (Lesuur[][] lesuur1 : uren) {
+                if (lesuur1 != null) {
+                    for (Lesuur[] lesuur2 : lesuur1) {
+                        if (lesuur2 != null) {
+                            for (Lesuur lesuur3 : lesuur2) {
+                                if (lesuur3 != null) {
+                                    return lesuur3.week;
+                                }
                             }
                         }
                     }

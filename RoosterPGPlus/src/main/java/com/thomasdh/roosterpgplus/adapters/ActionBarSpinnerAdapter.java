@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus;
+package com.thomasdh.roosterpgplus.adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+
+import com.thomasdh.roosterpgplus.R;
 
 import java.util.List;
 import java.util.MissingFormatArgumentException;

@@ -42,19 +42,19 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
 
 
     //Voor docenten
-    public RoosterDownloader(Context context, View rooView, ViewPager viewPager, boolean forceReload, MenuItem menuItem, int week, String klas, String docentOfLeerling, MainActivity.PlaceholderFragment.Type type) {
+    public RoosterDownloader(Context context, View rooView, boolean forceReload, MenuItem menuItem, int week, String klas, MainActivity.PlaceholderFragment.Type type) {
         this(context, rooView, forceReload, menuItem, week);
         this.type = type;
         this.klas = klas;
-        this.docent = docentOfLeerling;
     }
-    
+
     public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
         this.context = new WeakReference<Context>(context);
         this.rootView = new WeakReference<View>(rootView);
         this.forceReload = forceReload;
         this.menuItem = menuItem;
         this.week = week;
+        this.type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
 
         if (this.menuItem != null) {
             LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -65,6 +65,7 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
     }
 
     public RoosterDownloader(Context context, boolean forceReload, int week) {
+        this.type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
         this.context = new WeakReference<Context>(context);
         this.forceReload = forceReload;
         this.week = week;
@@ -110,11 +111,16 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
                 Toast.makeText(context.get(), string.substring(6), Toast.LENGTH_SHORT).show();
             } else {
                 RoosterWeek roosterWeek = new RoosterWeek(string);
-                if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER){
+                if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
                     roosterWeek.slaOp(context.get());
                 }
                 if (context != null && rootView.get() != null) {
-                    new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                    if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER)
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                    if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_docent), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                    if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_leerling), rootView.get(), week).buildLayout(new RoosterWeek(string));
                 }
             }
         }
@@ -131,9 +137,9 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
         if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
             httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?key=" + apikey + "&week=" + week);
         } else if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
-            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?leraar=" + docent);
+            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?leraar=" + klas + "&week=" + week);
         } else if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER) {
-            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?klas=" + klas);
+            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?klas=" + klas + "&week=" + week);
         }
 
         // Execute HTTP Post Request

@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus;
+package com.thomasdh.roosterpgplus.adapters;
 
 import android.support.v4.view.PagerAdapter;
 import android.view.View;

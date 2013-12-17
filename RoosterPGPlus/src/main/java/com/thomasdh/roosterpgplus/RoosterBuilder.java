@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
 
 import java.lang.ref.WeakReference;
@@ -80,7 +81,9 @@ public class RoosterBuilder {
     }
 
     public void buildLayout(RoosterWeek roosterWeek) {
-        viewPager.get().setAdapter(new MyPagerAdapter());
+        if (viewPager.get() != null) {
+            viewPager.get().setAdapter(new MyPagerAdapter());
+        }
         boolean weekView = PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("weekview", context.get().getResources().getBoolean(R.bool.big_screen));
 
         if (roosterWeek != null) {
