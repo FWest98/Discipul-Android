@@ -145,77 +145,49 @@ public class RoosterInfoDownloader {
     }
 
     /* Weken downloader */
-    static public ArrayList<Week> getWeken() {
+    static public ArrayList<Week> getWeken() throws IOException, JSONException {
         return getWeken(false, 0);
     }
 
-    static public ArrayList<Week> getWeken(final Boolean AllWeeks) {
+    static public ArrayList<Week> getWeken(Boolean AllWeeks) throws IOException, JSONException {
         return getWeken(AllWeeks, 0);
     }
 
-    static public ArrayList<Week> getWeken(final int numberOfWeeks) {
+    static public ArrayList<Week> getWeken(int numberOfWeeks) throws IOException, JSONException {
         return getWeken(false, numberOfWeeks);
     }
 
-    static public ArrayList<Week> getWeken(final boolean AllWeeks, final int numberOfWeeks) {
+    static public ArrayList<Week> getWeken(boolean AllWeeks, int numberOfWeeks) throws IOException, JSONException {
+
+        if (numberOfWeeks == 0)
+            numberOfWeeks = 1000;
+
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet get = new HttpGet(Settings.API_Base_URL + "rooster/info?weken");
 
-        try {
-            HttpResponse response = httpClient.execute(get);
-            int status = response.getStatusLine().getStatusCode();
+        HttpResponse response = httpClient.execute(get);
+        int status = response.getStatusLine().getStatusCode();
 
-            if (status == 200) {
-                String s = "";
-                Scanner scanner = new Scanner(response.getEntity().getContent());
-                while (scanner.hasNext()) {
-                    s += scanner.nextLine();
-                }
-                // verder verwerken
-                ArrayList<Week> weken = new ArrayList<Week>();
-                JSONArray jsonArray = new JSONArray(s);
+        if (status == 200) {
+            String s = "";
+            Scanner scanner = new Scanner(response.getEntity().getContent());
+            while (scanner.hasNext()) {
+                s += scanner.nextLine();
+            }
+            // verder verwerken
+            ArrayList<Week> weken = new ArrayList<Week>();
+            JSONArray jsonArray = new JSONArray(s);
 
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject week = jsonArray.getJSONObject(i);
+            for (int i = 0; i < Math.min(numberOfWeeks, jsonArray.length()); i++) {
+                JSONObject week = jsonArray.getJSONObject(i);
+                if (!AllWeeks && !week.getBoolean("vakantieweek")) {
                     weken.add(new Week(week.getInt("week"), week.getBoolean("vakantieweek")));
                 }
-
-                if (!AllWeeks && numberOfWeeks <= 0) {
-                    for (Week week : weken) {
-                        if (!week.vakantieweek) {
-                            weken.remove(week);
-                        }
-                    }
-                } else if (!AllWeeks && numberOfWeeks > 0) {
-                    ArrayList<Week> weken2 = new ArrayList<Week>();
-                    for (int i = 0; i < numberOfWeeks; i++) {
-                        Week week = weken.get(i);
-                        weken2.add(week);
-                        if (!week.vakantieweek) {
-                            weken2.remove(i);
-                        }
-                    }
-                    weken = weken2;
-                } else if (AllWeeks && numberOfWeeks > 0) {
-                    ArrayList<Week> weken2 = new ArrayList<Week>();
-                    for (int i = 0; i < numberOfWeeks; i++) {
-                        Week week = weken.get(i);
-                        weken2.add(week);
-                    }
-                    weken = weken2;
-                }
-                return weken;
-            } else {
-                throw new IOException("Onbekende status: " + status);
             }
-        } catch (IOException e) {
-            Log.e("RoosterInfoDownloader", "Fout bij het laden van de klassen", e);
-            e.printStackTrace();
-        } catch (JSONException e) {
-            Log.e("RoosterInfoDownloader", "Fout bij het laden van de klassen", e);
-            e.printStackTrace();
+            return weken;
+        } else {
+            throw new IOException("Onbekende status: " + status);
         }
-        return null;
     }
 
     public static class Leraar {

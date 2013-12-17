@@ -23,26 +23,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.thomasdh.roosterpgplus.adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -50,7 +39,6 @@ public class MainActivity extends ActionBarActivity {
     public static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
     public static ActionBar actionBar;
     public static int selectedWeek = -1;
-    private static ArrayList<String> weken;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     public PlaceholderFragment mainFragment;
 
@@ -294,95 +282,59 @@ public class MainActivity extends ActionBarActivity {
         }
 
         private void laadWeken(final Context context) {
-            new AsyncTask<String, Void, String>() {
+            new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Week>>() {
                 @Override
-                protected String doInBackground(String... params) {
-                    HttpClient httpclient = new DefaultHttpClient();
-                    HttpGet Get = new HttpGet(context.getResources().getString(R.string.API_base_url) + "rooster/info?weken");
-
+                protected ArrayList<RoosterInfoDownloader.Week> doInBackground(Void... unused) {
                     try {
-                        HttpResponse response = httpclient.execute(Get);
-                        int status = response.getStatusLine().getStatusCode();
-
-                        if (status == 200) {
-                            String s = "";
-                            Scanner sc = new Scanner(response.getEntity().getContent());
-                            while (sc.hasNext()) {
-                                s += sc.nextLine();
-                            }
-                            return s;
-                        } else {
-                            return "error:Onbekende status: " + status;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        return RoosterInfoDownloader.getWeken();
+                    } catch (Exception e) {
+                        Log.e(getClass().getSimpleName(), "Fout bij het laden van de weken", e);
                     }
                     return null;
                 }
 
                 @Override
-                protected void onPostExecute(String string) {
-                    System.out.println("!!!!WEKENE:" + string);
-                    if (string != null && string.startsWith("error:")) {
-                        Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
-                    } else {
-                        try {
-                            weken = new ArrayList<String>();
-                            final ArrayList<String> strings = new ArrayList<String>();
+                protected void onPostExecute(ArrayList<RoosterInfoDownloader.Week> wekenArray) {
+                    final ArrayList<String> strings = new ArrayList<String>();
+                    if (wekenArray == null) {
+                        strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+                    }
+                    if (wekenArray != null) {
 
-                            if (string == null) {
-                                string = PreferenceManager.getDefaultSharedPreferences(context).getString("weken", null);
+                        //Get the index of the current week
+                        int indexCurrentWeek = 0;
+
+                        int correctionForWeekends = 0;
+                        if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7) {
+                            correctionForWeekends = 1;
+                        }
+
+                        loop:
+                        for (int u = 0; u < wekenArray.size(); u++) {
+                            if (wekenArray.get(u).week >= Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + correctionForWeekends) {
+                                indexCurrentWeek = u;
+                                break;
                             }
-                            if (string != null) {
-
-                                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("weken", string).commit();
-
-                                JSONArray weekArray = new JSONArray(string);
-
-                                for (int i = 0; i < weekArray.length(); i++) {
-                                    JSONObject week = weekArray.getJSONObject(i);
-                                    weken.add(week.getString("week"));
-                                }
-                                //Get the index of the current week
-                                int indexCurrentWeek = -1;
-                                for (int u = 0; u < weken.size(); u++) {
-
-                                    int correctionForWeekends = 0;
-                                    if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7) {
-                                        correctionForWeekends = 1;
-                                    }
-
-                                    if (Integer.parseInt(weken.get(u)) == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + correctionForWeekends) {
-                                        indexCurrentWeek = u;
-                                        break;
-                                    }
-                                }
-                                final int NUMBER_OF_WEEKS_IN_SPINNER = 10;
-                                for (int c = 0; c < NUMBER_OF_WEEKS_IN_SPINNER; c++) {
-                                    strings.add("Week " + weken.get((indexCurrentWeek + c) % weken.size()));
-                                }
-                            } else {
-                                strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-                            }
-
-                            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
-                            actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
-                                @Override
-                                public boolean onNavigationItemSelected(int i, long l) {
-                                    if (PreferenceManager.getDefaultSharedPreferences(context).getString("key", null) != null) {
-                                        String itemString = (String) actionBarSpinnerAdapter.getItem(i);
-                                        int week = Integer.parseInt(itemString.substring(5));
-                                        selectedWeek = week;
-                                        laadRooster(context, viewPager, rootView, type);
-                                    }
-                                    return true;
-                                }
-                            });
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        }
+                        final int NUMBER_OF_WEEKS_IN_SPINNER = 10;
+                        for (int c = 0; c < NUMBER_OF_WEEKS_IN_SPINNER; c++) {
+                            strings.add("Week " + wekenArray.get((indexCurrentWeek + c) % wekenArray.size()).week);
                         }
                     }
+
+                    actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
+                    actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
+                        @Override
+                        public boolean onNavigationItemSelected(int i, long l) {
+                            if (PreferenceManager.getDefaultSharedPreferences(context).getString("key", null) != null) {
+                                String itemString = (String) actionBarSpinnerAdapter.getItem(i);
+                                int week = Integer.parseInt(itemString.substring(5));
+                                selectedWeek = week;
+                                laadRooster(context, viewPager, rootView, type);
+                            }
+                            return true;
+                        }
+                    });
                 }
             }.execute();
         }
