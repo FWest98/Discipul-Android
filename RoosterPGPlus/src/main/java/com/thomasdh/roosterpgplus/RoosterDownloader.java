@@ -13,6 +13,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
 
 import org.apache.http.HttpResponse;
@@ -168,7 +171,12 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
                 return "error:Onbekende status: " + status;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(getClass().getSimpleName(), "Fout bij het laden van de weken", e);
+            EasyTracker easyTracker = EasyTracker.getInstance(context.get());
+            easyTracker.send(MapBuilder
+                    .createException(new StandardExceptionParser(context.get(), null)
+                            .getDescription(Thread.currentThread().getName(), e), false)
+                    .build());
         }
         return null;
     }

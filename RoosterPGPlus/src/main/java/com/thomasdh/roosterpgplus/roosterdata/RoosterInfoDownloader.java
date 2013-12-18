@@ -49,7 +49,6 @@ public class RoosterInfoDownloader {
             Iterator<String> namenKeys = allArray.keys();
             while (namenKeys.hasNext()) {
                 String key = namenKeys.next();
-                Log.d("RoosterInfoDownloader", key);
                 if (allArray.getString(key) != null)
                     vakken.get(0).leraren.add(new Leraar(key, allArray.getString(key)));
             }

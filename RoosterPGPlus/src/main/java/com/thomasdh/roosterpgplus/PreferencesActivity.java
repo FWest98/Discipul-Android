@@ -9,6 +9,10 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.Fields;
+import com.google.analytics.tracking.android.MapBuilder;
+
 import java.util.List;
 
 /**
@@ -23,7 +27,6 @@ public class PreferencesActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
 
         preferenceListener = new PreferenceListener2();
-
         // Voor android versies voor 3.0
         String action = getIntent().getAction();
         if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment")) {
@@ -33,6 +36,17 @@ public class PreferencesActivity extends PreferenceActivity {
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
         }
+    }
+
+    @Override
+    protected void onStop() {
+        EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
+        tracker.set(Fields.SCREEN_NAME, null);
+        tracker.send(MapBuilder
+                .createAppView()
+                .build()
+        );
+        super.onStop();
     }
 
     @Override
@@ -63,6 +77,17 @@ public class PreferencesActivity extends PreferenceActivity {
         if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment")) {
             getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(preferenceListener);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
+        tracker.set(Fields.SCREEN_NAME, "Instellingen");
+        tracker.send(MapBuilder
+                .createAppView()
+                .build()
+        );
+        super.onStart();
     }
 
     @Override

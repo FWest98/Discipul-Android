@@ -24,6 +24,11 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.Fields;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.StandardExceptionParser;
+import com.google.analytics.tracking.android.Tracker;
 import com.thomasdh.roosterpgplus.adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
@@ -43,6 +48,17 @@ public class MainActivity extends ActionBarActivity {
     public PlaceholderFragment mainFragment;
 
     @Override
+    protected void onStop() {
+        Tracker easyTracker = EasyTracker.getInstance(this);
+        easyTracker.set(Fields.SCREEN_NAME, null);
+        easyTracker.send(MapBuilder
+                .createAppView()
+                .build()
+        );
+        super.onStop();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -57,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // Maak de navigation drawer
-        String[] keuzes = {"Persoonlijk rooster", "Leerlingrooster", "Docentenrooster"};
+        String[] keuzes = {"Persoonlijk rooster", "Klassenrooster", "Docentenrooster"};
 
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerlayout);
 
@@ -177,6 +193,14 @@ public class MainActivity extends ActionBarActivity {
                     //Laat de gebruiker inloggen -> wel rooster laden daarna
                     new LoginDialogClass(getActivity(), rootView, this).showLoginDialog(true);
                 }
+
+                Tracker easyTracker = EasyTracker.getInstance(getActivity());
+                easyTracker.set(Fields.SCREEN_NAME, "Persoonlijk Rooster");
+                easyTracker.send(MapBuilder
+                        .createAppView()
+                        .build()
+                );
+
             } else if (type == Type.DOCENTENROOSTER) {
                 rootView = inflater.inflate(R.layout.fragment_main_docenten, container, false);
                 viewPager = (ViewPager) rootView.findViewById(R.id.viewPager_docent);
@@ -190,6 +214,11 @@ public class MainActivity extends ActionBarActivity {
                             leraren = RoosterInfoDownloader.getLeraren();
                         } catch (Exception e) {
                             Log.e("MainActivity", "Er ging iets mis bij het ophalen van de leraren", e);
+                            EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                            easyTracker.send(MapBuilder
+                                    .createException(new StandardExceptionParser(getActivity(), null)
+                                            .getDescription(Thread.currentThread().getName(), e), false)
+                                    .build());
                             return null;
                         }
                         return leraren;
@@ -242,6 +271,13 @@ public class MainActivity extends ActionBarActivity {
                     }
                 }.execute();
 
+                Tracker easyTracker = EasyTracker.getInstance(getActivity());
+                easyTracker.set(Fields.SCREEN_NAME, "Docentenrooster");
+                easyTracker.send(MapBuilder
+                        .createAppView()
+                        .build()
+                );
+
             } else if (type == Type.KLASROOSTER) {
                 rootView = inflater.inflate(R.layout.fragment_main_leerling, container, false);
                 viewPager = (ViewPager) rootView.findViewById(R.id.viewPager_leerling);
@@ -259,22 +295,31 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     protected void onPostExecute(final ArrayList<String> klassen) {
                         // doe iets met de klassen
-                        klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[0])));
-                        klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                            @Override
-                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                leraarLerlingselected = ((TextView) view).getText().toString();
-                                new RoosterDownloader(getActivity(), rootView, true, refreshItem.get(), selectedWeek,
-                                        ((TextView) view).getText().toString(), Type.KLASROOSTER).execute();
-                            }
+                        if (klassen != null) {
+                            klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[0])));
+                            klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                @Override
+                                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                    leraarLerlingselected = ((TextView) view).getText().toString();
+                                    new RoosterDownloader(getActivity(), rootView, true, refreshItem.get(), selectedWeek,
+                                            ((TextView) view).getText().toString(), Type.KLASROOSTER).execute();
+                                }
 
-                            @Override
-                            public void onNothingSelected(AdapterView<?> parent) {
+                                @Override
+                                public void onNothingSelected(AdapterView<?> parent) {
 
-                            }
-                        });
+                                }
+                            });
+                        }
                     }
                 }.execute();
+
+                Tracker easyTracker = EasyTracker.getInstance(getActivity());
+                easyTracker.set(Fields.SCREEN_NAME, "Klasrooster");
+                easyTracker.send(MapBuilder
+                        .createAppView()
+                        .build()
+                );
             }
             laadWeken(getActivity());
             return rootView;
@@ -289,6 +334,11 @@ public class MainActivity extends ActionBarActivity {
                         return RoosterInfoDownloader.getWeken();
                     } catch (Exception e) {
                         Log.e(getClass().getSimpleName(), "Fout bij het laden van de weken", e);
+                        EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                        easyTracker.send(MapBuilder
+                                .createException(new StandardExceptionParser(getActivity(), null)
+                                        .getDescription(Thread.currentThread().getName(), e), false)
+                                .build());
                     }
                     return null;
                 }
