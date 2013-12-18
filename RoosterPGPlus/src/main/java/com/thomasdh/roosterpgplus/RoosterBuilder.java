@@ -156,7 +156,7 @@ public class RoosterBuilder {
                         }
                         if (uitgevallenUren.size() > 0) {
                             String uurNamen = uitgevallenUren.get(0).vak;
-                            for (int x = 1; x < uitgevallenUren.size(); x++){
+                            for (int x = 1; x < uitgevallenUren.size(); x++) {
                                 uurNamen += " & " + uitgevallenUren.get(x).vak;
                             }
                             Log.d(getClass().getSimpleName(), uurNamen);
@@ -182,14 +182,16 @@ public class RoosterBuilder {
                                 allUren.get(u).findViewById(R.id.layers).setVisibility(View.VISIBLE);
                             }
                             allUren.get(u).setVisibility(View.GONE);
-                            allUren.get(u).setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    allUren.get(k).setVisibility(View.GONE);
-                                    allUren.get((k + 1) % allUren.size()).setVisibility(View.VISIBLE);
-                                    ll.invalidate();
-                                }
-                            });
+                            if (uurArray.length > 1) {
+                                allUren.get(u).setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        allUren.get(k).setVisibility(View.GONE);
+                                        allUren.get((k + 1) % allUren.size()).setVisibility(View.VISIBLE);
+                                        ll.invalidate();
+                                    }
+                                });
+                            }
                             ll.addView(allUren.get(u));
                             allUren.get(0).setVisibility(View.VISIBLE);
                         }
