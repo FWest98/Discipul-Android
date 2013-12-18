@@ -8,6 +8,15 @@
     android:background="@drawable/basic_rect_nobottom"
     android:orientation="vertical">
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/layers"
+        android:layout_alignParentRight="true"
+        android:layout_margin="5dp"
+        android:id="@+id/layers"
+        android:visibility="gone"/>
+
     <RelativeLayout
         android:layout_height="80dp"
         android:layout_width="match_parent"

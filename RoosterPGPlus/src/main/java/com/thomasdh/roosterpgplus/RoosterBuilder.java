@@ -18,8 +18,11 @@ import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 
 /**
  * Created by Thomas on 2-12-13.
@@ -100,7 +103,7 @@ public class RoosterBuilder {
 
             for (int day = 2; day < 7; day++) {
                 View dagView;
-                LinearLayout ll;
+                final LinearLayout ll;
                 dagView = inflater.inflate(R.layout.rooster_dag, null);
                 ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
 
@@ -141,57 +144,55 @@ public class RoosterBuilder {
                 for (int y = 0; y < 7; y++) {
                     if (roosterWeek.getUren(day, y) != null && roosterWeek.getUren(day, y).length != 0) {
                         Lesuur[] uurArray = roosterWeek.getUren(day, y);
-                        Lesuur lesuur = uurArray[0];
-                        JoinableList vervallenVakken = new JoinableList();
-
-                        // Bepalen welk uur van de (eventueel meerdere) hij moet nemen
-                        if (lesuur.vervallen && uurArray.length > 1) {
-                            int uurCounter = 1;
-                            while (lesuur.vervallen && uurCounter < uurArray.length) { // vervallen les, en er moet nog één beschikbaar zijn
-                                vervallenVakken.add(lesuur.vak);
-                                lesuur = uurArray[uurCounter];
-                                uurCounter++;
+                        ArrayList<Lesuur> tempUurArray = new ArrayList<Lesuur>(Arrays.asList(uurArray));
+                        ArrayList<Lesuur> uitgevallenUren = new ArrayList<Lesuur>();
+                        Iterator<Lesuur> iter = tempUurArray.iterator();
+                        while (iter.hasNext()) {
+                            Lesuur uur = iter.next();
+                            if (uur.vervallen) {
+                                uitgevallenUren.add(uur);
+                                iter.remove();
                             }
                         }
+                        if (uitgevallenUren.size() > 0) {
+                            String uurNamen = uitgevallenUren.get(0).vak;
+                            for (int x = 1; x < uitgevallenUren.size(); x++){
+                                uurNamen += " & " + uitgevallenUren.get(x).vak;
+                            }
+                            Log.d(getClass().getSimpleName(), uurNamen);
+                            tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
+                                    uitgevallenUren.get(0).uur,
+                                    uitgevallenUren.get(0).week,
+                                    uitgevallenUren.get(0).klas,
+                                    uitgevallenUren.get(0).leraar,
+                                    uurNamen,
+                                    uitgevallenUren.get(0).lokaal,
+                                    true));
+                        }
+                        final ArrayList<View> allUren = new ArrayList<View>();
+                        uurArray = tempUurArray.toArray(new Lesuur[tempUurArray.size()]);
 
 
-                        View uur;
-                        boolean paddingRight = true;
-                        if (lesuur.vervallen) {
-                            uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
-                            uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
-                            if (vervallenVakken.size() > 0) {
-                                vervallenVakken.add(lesuur.vak);
-                                String vakken = vervallenVakken.join(" & ");
-                                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(vakken + " vallen uit");
-                            } else {
-                                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
+                        final boolean multipleViews = (uurArray.length > 1);
+                        for (int u = 0; u < uurArray.length; u++) {
+                            final int k = u;
+                            Lesuur lesuur = uurArray[u];
+                            allUren.add(makeView(lesuur, inflater, y));
+                            if (multipleViews) {
+                                allUren.get(u).findViewById(R.id.layers).setVisibility(View.VISIBLE);
                             }
-                        } else {
-                            if (lesuur.verandering) {
-                                paddingRight = false;
-                                uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
-                            } else {
-                                paddingRight = false;
-                                uur = inflater.inflate(R.layout.rooster_uur, null);
-                            }
-                            ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
-                            if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
-                                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
-                            } else {
-                                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
-                            }
-                            ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(lesuur.lokaal);
-                            ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
+                            allUren.get(u).setVisibility(View.GONE);
+                            allUren.get(u).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    allUren.get(k).setVisibility(View.GONE);
+                                    allUren.get((k + 1) % allUren.size()).setVisibility(View.VISIBLE);
+                                    ll.invalidate();
+                                }
+                            });
+                            ll.addView(allUren.get(u));
+                            allUren.get(0).setVisibility(View.VISIBLE);
                         }
-                        if (y == 6) {
-                            uur.setBackgroundResource(R.drawable.basic_rect);
-                            if (!paddingRight) {
-                                uur.setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
-                            }
-                        }
-                        uur.setMinimumHeight((int) convertDPToPX(81, context.get()));
-                        ll.addView(uur);
                     } else {
                         View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
                         vrij.setMinimumHeight((int) convertDPToPX(80, context.get()));
@@ -200,6 +201,7 @@ public class RoosterBuilder {
                         }
                         ll.addView(vrij);
                     }
+
                 }
 
                 if (weekView) {
@@ -280,4 +282,39 @@ public class RoosterBuilder {
         float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, r.getDisplayMetrics());
         return px;
     }
+
+    View makeView(Lesuur lesuur, LayoutInflater inflater, int y) {
+        View uur;
+        boolean paddingRight = true;
+        if (lesuur.vervallen) {
+            uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
+            uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
+            ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
+        } else {
+            if (lesuur.verandering) {
+                paddingRight = false;
+                uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
+            } else {
+                paddingRight = false;
+                uur = inflater.inflate(R.layout.rooster_uur, null);
+            }
+            ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
+            if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
+                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
+            } else {
+                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
+            }
+            ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(lesuur.lokaal);
+            ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
+        }
+        if (y == 6) {
+            uur.setBackgroundResource(R.drawable.basic_rect);
+            if (!paddingRight) {
+                uur.setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
+            }
+        }
+        uur.setMinimumHeight((int) convertDPToPX(81, context.get()));
+        return uur;
+    }
+
 }

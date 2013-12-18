@@ -53,7 +53,7 @@ public class Lesuur implements Serializable{
             e.printStackTrace();
         }
     }
-    public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal) {
+    public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen) {
         this.unique = klas+dag+uur+week;
         this.dag = dag;
         this.uur = uur;
@@ -64,7 +64,7 @@ public class Lesuur implements Serializable{
         this.vak = vak;
         this.lokaal = lokaal;
         this.verandering = false;
-        this.vervallen = false;
+        this.vervallen = vervallen;
         this.huiswerk = null;
         this.bijlage_id = 0;
         this.so = false;
