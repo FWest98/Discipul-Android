@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -209,9 +210,11 @@ public class RoosterInfoDownloader {
         }
     }
 
-    public static class Week {
+    public static class Week implements Serializable{
         public int week;
         public boolean vakantieweek;
+
+        private static final long serialVersionUID = 102947213471347253L;
 
         public Week(int week, boolean vakantieweek) {
             this.week = week;

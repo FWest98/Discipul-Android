@@ -3,6 +3,8 @@ package com.thomasdh.roosterpgplus;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -34,6 +36,9 @@ import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
 
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -327,66 +332,102 @@ public class MainActivity extends ActionBarActivity {
         }
 
         private void laadWeken(final Context context) {
-            new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Week>>() {
-                @Override
-                protected ArrayList<RoosterInfoDownloader.Week> doInBackground(Void... unused) {
-                    try {
-                        return RoosterInfoDownloader.getWeken();
-                    } catch (Exception e) {
-                        Log.e(getClass().getSimpleName(), "Fout bij het laden van de weken", e);
-                        EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
-                        easyTracker.send(MapBuilder
-                                .createException(new StandardExceptionParser(getActivity(), null)
-                                        .getDescription(Thread.currentThread().getName(), e), false)
-                                .build());
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
+
+            if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+                //Laad via internet
+                new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Week>>() {
+
+                    @Override
+                    protected ArrayList<RoosterInfoDownloader.Week> doInBackground(Void... unused) {
+                        try {
+                            return RoosterInfoDownloader.getWeken();
+                        } catch (Exception e) {
+                            Log.e(getClass().getSimpleName(), "Fout bij het laden van de weken", e);
+                            EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                            easyTracker.send(MapBuilder
+                                    .createException(new StandardExceptionParser(getActivity(), null)
+                                            .getDescription(Thread.currentThread().getName(), e), false)
+                                    .build());
+                        }
+                        return null;
                     }
-                    return null;
+
+                    @Override
+                    protected void onPostExecute(ArrayList<RoosterInfoDownloader.Week> wekenArray) {
+                        try {
+                            FileOutputStream arraySaver = context.openFileOutput("wekenarray", MODE_PRIVATE);
+                            ObjectOutputStream arrayObjectOutputStream = new ObjectOutputStream(arraySaver);
+                            arrayObjectOutputStream.writeObject(wekenArray);
+                            arrayObjectOutputStream.close();
+                            arraySaver.close();
+                        } catch (Exception e) {
+                            Log.e("MainActivity", "Kon de weken niet opslaan", e);
+                            EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                            easyTracker.send(MapBuilder
+                                    .createException(new StandardExceptionParser(getActivity(), null)
+                                            .getDescription(Thread.currentThread().getName(), e), false)
+                                    .build());
+                        }
+                        addWekenToActionBar(wekenArray, context);
+                    }
+                }.execute();
+            } else {
+                try {
+                    ObjectInputStream ois = new ObjectInputStream(context.openFileInput("wekenarray"));
+                    ArrayList<RoosterInfoDownloader.Week> weken = (ArrayList<RoosterInfoDownloader.Week>) ois.readObject();
+                } catch (Exception e) {
+                    Log.e("MainActivity", "Kon de weken niet uit het geheugen laden", e);
+                    EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                    easyTracker.send(MapBuilder
+                            .createException(new StandardExceptionParser(getActivity(), null)
+                                    .getDescription(Thread.currentThread().getName(), e), false)
+                            .build());
+                }
+            }
+        }
+
+        void addWekenToActionBar(ArrayList<RoosterInfoDownloader.Week> wekenArray, final Context context) {
+            final ArrayList<String> strings = new ArrayList<String>();
+            if (wekenArray == null) {
+                strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+            }
+            if (wekenArray != null) {
+
+                //Get the index of the current week
+                int indexCurrentWeek = 0;
+
+                int correctionForWeekends = 0;
+                if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7) {
+                    correctionForWeekends = 1;
                 }
 
-                @Override
-                protected void onPostExecute(ArrayList<RoosterInfoDownloader.Week> wekenArray) {
-                    final ArrayList<String> strings = new ArrayList<String>();
-                    if (wekenArray == null) {
-                        strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+                loop:
+                for (int u = 0; u < wekenArray.size(); u++) {
+                    if (wekenArray.get(u).week >= Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + correctionForWeekends) {
+                        indexCurrentWeek = u;
+                        break;
                     }
-                    if (wekenArray != null) {
-
-                        //Get the index of the current week
-                        int indexCurrentWeek = 0;
-
-                        int correctionForWeekends = 0;
-                        if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7) {
-                            correctionForWeekends = 1;
-                        }
-
-                        loop:
-                        for (int u = 0; u < wekenArray.size(); u++) {
-                            if (wekenArray.get(u).week >= Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + correctionForWeekends) {
-                                indexCurrentWeek = u;
-                                break;
-                            }
-                        }
-                        final int NUMBER_OF_WEEKS_IN_SPINNER = 10;
-                        for (int c = 0; c < NUMBER_OF_WEEKS_IN_SPINNER; c++) {
-                            strings.add("Week " + wekenArray.get((indexCurrentWeek + c) % wekenArray.size()).week);
-                        }
-                    }
-
-                    actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
-                    actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
-                        @Override
-                        public boolean onNavigationItemSelected(int i, long l) {
-                            if (PreferenceManager.getDefaultSharedPreferences(context).getString("key", null) != null) {
-                                String itemString = (String) actionBarSpinnerAdapter.getItem(i);
-                                int week = Integer.parseInt(itemString.substring(5));
-                                selectedWeek = week;
-                                laadRooster(context, viewPager, rootView, type);
-                            }
-                            return true;
-                        }
-                    });
                 }
-            }.execute();
+                final int NUMBER_OF_WEEKS_IN_SPINNER = 10;
+                for (int c = 0; c < NUMBER_OF_WEEKS_IN_SPINNER; c++) {
+                    strings.add("Week " + wekenArray.get((indexCurrentWeek + c) % wekenArray.size()).week);
+                }
+            }
+            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
+            actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
+                @Override
+                public boolean onNavigationItemSelected(int i, long l) {
+                    if (PreferenceManager.getDefaultSharedPreferences(context).getString("key", null) != null) {
+                        String itemString = (String) actionBarSpinnerAdapter.getItem(i);
+                        int week = Integer.parseInt(itemString.substring(5));
+                        selectedWeek = week;
+                        laadRooster(context, viewPager, rootView, type);
+                    }
+                    return true;
+                }
+            });
         }
 
         public void laadRooster(Context context, ViewPager viewPager, View rootView, Type type) {
