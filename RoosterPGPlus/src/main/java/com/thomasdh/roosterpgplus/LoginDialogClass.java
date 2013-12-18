@@ -154,7 +154,7 @@ public class LoginDialogClass {
                         Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
                         //Laad het rooster als de boolean true is
                         if (laadRooster) {
-                            mainFragment.laadRooster(context, mainFragment.viewPager, mainFragment.rootView, mainFragment.type);
+                            mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -238,7 +238,7 @@ public class LoginDialogClass {
 
                         //Laad het rooster
                         if (laadRooster) {
-                            mainFragment.laadRooster(context, mainFragment.viewPager, mainFragment.rootView, mainFragment.type);
+                            mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
                         }
 
                     } catch (JSONException e) {
@@ -409,7 +409,7 @@ public class LoginDialogClass {
                         Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
                         //Laad het rooster als de boolean true is
                         if (laadRooster) {
-                            mainFragment.laadRooster(context, mainFragment.viewPager, mainFragment.rootView, mainFragment.type);
+                            mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();

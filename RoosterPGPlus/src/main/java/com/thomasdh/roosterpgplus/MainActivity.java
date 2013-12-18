@@ -168,7 +168,7 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             case R.id.menu_item_refresh:
                 if (mainFragment.type == PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
-                    new RoosterDownloader(this, mainFragment.rootView, true, item, selectedWeek).execute();
+                    new RoosterDownloader(this, mainFragment.getRootView(), true, item, selectedWeek).execute();
                 }
                 return true;
         }
@@ -178,7 +178,7 @@ public class MainActivity extends ActionBarActivity {
     public static class PlaceholderFragment extends Fragment {
 
         public static String leraarLerlingselected;
-        public View rootView;
+        private View rootView;
         public ViewPager viewPager;
         public Type type;
 
@@ -190,13 +190,13 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             if (type == Type.PERSOONLIJK_ROOSTER) {
-                rootView = inflater.inflate(R.layout.fragment_main, container, false);
-                viewPager = (ViewPager) rootView.findViewById(R.id.viewPager);
+                setRootView(inflater.inflate(R.layout.fragment_main, container, false));
+                viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager);
                 viewPager.setAdapter(new MyPagerAdapter());
 
                 if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
                     //Laat de gebruiker inloggen -> wel rooster laden daarna
-                    new LoginDialogClass(getActivity(), rootView, this).showLoginDialog(true);
+                    new LoginDialogClass(getActivity(), getRootView(), this).showLoginDialog(true);
                 }
 
                 Tracker easyTracker = EasyTracker.getInstance(getActivity());
@@ -207,8 +207,8 @@ public class MainActivity extends ActionBarActivity {
                 );
 
             } else if (type == Type.DOCENTENROOSTER) {
-                rootView = inflater.inflate(R.layout.fragment_main_docenten, container, false);
-                viewPager = (ViewPager) rootView.findViewById(R.id.viewPager_docent);
+                setRootView(inflater.inflate(R.layout.fragment_main_docenten, container, false));
+                viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_docent);
                 viewPager.setAdapter(new MyPagerAdapter());
 
                 new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Vak>>() {
@@ -232,8 +232,8 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     protected void onPostExecute(final ArrayList<RoosterInfoDownloader.Vak> vakken) {
 
-                        final Spinner docentenNaamSpinner = (Spinner) rootView.findViewById(R.id.main_fragment_spinner_docent_naam);
-                        final Spinner docentenVakSpinner = (Spinner) rootView.findViewById(R.id.main_fragment_spinner_docent_vak);
+                        final Spinner docentenNaamSpinner = (Spinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_naam);
+                        final Spinner docentenVakSpinner = (Spinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_vak);
 
                         if (vakken != null) {
                             final ArrayList<String> vakNaam = new ArrayList<String>();
@@ -241,7 +241,7 @@ public class MainActivity extends ActionBarActivity {
                                 vakNaam.add(vak.naam);
                             }
 
-                            docentenVakSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, vakNaam.toArray(new String[0])));
+                            docentenVakSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, vakNaam.toArray(new String[vakNaam.size()])));
                             docentenVakSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
                                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -253,12 +253,12 @@ public class MainActivity extends ActionBarActivity {
                                         namenLeraren.add(leraar.naam);
                                     }
 
-                                    docentenNaamSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, namenLeraren.toArray(new String[0])));
+                                    docentenNaamSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, namenLeraren.toArray(new String[namenLeraren.size()])));
                                     docentenNaamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                         @Override
                                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                                             leraarLerlingselected = selectedVak.leraren.get(position).korteNaam;
-                                            new RoosterDownloader(getActivity(), rootView, true, refreshItem.get(), selectedWeek, selectedVak.leraren.get(position).korteNaam, Type.DOCENTENROOSTER).execute();
+                                            new RoosterDownloader(getActivity(), getRootView(), true, refreshItem.get(), selectedWeek, selectedVak.leraren.get(position).korteNaam, Type.DOCENTENROOSTER).execute();
                                         }
 
                                         @Override
@@ -284,11 +284,11 @@ public class MainActivity extends ActionBarActivity {
                 );
 
             } else if (type == Type.KLASROOSTER) {
-                rootView = inflater.inflate(R.layout.fragment_main_leerling, container, false);
-                viewPager = (ViewPager) rootView.findViewById(R.id.viewPager_leerling);
+                setRootView(inflater.inflate(R.layout.fragment_main_leerling, container, false));
+                viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_leerling);
                 viewPager.setAdapter(new MyPagerAdapter());
 
-                final Spinner klasspinner = (Spinner) rootView.findViewById(R.id.main_fragment_spinner_klas);
+                final Spinner klasspinner = (Spinner) getRootView().findViewById(R.id.main_fragment_spinner_klas);
                 new AsyncTask<Void, Void, ArrayList<String>>() {
 
 
@@ -301,12 +301,12 @@ public class MainActivity extends ActionBarActivity {
                     protected void onPostExecute(final ArrayList<String> klassen) {
                         // doe iets met de klassen
                         if (klassen != null) {
-                            klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[0])));
+                            klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[klassen.size()])));
                             klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
                                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                                     leraarLerlingselected = ((TextView) view).getText().toString();
-                                    new RoosterDownloader(getActivity(), rootView, true, refreshItem.get(), selectedWeek,
+                                    new RoosterDownloader(getActivity(), getRootView(), true, refreshItem.get(), selectedWeek,
                                             ((TextView) view).getText().toString(), Type.KLASROOSTER).execute();
                                 }
 
@@ -327,7 +327,7 @@ public class MainActivity extends ActionBarActivity {
                 );
             }
             laadWeken(getActivity());
-            return rootView;
+            return getRootView();
 
         }
 
@@ -377,6 +377,7 @@ public class MainActivity extends ActionBarActivity {
                 try {
                     ObjectInputStream ois = new ObjectInputStream(context.openFileInput("wekenarray"));
                     ArrayList<RoosterInfoDownloader.Week> weken = (ArrayList<RoosterInfoDownloader.Week>) ois.readObject();
+                    addWekenToActionBar(weken, context);
                 } catch (Exception e) {
                     Log.e("MainActivity", "Kon de weken niet uit het geheugen laden", e);
                     EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
@@ -404,12 +405,11 @@ public class MainActivity extends ActionBarActivity {
                 }
 
                 loop:
-                for (int u = 0; u < wekenArray.size(); u++) {
+                for (int u = 0; u < wekenArray.size(); u++)
                     if (wekenArray.get(u).week >= Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + correctionForWeekends) {
                         indexCurrentWeek = u;
-                        break;
+                        break loop;
                     }
-                }
                 final int NUMBER_OF_WEEKS_IN_SPINNER = 10;
                 for (int c = 0; c < NUMBER_OF_WEEKS_IN_SPINNER; c++) {
                     strings.add("Week " + wekenArray.get((indexCurrentWeek + c) % wekenArray.size()).week);
@@ -423,14 +423,14 @@ public class MainActivity extends ActionBarActivity {
                         String itemString = (String) actionBarSpinnerAdapter.getItem(i);
                         int week = Integer.parseInt(itemString.substring(5));
                         selectedWeek = week;
-                        laadRooster(context, viewPager, rootView, type);
+                        laadRooster(context, getRootView(), type);
                     }
                     return true;
                 }
             });
         }
 
-        public void laadRooster(Context context, ViewPager viewPager, View rootView, Type type) {
+        public void laadRooster(Context context, View rootView, Type type) {
 
             if (type == Type.PERSOONLIJK_ROOSTER) {
                 //Probeer de string uit het geheugen te laden
@@ -454,6 +454,14 @@ public class MainActivity extends ActionBarActivity {
             } else if (type == Type.DOCENTENROOSTER) {
                 new RoosterDownloader(context, rootView, true, refreshItem.get(), selectedWeek, leraarLerlingselected, type).execute();
             }
+        }
+
+        public View getRootView() {
+            return rootView;
+        }
+
+        public void setRootView(View rootView) {
+            this.rootView = rootView;
         }
 
         public static enum Type {
