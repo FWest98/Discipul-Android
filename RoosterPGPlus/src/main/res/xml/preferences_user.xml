@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:thomasdhprefs="http://schemas.android.com/apk/res/com.thomasdh.roosterpgplus">
 
     <Preference
         android:key="mijn_account"
@@ -8,5 +9,17 @@
         android:key="log_in"
         android:summary="Log opnieuw in"
         android:title="Log in" />
+
+
+    <com.thomasdh.roosterpgplus.ListPreferenceMultiSelect
+        android:defaultValue="#ALL#"
+        android:dialogTitle="Image folders to monitor"
+        android:entries="@array/pref_upload_buckets_default_entries"
+        android:entryValues="@array/pref_upload_buckets_default_values"
+        android:key="subklassen"
+        android:summary="Kies de subklassen die je bij jouw account wil zien"
+        android:title="Subklassen"
+        thomasdhprefs:checkAll="check"
+        thomasdhprefs:separator="|" />
 
 </PreferenceScreen>

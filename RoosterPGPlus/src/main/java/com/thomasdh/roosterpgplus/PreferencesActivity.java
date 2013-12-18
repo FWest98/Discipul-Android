@@ -2,6 +2,7 @@ package com.thomasdh.roosterpgplus;
 
 import android.annotation.TargetApi;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -143,6 +144,22 @@ public class PreferencesActivity extends PreferenceActivity {
                     return true;
                 }
             });
+
+            final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
+            new AsyncTask<Void, Void, String[]>() {
+                @Override
+                protected String[] doInBackground(Void... params) {
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(String[] s) {
+                    if (subklassen != null && s != null) {
+                        subklassen.setEntries(s);
+                        subklassen.setEntryValues(s);
+                    }
+                }
+            }.execute();
         }
 
         @Override

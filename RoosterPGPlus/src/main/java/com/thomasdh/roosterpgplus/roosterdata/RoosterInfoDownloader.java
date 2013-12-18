@@ -210,11 +210,10 @@ public class RoosterInfoDownloader {
         }
     }
 
-    public static class Week implements Serializable{
+    public static class Week implements Serializable {
+        private static final long serialVersionUID = 102947213471347253L;
         public int week;
         public boolean vakantieweek;
-
-        private static final long serialVersionUID = 102947213471347253L;
 
         public Week(int week, boolean vakantieweek) {
             this.week = week;
