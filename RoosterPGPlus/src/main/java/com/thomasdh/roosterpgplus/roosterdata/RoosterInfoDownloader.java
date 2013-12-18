@@ -92,7 +92,7 @@ public class RoosterInfoDownloader {
                 Collections.sort(v.leraren, new Comparator<Leraar>() {
                     @Override
                     public int compare(Leraar lhs, Leraar rhs) {
-                        return lhs.naam.compareToIgnoreCase(rhs.naam);
+                        return lhs.korteNaam.compareToIgnoreCase(rhs.korteNaam);
                     }
                 });
             }
