@@ -128,7 +128,7 @@ public class MainActivity extends ActionBarActivity {
                         return false;
                     }
                 };
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>());
+        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>(), PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
         //Voeg beide toe
         getSupportActionBar().setListNavigationCallbacks(actionBarSpinnerAdapter, onNavigationListener);
 
@@ -413,7 +413,7 @@ public class MainActivity extends ActionBarActivity {
                     strings.add("Week " + wekenArray.get((indexCurrentWeek + c) % wekenArray.size()).week);
                 }
             }
-            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
+            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings, type);
             actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
                 @Override
                 public boolean onNavigationItemSelected(int i, long l) {
