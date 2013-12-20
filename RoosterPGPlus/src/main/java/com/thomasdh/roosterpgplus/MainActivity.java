@@ -184,6 +184,7 @@ public class MainActivity extends ActionBarActivity {
         public ViewPager viewPager;
         public final Type type;
         public Account user;
+        private View rootView;
 
         public PlaceholderFragment(Type type) {
             this.type = type;
