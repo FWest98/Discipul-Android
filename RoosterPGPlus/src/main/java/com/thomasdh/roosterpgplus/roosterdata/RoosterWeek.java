@@ -3,6 +3,9 @@ package com.thomasdh.roosterpgplus.roosterdata;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.thomasdh.roosterpgplus.Lesuur;
 
 import org.json.JSONArray;
@@ -21,12 +24,6 @@ import java.util.Calendar;
 public class RoosterWeek implements Serializable {
 
     public static final int MAANDAG = 2;
-    public static final int DINSDAG = 3;
-    public static final int WOENSDAG = 4;
-    public static final int DONDERDAG = 5;
-    public static final int VRIJDAG = 6;
-    public static final int ZATERDAG = 7;
-    public static final int ZONDAG = 1;
     private static final long serialVersionUID = 1029472134713472957L;
     private Lesuur[][][] uren;
 
@@ -53,7 +50,7 @@ public class RoosterWeek implements Serializable {
         }
     }
 
-    public static String getDayOfWeek(int x) {
+    private static String getDayOfWeek(int x) {
         switch (x) {
             case Calendar.SUNDAY:
                 return "zondag";
@@ -88,7 +85,11 @@ public class RoosterWeek implements Serializable {
             return roosterWeek;
         } catch (Exception e) {
             Log.e("MainActivity", "Kon het rooster niet laden", e);
-            e.printStackTrace();
+            EasyTracker easyTracker = EasyTracker.getInstance(context);
+            easyTracker.send(MapBuilder.createException(
+                    new StandardExceptionParser(context, null)
+                            .getDescription(Thread.currentThread().getName(), e), true).build()
+            );
         }
         return null;
     }

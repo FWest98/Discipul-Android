@@ -4,27 +4,28 @@
     android:layout_width="match_parent"
     android:layout_height="80dp"
     android:layout_margin="3dp"
-    android:paddingLeft="7dp"
-    android:paddingTop="3dp"
-    android:paddingRight="10dp"
     android:background="@drawable/basic_rect_nobottom"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingLeft="7dp"
+    android:paddingRight="10dp"
+    android:paddingTop="3dp">
 
     <ImageView
+        android:id="@+id/layers"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/layers"
         android:layout_alignParentRight="true"
         android:layout_margin="5dp"
-        android:id="@+id/layers"
-        android:visibility="gone"/>
+        android:contentDescription="@string/rooster_dubbel_uur"
+        android:src="@drawable/layers"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/rooster_vak"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
-        android:text="Vak"
+        android:text="@string/rooster_vak"
         android:textSize="20sp" />
 
     <TextView
@@ -33,7 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/rooster_vak"
         android:layout_marginLeft="3dp"
-        android:text="Lokaal"
+        android:text="@string/rooster_lokaal"
         android:textSize="15sp" />
 
     <TextView
@@ -42,8 +43,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_below="@id/rooster_vak"
-        android:text="Leraar"
         android:layout_marginRight="3dp"
+        android:text="@string/rooster_leraar"
         android:textSize="15sp" />
 
 
@@ -53,7 +54,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/rooster_lokaal"
         android:layout_margin="3dp"
-        android:text="Tijden"
+        android:text="@string/rooster_tijden"
         android:textSize="15sp" />
 
 </RelativeLayout>

@@ -45,12 +45,12 @@ import java.util.Calendar;
 
 public class MainActivity extends ActionBarActivity {
 
-    public static WeakReference<MenuItem> refreshItem;
-    public static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
-    public static ActionBar actionBar;
-    public static int selectedWeek = -1;
-    public ActionBarDrawerToggle actionBarDrawerToggle;
-    public PlaceholderFragment mainFragment;
+    private static WeakReference<MenuItem> refreshItem;
+    private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
+    private static ActionBar actionBar;
+    private static int selectedWeek = -1;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
+    private PlaceholderFragment mainFragment;
 
     @Override
     protected void onStop() {
@@ -139,7 +139,6 @@ public class MainActivity extends ActionBarActivity {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
         actionBarDrawerToggle.syncState();
-        // new Notify(this);
     }
 
     @Override
@@ -178,9 +177,9 @@ public class MainActivity extends ActionBarActivity {
     public static class PlaceholderFragment extends Fragment {
 
         public static String leraarLerlingselected;
-        private View rootView;
         public ViewPager viewPager;
-        public Type type;
+        public final Type type;
+        private View rootView;
 
         public PlaceholderFragment(Type type) {
             this.type = type;
@@ -393,8 +392,7 @@ public class MainActivity extends ActionBarActivity {
             final ArrayList<String> strings = new ArrayList<String>();
             if (wekenArray == null) {
                 strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-            }
-            if (wekenArray != null) {
+            } else {
 
                 //Get the index of the current week
                 int indexCurrentWeek = 0;

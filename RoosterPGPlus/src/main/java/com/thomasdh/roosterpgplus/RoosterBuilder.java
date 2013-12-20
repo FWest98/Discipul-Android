@@ -27,22 +27,21 @@ import java.util.Iterator;
 /**
  * Created by Thomas on 2-12-13.
  */
-public class RoosterBuilder {
+class RoosterBuilder {
 
-    public WeakReference<Context> context;
-    public WeakReference<ViewPager> viewPager;
-    public WeakReference<View> rootView;
-    private int week;
+    private final WeakReference<Context> context;
+    private final WeakReference<ViewPager> viewPager;
+    private final int week;
 
 
     public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
-        this.rootView = new WeakReference<View>(rootView);
+        WeakReference<View> rootView1 = new WeakReference<View>(rootView);
         this.week = week;
     }
 
-    public static String getTijden(int x) {
+    private static String getTijden(int x) {
         switch (x) {
             case 0:
                 return "8:30 - 9:30";
@@ -62,7 +61,7 @@ public class RoosterBuilder {
         return "Foute tijd";
     }
 
-    public static String getDayOfWeek(int x) {
+    private static String getDayOfWeek(int x) {
         switch (x) {
             case Calendar.SUNDAY:
                 return "zondag";
@@ -281,8 +280,7 @@ public class RoosterBuilder {
 
     float convertDPToPX(float pixel, Context c) {
         Resources r = c.getResources();
-        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, r.getDisplayMetrics());
-        return px;
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, r.getDisplayMetrics());
     }
 
     View makeView(Lesuur lesuur, LayoutInflater inflater, int y) {

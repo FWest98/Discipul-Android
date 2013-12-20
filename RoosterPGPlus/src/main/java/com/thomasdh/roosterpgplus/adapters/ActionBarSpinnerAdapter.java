@@ -1,8 +1,6 @@
 package com.thomasdh.roosterpgplus.adapters;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,17 +10,16 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.R;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.MissingFormatArgumentException;
 
 public class ActionBarSpinnerAdapter implements SpinnerAdapter {
-    static public TextView andereWeekTextView;
-    private Context context;
-    private List<String> data;
+    private final WeakReference<Context> context;
+    private final List<String> data;
 
 
     public ActionBarSpinnerAdapter(Context context, List<String> data) {
-        this.context = context;
+        this.context = new WeakReference<Context>(context);
         this.data = data;
     }
 
@@ -67,8 +64,8 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        if (convertView == null && context.get() != null) {
+            LayoutInflater vi = (LayoutInflater) context.get().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = vi.inflate(android.R.layout.simple_spinner_dropdown_item, parent, false);
         }
         ((TextView) convertView).setText(data.get(position));
@@ -78,9 +75,12 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View view = View.inflate(context, R.layout.action_bar_list_view, null);
-        ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
-        return view;
+        if (context.get() != null) {
+            View view = View.inflate(context.get(), R.layout.action_bar_list_view, null);
+            ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
+            return view;
+        }
+        return null;
     }
 
     @Override
