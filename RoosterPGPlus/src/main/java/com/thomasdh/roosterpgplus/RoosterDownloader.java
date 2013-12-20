@@ -31,13 +31,13 @@ import java.util.Scanner;
 /**
  * Created by Thomas on 27-11-13.
  */
-public class RoosterDownloader extends AsyncTask<String, Void, String> {
+class RoosterDownloader extends AsyncTask<String, Void, String> {
 
-    public WeakReference<Context> context;
-    public WeakReference<View> rootView;
-    public boolean forceReload;
-    public MenuItem menuItem;
-    MainActivity.PlaceholderFragment.Type type;
+    private final WeakReference<Context> context;
+    private WeakReference<View> rootView;
+    private final boolean forceReload;
+    private MenuItem menuItem;
+    private MainActivity.PlaceholderFragment.Type type;
     private int week;
     private ViewPager viewPager;
     private String klas;

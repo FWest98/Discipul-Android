@@ -12,7 +12,7 @@ public class Lesuur implements Serializable{
 
     private static final long serialVersionUID = 7526472295622776147L;
 
-    public String unique;
+    private String unique;
     public int dag;
     public int uur;
     public int week;
@@ -23,12 +23,11 @@ public class Lesuur implements Serializable{
     public String lokaal;
     public boolean verandering;
     public boolean vervallen;
-    public String huiswerk;
-    public int bijlage_id;
-    public boolean so;
-    public boolean pw;
-    public boolean master;
-    public int bijzonder;
+    private String huiswerk;
+    private boolean so;
+    private boolean pw;
+    private boolean master;
+    private int bijzonder;
 
     public Lesuur(JSONObject JSON) {
         try {
@@ -66,7 +65,7 @@ public class Lesuur implements Serializable{
         this.verandering = false;
         this.vervallen = vervallen;
         this.huiswerk = null;
-        this.bijlage_id = 0;
+        int bijlage_id = 0;
         this.so = false;
         this.pw = false;
         this.master = false;

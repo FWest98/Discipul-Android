@@ -5,7 +5,6 @@ import android.util.Log;
 import com.thomasdh.roosterpgplus.Settings;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -28,7 +27,7 @@ public class RoosterInfoDownloader {
 
 
     /* Lerarendownloader */
-    static public ArrayList<Vak> getLeraren() throws ClientProtocolException, IOException, JSONException {
+    static public ArrayList<Vak> getLeraren() throws IOException, JSONException {
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet get = new HttpGet(Settings.API_Base_URL + "rooster/info?leraren");
         HttpResponse response = httpClient.execute(get);
@@ -157,7 +156,7 @@ public class RoosterInfoDownloader {
         return getWeken(false, numberOfWeeks);
     }
 
-    static public ArrayList<Week> getWeken(boolean AllWeeks, int numberOfWeeks) throws IOException, JSONException {
+    private static ArrayList<Week> getWeken(boolean AllWeeks, int numberOfWeeks) throws IOException, JSONException {
 
         if (numberOfWeeks == 0)
             numberOfWeeks = 1000;
@@ -191,8 +190,8 @@ public class RoosterInfoDownloader {
     }
 
     public static class Leraar {
-        public String korteNaam;
-        public String naam;
+        public final String korteNaam;
+        public final String naam;
 
         public Leraar(String korteNaam, String naam) {
             this.naam = naam;
@@ -201,8 +200,8 @@ public class RoosterInfoDownloader {
     }
 
     public static class Vak {
-        public String naam;
-        public ArrayList<Leraar> leraren;
+        public final String naam;
+        public final ArrayList<Leraar> leraren;
 
         public Vak(String naam) {
             this.naam = naam;
@@ -212,8 +211,8 @@ public class RoosterInfoDownloader {
 
     public static class Week implements Serializable {
         private static final long serialVersionUID = 102947213471347253L;
-        public int week;
-        public boolean vakantieweek;
+        public final int week;
+        public final boolean vakantieweek;
 
         public Week(int week, boolean vakantieweek) {
             this.week = week;

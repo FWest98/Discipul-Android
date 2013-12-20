@@ -21,10 +21,10 @@ import java.util.List;
  */
 public class PreferencesActivity extends PreferenceActivity {
 
-    static PreferenceListener2 preferenceListener;
+    private static PreferenceListener2 preferenceListener;
     private Account user2;
     final private Account user = user2;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,7 +107,7 @@ public class PreferencesActivity extends PreferenceActivity {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class InfoFragment extends PreferenceFragment {
+    private static class InfoFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -185,7 +185,7 @@ public class PreferencesActivity extends PreferenceActivity {
         }
     }
 
-    public class PreferenceListener2 implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private class PreferenceListener2 implements SharedPreferences.OnSharedPreferenceChangeListener {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             findPreference("mijn_account").setSummary(

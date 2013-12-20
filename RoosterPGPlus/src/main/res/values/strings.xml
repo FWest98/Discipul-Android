@@ -6,10 +6,32 @@
     <string name="drawer_close">Sluit</string>
     <string name="drawer_open">Open</string>
 
+    <string name="placeholder_text">Dit is een tekst.</string>
+
     <array name="dropdown">
         <item>Dag</item>
         <item>Week</item>
     </array>
+
+    <string name="menu_refresh">Refresh</string>
+
+    <string name="action_bar_dropdown_week">Week</string>
+    <string name="action_bar_dropdown_persoonlijk_rooster"> - Persoonlijk rooster</string>
+    <string name="action_bar_dropdown_klassenrooster"> - Klassenrooster</string>
+    <string name="action_bar_dropdown_docentenrooster"> - Docentenrooster</string>
+
+    <string name="persoonlijk_rooster">Persoonlijk rooster</string>
+    <string name="klassenrooster">Klassenrooster</string>
+    <string name="docentenrooster">Docentenrooster</string>
+
+    <string name="rooster_dubbel_uur">Dubbel uur</string>
+    <string name="rooster_weekdag">Weekdag</string>
+    <string name="rooster_datum">Datum</string>
+    <string name="rooster_vak">Vak</string>
+    <string name="rooster_lokaal">Lokaal</string>
+    <string name="rooster_leraar">Leraar</string>
+    <string name="rooster_vervallen">Vervallen</string>
+    <string name="rooster_tijden">Tijden</string>
 
     <string name="logindialog_title">Log in</string>
     <string name="logindialog_tabs_userpass">RoosterPG+</string>
@@ -37,4 +59,6 @@
     <string name="registerdialog_repass_hint">Wachtwoord (bevestiging)</string>
     <string name="extenddialog_text">Upgrade je leerlingaccount</string>
     <string name="extenddialog_extendbutton">Upgrade</string>
+
+
 </resources>

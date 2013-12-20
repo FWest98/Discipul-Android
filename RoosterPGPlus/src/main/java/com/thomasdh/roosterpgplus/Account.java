@@ -153,7 +153,7 @@ public class Account {
                 //Controleer of het apparaat een internetverbinding heeft
                 ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo netInfo = cm.getActiveNetworkInfo();
-                if (netInfo == null && !netInfo.isConnectedOrConnecting()) {
+                if (netInfo == null || !netInfo.isConnectedOrConnecting()) {
                     return "error:De app kon geen verbinding maken met het internet";
                 }
 
@@ -247,6 +247,7 @@ public class Account {
     private void login(String gebruikersnaam, String wachtwoord) {
         login(gebruikersnaam, wachtwoord, false);
     }
+
     private void login(String gebruikersnaam, String wachtwoord, final boolean laadRooster) {
         new AsyncTask<String, Void, String>() {
             @Override
@@ -328,6 +329,7 @@ public class Account {
     private void register() {
         register(false);
     }
+
     private void register(final boolean laadRooster) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(context);
         final LayoutInflater inflater = LayoutInflater.from(context);
@@ -360,19 +362,19 @@ public class Account {
                 final EditText llnr = (EditText) dialogView.findViewById(R.id.registerdialog_llnr);
                 final EditText email = (EditText) dialogView.findViewById(R.id.registerdialog_email);
                 username.requestFocus();
-                if(username.getText().toString().equals("")) {
+                if (username.getText().toString().equals("")) {
                     Toast.makeText(context, "Gebruikersnaam is verplicht!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(password.getText().toString().equals("")) {
+                if (password.getText().toString().equals("")) {
                     Toast.makeText(context, "Wachtwoord is verplicht!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(!password.getText().toString().equals(repass.getText().toString())) {
+                if (!password.getText().toString().equals(repass.getText().toString())) {
                     Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText().toString() + "  " + repass.getText().toString(), Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(llnr.getText().toString().equals("")) {
+                if (llnr.getText().toString().equals("")) {
                     Toast.makeText(context, "Leerlingnummer is verplicht!", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -402,7 +404,7 @@ public class Account {
                     postParameters.add(new BasicNameValuePair("password", params[1]));
                     postParameters.add(new BasicNameValuePair("llnr", Integer.toString(llnr)));
                     postParameters.add(new BasicNameValuePair("email", params[2]));
-                    if(force) {
+                    if (force) {
                         postParameters.add(new BasicNameValuePair("force", "true"));
                     }
                     UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
@@ -411,7 +413,7 @@ public class Account {
                     HttpResponse response = httpClient.execute(httpPost);
                     int status = response.getStatusLine().getStatusCode();
 
-                    switch(status) {
+                    switch (status) {
                         case 204:
                             return "duplicate";
                         case 500:
@@ -433,12 +435,12 @@ public class Account {
 
             @Override
             protected void onPostExecute(String s) {
-                Log.e(this.getClass().getName(), "The string is: "+s);
-                if(s.startsWith("error:")) {
+                Log.e(this.getClass().getName(), "The string is: " + s);
+                if (s.startsWith("error:")) {
                     Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
-                } else if(s.equals("conflict")) {
+                } else if (s.equals("conflict")) {
                     Toast.makeText(context, "Deze gebruikersnaam is al in gebruik", Toast.LENGTH_LONG).show();
-                } else if(s.equals("duplicate")) {
+                } else if (s.equals("duplicate")) {
                     final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
                     dialog.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
                     dialog.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
@@ -448,12 +450,12 @@ public class Account {
                             register(username, password, llnr, email, laadRooster, true);
                         }
                     })
-                    .setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // nothing
-                        }
-                    });
+                            .setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // nothing
+                                }
+                            });
                     dialog.show();
                 } else {
                     hideRegisterDialog();
