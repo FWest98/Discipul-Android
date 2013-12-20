@@ -22,6 +22,8 @@ import java.util.List;
 public class PreferencesActivity extends PreferenceActivity {
 
     static PreferenceListener2 preferenceListener;
+    private Account user2;
+    final private Account user = user2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,8 @@ public class PreferencesActivity extends PreferenceActivity {
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
         }
+
+        this.user2 = new Account(this);
     }
 
     @Override
@@ -57,14 +61,14 @@ public class PreferencesActivity extends PreferenceActivity {
         if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment")) {
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
             findPreference("mijn_account").setSummary(
-                    "Naam: " + PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("naam", "-") + ", " +
-                            "Klas: " + PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("klas", "-")
+                    "Naam: " + user.name + ", " +
+                            "Klas: " + user.klas
             );
 
             findPreference("log_in").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    new LoginDialogClass(getApplicationContext(), null, null).showLoginDialog();
+                    user.showLoginDialog();
                     return true;
                 }
             });
@@ -120,12 +124,14 @@ public class PreferencesActivity extends PreferenceActivity {
     public static class UserFragment extends PreferenceFragment {
 
         public PreferenceListener preferenceListener;
+        private Account user;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_user);
             preferenceListener = new PreferenceListener();
+            this.user = new Account(getActivity());
         }
 
         @Override
@@ -133,14 +139,14 @@ public class PreferencesActivity extends PreferenceActivity {
             super.onResume();
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
             findPreference("mijn_account").setSummary(
-                    "Naam: " + PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("naam", "-") + ", " +
-                            "Klas: " + PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("klas", "-")
+                    "Naam: " + user.name + ", " +
+                            "Klas: " + user.klas
             );
 
             findPreference("log_in").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    new LoginDialogClass(getActivity(), null, null).showLoginDialog();
+                    user.showLoginDialog();
                     return true;
                 }
             });
@@ -172,8 +178,8 @@ public class PreferencesActivity extends PreferenceActivity {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                 findPreference("mijn_account").setSummary(
-                        "Naam: " + PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("naam", "-") + ", " +
-                                "Klas: " + PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("klas", "-")
+                        "Naam: " + user.name + ", " +
+                                "Klas: " + user.klas
                 );
             }
         }
@@ -183,8 +189,8 @@ public class PreferencesActivity extends PreferenceActivity {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             findPreference("mijn_account").setSummary(
-                    "Naam: " + PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("naam", "-") + ", " +
-                            "Klas: " + PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("klas", "-")
+                    "Naam: " + user.name + ", " +
+                            "Klas: " + user.klas
             );
         }
     }

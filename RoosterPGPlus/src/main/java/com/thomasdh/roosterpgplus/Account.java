@@ -34,20 +34,107 @@ import java.util.Scanner;
 /**
  * Created by Thomas on 3-12-13.
  */
-public class LoginDialogClass {
+public class Account {
 
     private Context context;
     private AlertDialog LoginDialog;
     private AlertDialog RegisterDialog;
-    private View rootView;
+    private AlertDialog ExtendDialog;
     private MainActivity.PlaceholderFragment mainFragment;
 
-    public LoginDialogClass(Context context, View rootView, MainActivity.PlaceholderFragment mainFragment) {
+    public Boolean isSet;
+    public String name;
+    public String apikey;
+    public String klas;
+    public Boolean vertegenwoordiger;
+    public Boolean isAppAccount;
+    public UserTypes userType;
+    public String code;
+
+    public Account(Context context) {
         this.context = context;
-        this.rootView = rootView;
-        this.mainFragment = mainFragment;
+        this.mainFragment = null;
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
+        if(preferences.getString("key", null) == null) {
+            this.isSet = false;
+        } else {
+            this.isSet = true;
+            this.name = preferences.getString("naam", null);
+            this.apikey = preferences.getString("key", null);
+            if(preferences.getString("code", null) == null) {
+                this.userType = UserTypes.LEERLING;
+                this.klas = preferences.getString("klas", null);
+                this.vertegenwoordiger = preferences.getBoolean("vertegenwoordiger", false);
+            } else {
+                this.userType = UserTypes.LERAAR;
+                this.code = preferences.getString("code", null);
+            }
+
+            this.isAppAccount = preferences.getBoolean("appaccount", true);
+        }
     }
 
+    public Account(Context context, MainActivity.PlaceholderFragment mainFragment) {
+        this.context = context;
+        this.mainFragment = mainFragment;
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
+        if(preferences.getString("key", null) == null) {
+            this.isSet = false;
+        } else {
+            this.isSet = true;
+            this.name = preferences.getString("naam", null);
+            this.apikey = preferences.getString("key", null);
+            if(preferences.getString("code", null) == null) {
+                this.userType = UserTypes.LEERLING;
+                this.klas = preferences.getString("klas", null);
+                this.vertegenwoordiger = preferences.getBoolean("vertegenwoordiger", false);
+            } else {
+                this.userType = UserTypes.LERAAR;
+                this.code = preferences.getString("code", null);
+            }
+
+            this.isAppAccount = preferences.getBoolean("appaccount", true);
+        }
+    }
+
+
+    //region JSON-verwerking
+
+    final public Account JSON_InitializeAccount(String s) throws JSONException {
+        try {
+            JSONObject object = new JSONObject(s);
+            SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
+            e.putString("key", object.getString("key"));
+            this.apikey = object.getString("key");
+            System.out.println("The key: " + object.getString("key"));
+            e.putString("naam", object.getString("naam"));
+            this.name = object.getString("naam");
+            if (object.has("klas")) {
+                this.userType = UserTypes.LEERLING;
+                e.putString("klas", object.getString("klas"));
+                this.klas = object.getString("klas");
+                e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
+                this.vertegenwoordiger = object.getBoolean("vertegenwoordiger");
+            } else {
+                this.userType = UserTypes.LERAAR;
+                e.putString("code", object.getString("code"));
+                this.code = object.getString("code");
+            }
+            e.putBoolean("appaccount", object.getBoolean("app_user"));
+            this.isAppAccount = object.getBoolean("app_user");
+            e.commit();
+
+            return this;
+        } catch (JSONException e) {
+            throw e;
+        }
+    }
+
+    //endregion
+
+    //region Login
     /**
      * Inloggen met leerlingnummer
      */
@@ -139,21 +226,10 @@ public class LoginDialogClass {
                         s = s.substring(4);
                     }
                     try {
-                        JSONObject object = new JSONObject(s);
-                        SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
-                        e.putString("key", object.getString("key"));
-                        System.out.println("The key: " + object.getString("key"));
-                        e.putString("naam", object.getString("naam"));
-                        if (object.has("klas")) {
-                            e.putString("klas", object.getString("klas"));
-                            e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
-                        } else {
-                            e.putString("code", object.getString("code"));
-                        }
-                        e.commit();
-                        Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+                        Account account = JSON_InitializeAccount(s);
+                        Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
                         //Laad het rooster als de boolean true is
-                        if (laadRooster) {
+                        if (laadRooster && mainFragment != null) {
                             mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
                         }
                     } catch (JSONException e) {
@@ -220,24 +296,13 @@ public class LoginDialogClass {
                     Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
                 } else {
                     try {
-                        JSONObject jsonObject = new JSONObject(s);
-                        SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
-                        e.putString("key", jsonObject.getString("key"));
-                        System.out.println("The key: " + jsonObject.getString("key"));
-                        e.putString("naam", jsonObject.getString("naam"));
-                        if (jsonObject.has("klas")) {
-                            e.putString("klas", jsonObject.getString("klas"));
-                            e.putBoolean("vertegenwoordiger", jsonObject.getBoolean("vertegenwoordiger"));
-                        } else {
-                            e.putString("code", jsonObject.getString("code"));
-                        }
-                        e.commit();
-                        Toast.makeText(context, "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+                        Account account = JSON_InitializeAccount(s);
+                        Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
 
                         LoginDialog.dismiss();
 
                         //Laad het rooster
-                        if (laadRooster) {
+                        if (laadRooster && mainFragment != null) {
                             mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
                         }
 
@@ -251,8 +316,8 @@ public class LoginDialogClass {
             }
         }.execute(gebruikersnaam, wachtwoord);
     }
-
-
+    //endregion
+    //region Registreren
     /**
      * Registreren
      */
@@ -394,21 +459,10 @@ public class LoginDialogClass {
                     hideRegisterDialog();
                     hideLoginDialog();
                     try {
-                        JSONObject object = new JSONObject(s);
-                        SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
-                        e.putString("key", object.getString("key"));
-                        System.out.println("The key: " + object.getString("key"));
-                        e.putString("naam", object.getString("klas"));
-                        if (object.has("klas")) {
-                            e.putString("klas", object.getString("klas"));
-                            e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
-                        } else {
-                            e.putString("code", object.getString("code"));
-                        }
-                        e.commit();
-                        Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+                        Account account = JSON_InitializeAccount(s);
+                        Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
                         //Laad het rooster als de boolean true is
-                        if (laadRooster) {
+                        if (laadRooster && mainFragment != null) {
                             mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
                         }
                     } catch (JSONException e) {
@@ -419,9 +473,8 @@ public class LoginDialogClass {
             }
         }.execute(username, password, email);
     }
-
-
-
+    //endregion
+    //region Logindialogs
     /**
      * Dialogstuff
      */
@@ -500,5 +553,137 @@ public class LoginDialogClass {
 
             }
         });
+    }
+    //endregion
+
+    //region User_Extend
+
+    /**
+     * App_account uitbreiden
+     */
+    private void hideExtendDialog() {
+        ExtendDialog.dismiss();
+    }
+
+    public void extend() throws Exception {
+        if(this.isAppAccount) {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            final LayoutInflater inflater = LayoutInflater.from(context);
+            final View dialogView = inflater.inflate(R.layout.extenddialog, null);
+
+            builder.setTitle("Upgrade account");
+            builder.setView(dialogView)
+                    .setPositiveButton(R.string.extenddialog_extendbutton, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    .setNegativeButton(R.string.registerdialog_cancelbutton, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+
+            ExtendDialog = builder.create();
+            ExtendDialog.show();
+            ExtendDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final EditText username = (EditText) dialogView.findViewById(R.id.extenddialog_username);
+                    final EditText password = (EditText) dialogView.findViewById(R.id.extenddialog_password);
+                    final EditText repass = (EditText) dialogView.findViewById(R.id.extenddialog_passwordcheck);
+                    final EditText email = (EditText) dialogView.findViewById(R.id.extenddialog_email);
+                    username.requestFocus();
+
+                    if(username.getText().toString().equals("")) {
+                        Toast.makeText(context, "Gebruikersnaam is verplicht!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if(password.getText().toString().equals("")) {
+                        Toast.makeText(context, "Wachtwoord is verplicht!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if(!password.getText().toString().equals(repass.getText().toString())) {
+                        Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText().toString() + "  " + repass.getText().toString(), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    try {
+                        extend(username.getText().toString(), password.getText().toString(), email.getText().toString());
+                    } catch(Exception e) {
+                        Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } else {
+            throw new Exception("Is al geen appaccount meer");
+        }
+    }
+
+    public void extend(final String username, final String password, final String email) throws Exception {
+        if(this.isAppAccount) {
+            new AsyncTask<String, Void, String>() {
+                @Override
+                protected String doInBackground(String... params) {
+                    HttpClient httpClient = new DefaultHttpClient();
+                    HttpPost httpPost = new HttpPost(Settings.API_Base_URL + "account/register.php?extend");
+                    String s;
+                    try {
+                        List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+                        postParameters.add(new BasicNameValuePair("key", params[0]));
+                        postParameters.add(new BasicNameValuePair("username", params[1]));
+                        postParameters.add(new BasicNameValuePair("password", params[2]));
+                        if(!email.equals("")) {
+                            postParameters.add(new BasicNameValuePair("email", email));
+                        }
+
+                        UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
+                        httpPost.setEntity(form);
+
+                        HttpResponse response = httpClient.execute(httpPost);
+                        int status = response.getStatusLine().getStatusCode();
+
+                        switch(status) {
+                            case 409:
+                                return "conflict";
+                            case 400:
+                                return "error:Er mist een veld";
+                            case 500:
+                                return "error:Serverfout";
+                            case 200:
+                                return new Scanner(response.getEntity().getContent()).nextLine();
+                            default:
+                                return "error:Onbekende fout";
+                        }
+                    } catch (Exception e) {
+                        s = "error:"+e.toString();
+                    }
+                    return s;
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    Log.e(this.getClass().getName(), "The string is:"+s);
+                    if(s.startsWith("error:")) {
+                        Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
+                    } else if(s.equals("conflict")) {
+                        Toast.makeText(context, "Deze gebruikersnaam is al in gebruik", Toast.LENGTH_LONG).show();
+                    } else {
+                        hideExtendDialog();
+                        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("appaccount", false).commit();
+                        super.onPostExecute(s);
+                    }
+                }
+            }.execute(this.apikey, username, password);
+        } else {
+            throw new Exception("Je bent al geüpgrade");
+        }
+    }
+
+    //endregion
+
+    public enum UserTypes {
+        LERAAR,
+        LEERLING
     }
 }

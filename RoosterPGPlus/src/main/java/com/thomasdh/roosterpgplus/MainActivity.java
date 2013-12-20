@@ -51,6 +51,7 @@ public class MainActivity extends ActionBarActivity {
     public static int selectedWeek = -1;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     public PlaceholderFragment mainFragment;
+    private Account user;
 
     @Override
     protected void onStop() {
@@ -132,6 +133,9 @@ public class MainActivity extends ActionBarActivity {
         //Voeg beide toe
         getSupportActionBar().setListNavigationCallbacks(actionBarSpinnerAdapter, onNavigationListener);
 
+
+        /** Aanmaken User */
+        this.user = new Account(this, mainFragment);
     }
 
     @Override
@@ -181,6 +185,7 @@ public class MainActivity extends ActionBarActivity {
         private View rootView;
         public ViewPager viewPager;
         public Type type;
+        public Account user;
 
         public PlaceholderFragment(Type type) {
             this.type = type;
@@ -189,14 +194,15 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+            /** Aanmaken User */
+            this.user = new Account(getActivity(), this);
             if (type == Type.PERSOONLIJK_ROOSTER) {
                 setRootView(inflater.inflate(R.layout.fragment_main, container, false));
                 viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager);
                 viewPager.setAdapter(new MyPagerAdapter());
 
-                if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
-                    //Laat de gebruiker inloggen -> wel rooster laden daarna
-                    new LoginDialogClass(getActivity(), getRootView(), this).showLoginDialog(true);
+                if(!this.user.isSet) {
+                    this.user.showLoginDialog(true);
                 }
 
                 Tracker easyTracker = EasyTracker.getInstance(getActivity());
