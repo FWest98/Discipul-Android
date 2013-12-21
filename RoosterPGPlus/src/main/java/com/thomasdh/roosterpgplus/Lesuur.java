@@ -3,11 +3,16 @@ package com.thomasdh.roosterpgplus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 /**
  * Created by Floris on 3-12-13.
  */
-public class Lesuur {
-    public String unique;
+public class Lesuur implements Serializable{
+
+    private static final long serialVersionUID = 7526472295622776147L;
+
+    private String unique;
     public int dag;
     public int uur;
     public int week;
@@ -18,12 +23,11 @@ public class Lesuur {
     public String lokaal;
     public boolean verandering;
     public boolean vervallen;
-    public String huiswerk;
-    public int bijlage_id;
-    public boolean so;
-    public boolean pw;
-    public boolean master;
-    public int bijzonder;
+    private String huiswerk;
+    private boolean so;
+    private boolean pw;
+    private boolean master;
+    private int bijzonder;
 
     public Lesuur(JSONObject JSON) {
         try {
@@ -39,7 +43,7 @@ public class Lesuur {
             this.verandering = JSON.getInt("verandering") == 1;
             this.vervallen = JSON.getInt("vervallen") == 1;
             this.huiswerk = JSON.getString("huiswerk");
-            this.bijlage_id = JSON.getInt("bijlage-id");
+            //this.bijlage_id = JSON.getInt("bijlage-id");
             this.so = JSON.getInt("so") == 1;
             this.pw = JSON.getInt("pw") == 1;
             this.master = JSON.getInt("master") == 1;
@@ -48,7 +52,7 @@ public class Lesuur {
             e.printStackTrace();
         }
     }
-    public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal) {
+    public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen) {
         this.unique = klas+dag+uur+week;
         this.dag = dag;
         this.uur = uur;
@@ -59,9 +63,9 @@ public class Lesuur {
         this.vak = vak;
         this.lokaal = lokaal;
         this.verandering = false;
-        this.vervallen = false;
+        this.vervallen = vervallen;
         this.huiswerk = null;
-        this.bijlage_id = 0;
+        int bijlage_id = 0;
         this.so = false;
         this.pw = false;
         this.master = false;

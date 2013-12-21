@@ -1,7 +1,10 @@
 package com.thomasdh.roosterpgplus;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -16,34 +19,50 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.Spinner;
+import android.widget.TextView;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.Fields;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.StandardExceptionParser;
+import com.google.analytics.tracking.android.Tracker;
+import com.thomasdh.roosterpgplus.adapters.ActionBarSpinnerAdapter;
+import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
+import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
+import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
 
-import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Scanner;
 
 public class MainActivity extends ActionBarActivity {
 
-    public static MenuItem refreshItem;
-    public static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
-    public static ActionBar actionBar;
+    private static WeakReference<MenuItem> refreshItem;
+    private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
+    private static ActionBar actionBar;
     private static int selectedWeek = -1;
-    public ActionBarDrawerToggle actionBarDrawerToggle;
-    public PlaceholderFragment mainFragment;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
+    private PlaceholderFragment mainFragment;
+    private Account user;
+
+    @Override
+    protected void onStop() {
+        Tracker easyTracker = EasyTracker.getInstance(this);
+        easyTracker.set(Fields.SCREEN_NAME, null);
+        easyTracker.send(MapBuilder
+                .createAppView()
+                .build()
+        );
+        super.onStop();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +71,7 @@ public class MainActivity extends ActionBarActivity {
 
         actionBar = getSupportActionBar();
 
-        mainFragment = new PlaceholderFragment();
-
+        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, mainFragment)
@@ -61,7 +79,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // Maak de navigation drawer
-        String[] keuzes = {"Persoonlijk rooster", "Andere roosters"};
+        String[] keuzes = {"Persoonlijk rooster", "Klassenrooster", "Docentenrooster"};
 
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerlayout);
 
@@ -71,15 +89,23 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
-                    mainFragment = new PlaceholderFragment();
+                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
                     android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
-                            .replace(R.id.main_linearlayout, mainFragment, "Main_Fragment")
+                            .replace(R.id.container, mainFragment, "Persoonlijk roosterFragment")
                             .commit();
-                    //TODO reload rooster (dus gewoon opnieuw de view aanmaken?)
                 } else if (position == 1) {
-                    //TODO Ander rooster
-                    Toast.makeText(getApplicationContext(), "Deze functie is nog niet geïmplementeerd", Toast.LENGTH_SHORT).show();
+                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.KLASROOSTER);
+                    android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.container, mainFragment, "LeerlingroosterFragment")
+                            .commit();
+                } else if (position == 2) {
+                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.DOCENTENROOSTER);
+                    android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.container, mainFragment, "DocentenroosterFragment")
+                            .commit();
                 }
                 drawerLayout.closeDrawer(drawerList);
             }
@@ -89,8 +115,10 @@ public class MainActivity extends ActionBarActivity {
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Schakel List navigatie in
+
         getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
         ActionBar.OnNavigationListener onNavigationListener = new
@@ -101,11 +129,13 @@ public class MainActivity extends ActionBarActivity {
                         return false;
                     }
                 };
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>());
+        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>(), PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
         //Voeg beide toe
-        actionBarSpinnerAdapter.addItem("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         getSupportActionBar().setListNavigationCallbacks(actionBarSpinnerAdapter, onNavigationListener);
 
+
+        /** Aanmaken User */
+        this.user = new Account(this, mainFragment);
     }
 
     @Override
@@ -113,7 +143,6 @@ public class MainActivity extends ActionBarActivity {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
         actionBarDrawerToggle.syncState();
-        // new Notify(this);
     }
 
     @Override
@@ -126,6 +155,7 @@ public class MainActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        refreshItem = new WeakReference<MenuItem>(menu.findItem(R.id.menu_item_refresh));
         return true;
     }
 
@@ -136,9 +166,13 @@ public class MainActivity extends ActionBarActivity {
         }
         switch (item.getItemId()) {
             case R.id.action_settings:
+                Intent optiesIntent = new Intent(this, PreferencesActivity.class);
+                startActivity(optiesIntent);
                 return true;
             case R.id.menu_item_refresh:
-                new RoosterDownloader(this, mainFragment.rootView, true, item, selectedWeek).execute();
+                if (mainFragment.type == PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
+                    new RoosterDownloader(this, mainFragment.getRootView(), true, item, selectedWeek).execute();
+                }
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -146,161 +180,298 @@ public class MainActivity extends ActionBarActivity {
 
     public static class PlaceholderFragment extends Fragment {
 
-        public View rootView;
+        public static String leraarLerlingselected;
+        public ViewPager viewPager;
+        public final Type type;
+        public Account user;
+        private View rootView;
 
-        public PlaceholderFragment() {
+        public PlaceholderFragment(Type type) {
+            this.type = type;
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            /** Aanmaken User */
+            this.user = new Account(getActivity(), this);
+            if (type == Type.PERSOONLIJK_ROOSTER) {
+                setRootView(inflater.inflate(R.layout.fragment_main, container, false));
+                viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager);
+                viewPager.setAdapter(new MyPagerAdapter());
 
-            ViewPager viewPager = (ViewPager) rootView.findViewById(R.id.viewPager);
-            viewPager.setAdapter(new MyPagerAdapter());
+                if(!this.user.isSet) {
+                    this.user.showLoginDialog(true);
+                }
+
+                Tracker easyTracker = EasyTracker.getInstance(getActivity());
+                easyTracker.set(Fields.SCREEN_NAME, "Persoonlijk Rooster");
+                easyTracker.send(MapBuilder
+                        .createAppView()
+                        .build()
+                );
+
+            } else if (type == Type.DOCENTENROOSTER) {
+                setRootView(inflater.inflate(R.layout.fragment_main_docenten, container, false));
+                viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_docent);
+                viewPager.setAdapter(new MyPagerAdapter());
+
+                new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Vak>>() {
+                    @Override
+                    protected ArrayList<RoosterInfoDownloader.Vak> doInBackground(Void... params) {
+                        ArrayList<RoosterInfoDownloader.Vak> leraren;
+                        try {
+                            leraren = RoosterInfoDownloader.getLeraren();
+                        } catch (Exception e) {
+                            Log.e("MainActivity", "Er ging iets mis bij het ophalen van de leraren", e);
+                            EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                            easyTracker.send(MapBuilder
+                                    .createException(new StandardExceptionParser(getActivity(), null)
+                                            .getDescription(Thread.currentThread().getName(), e), false)
+                                    .build());
+                            return null;
+                        }
+                        return leraren;
+                    }
+
+                    @Override
+                    protected void onPostExecute(final ArrayList<RoosterInfoDownloader.Vak> vakken) {
+
+                        final Spinner docentenNaamSpinner = (Spinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_naam);
+                        final Spinner docentenVakSpinner = (Spinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_vak);
+
+                        if (vakken != null) {
+                            final ArrayList<String> vakNaam = new ArrayList<String>();
+                            for (RoosterInfoDownloader.Vak vak : vakken) {
+                                vakNaam.add(vak.naam);
+                            }
+
+                            docentenVakSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, vakNaam.toArray(new String[vakNaam.size()])));
+                            docentenVakSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                @Override
+                                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                                    final RoosterInfoDownloader.Vak selectedVak = vakken.get(position);
+
+                                    ArrayList<String> namenLeraren = new ArrayList<String>();
+                                    for (RoosterInfoDownloader.Leraar leraar : selectedVak.leraren) {
+                                        namenLeraren.add(leraar.naam);
+                                    }
+
+                                    docentenNaamSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, namenLeraren.toArray(new String[namenLeraren.size()])));
+                                    docentenNaamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                        @Override
+                                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                            leraarLerlingselected = selectedVak.leraren.get(position).korteNaam;
+                                            new RoosterDownloader(getActivity(), getRootView(), true, refreshItem.get(), selectedWeek, selectedVak.leraren.get(position).korteNaam, Type.DOCENTENROOSTER).execute();
+                                        }
+
+                                        @Override
+                                        public void onNothingSelected(AdapterView<?> parent) {
+
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onNothingSelected(AdapterView<?> parent) {
+                                }
+                            });
+                        }
+                    }
+                }.execute();
+
+                Tracker easyTracker = EasyTracker.getInstance(getActivity());
+                easyTracker.set(Fields.SCREEN_NAME, "Docentenrooster");
+                easyTracker.send(MapBuilder
+                        .createAppView()
+                        .build()
+                );
+
+            } else if (type == Type.KLASROOSTER) {
+                setRootView(inflater.inflate(R.layout.fragment_main_leerling, container, false));
+                viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_leerling);
+                viewPager.setAdapter(new MyPagerAdapter());
+
+                final Spinner klasspinner = (Spinner) getRootView().findViewById(R.id.main_fragment_spinner_klas);
+                new AsyncTask<Void, Void, ArrayList<String>>() {
 
 
-            // If the user apikey is already obtained
-            if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
-                //Laat de gebruiker inloggen -> wel rooster laden daarna
-                new LoginDialogClass(getActivity(), rootView, this).showLoginDialog(true);
-            } else {
-                laadRooster(getActivity(), rootView);
+                    @Override
+                    protected ArrayList<String> doInBackground(Void... params) {
+                        return RoosterInfoDownloader.getKlassen();
+                    }
+
+                    @Override
+                    protected void onPostExecute(final ArrayList<String> klassen) {
+                        // doe iets met de klassen
+                        if (klassen != null) {
+                            klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[klassen.size()])));
+                            klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                @Override
+                                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                    leraarLerlingselected = ((TextView) view).getText().toString();
+                                    new RoosterDownloader(getActivity(), getRootView(), true, refreshItem.get(), selectedWeek,
+                                            ((TextView) view).getText().toString(), Type.KLASROOSTER).execute();
+                                }
+
+                                @Override
+                                public void onNothingSelected(AdapterView<?> parent) {
+
+                                }
+                            });
+                        }
+                    }
+                }.execute();
+
+                Tracker easyTracker = EasyTracker.getInstance(getActivity());
+                easyTracker.set(Fields.SCREEN_NAME, "Klasrooster");
+                easyTracker.send(MapBuilder
+                        .createAppView()
+                        .build()
+                );
             }
-            this.rootView = rootView;
-
             laadWeken(getActivity());
-
-            return rootView;
+            return getRootView();
 
         }
 
         private void laadWeken(final Context context) {
-            new AsyncTask<String, Void, String>() {
-                @Override
-                protected String doInBackground(String... params) {
-                    HttpClient httpclient = new DefaultHttpClient();
-                    HttpGet Get = new HttpGet("http://rooster.fwest98.nl/api/rooster/info?weken");
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
-                    try {
-                        HttpResponse response = httpclient.execute(Get);
-                        int status = response.getStatusLine().getStatusCode();
+            if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+                //Laad via internet
+                new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Week>>() {
 
-                        if (status == 200) {
-                            String s = "";
-                            Scanner sc = new Scanner(response.getEntity().getContent());
-                            while (sc.hasNext()) {
-                                s += sc.nextLine();
-                            }
-                            return s;
-                        } else {
-                            return "error:Onbekende status: " + status;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(String string) {
-                    System.out.println("!!!!WEKENE:" + string);
-                    if (string != null && string.startsWith("error:")) {
-                        Toast.makeText(getActivity(), string.substring(6), Toast.LENGTH_LONG).show();
-                    } else {
+                    @Override
+                    protected ArrayList<RoosterInfoDownloader.Week> doInBackground(Void... unused) {
                         try {
-                            ArrayList<String> strings = new ArrayList<String>();
-                            if(string == null) {
-                                string = PreferenceManager.getDefaultSharedPreferences(context).getString("weken", null);
-                            }
-                            if(string != null) {
-
-                                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("weken", string).commit();
-
-                                JSONArray weekArray = new JSONArray(string);
-                                ArrayList<Integer> weken = new ArrayList<Integer>();
-                                ArrayList<Integer> vakantieweken = new ArrayList<Integer>();
-
-                                for (int i = 0; i < weekArray.length(); i++) {
-                                    JSONObject week = weekArray.getJSONObject(i);
-                                    weken.add(week.getInt("week"));
-                                    if(week.getBoolean("vakantieweek")) {
-                                        vakantieweken.add(week.getInt("week"));
-                                    }
-                                }
-
-                                //Get the index of the current week
-                                int getweek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
-                                for (int c = 0; c < 3; c++) {
-                                    if(getweek > 52) {
-                                        getweek = 1;
-
-                                    }
-                                    if(vakantieweken.contains(getweek)) {
-                                        Log.e("Volgende", Integer.toString(getweek));
-                                        getweek++;
-                                        continue;
-                                    }
-                                    strings.add("Week " + getweek);
-                                    getweek++;
-                                }
-
-                                Log.e("Ophalen", vakantieweken.toString());
-                            } else {
-                                strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-                            }
-
-                            //TODO Een andere week kan hiermee worden toegevoegd
-                            // strings.add("Andere week");
-
-                            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
-                            actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
-                                @Override
-                                public boolean onNavigationItemSelected(int i, long l) {
-                                    if (i != 3) {
-                                        String itemString = (String) actionBarSpinnerAdapter.getItem(i);
-                                        int week = Integer.parseInt(itemString.substring(5));
-                                        selectedWeek = week;
-                                        laadRooster(context, rootView);
-                                    }
-                                    return true;
-                                }
-                            });
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                            return RoosterInfoDownloader.getWeken();
+                        } catch (Exception e) {
+                            Log.e(getClass().getSimpleName(), "Fout bij het laden van de weken", e);
+                            EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                            easyTracker.send(MapBuilder
+                                    .createException(new StandardExceptionParser(getActivity(), null)
+                                            .getDescription(Thread.currentThread().getName(), e), false)
+                                    .build());
                         }
+                        return null;
                     }
-                }
-            }.execute();
-        }
 
-        public void laadRooster(final Context context, final View v) {
-
-            //Probeer de string uit het geheugen te laden
-            String JSON = laadInternal(selectedWeek, getActivity());
-
-            //Als het de goede week is, gebruik hem
-            if (JSON.contains("\"week\":\"" + (selectedWeek) + "\"")) {
-                new RoosterBuilder(context, (ViewPager) v.findViewById(R.id.viewPager), v).buildLayout(JSON);
-                Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
-                new RoosterDownloader(context, v, false, refreshItem, selectedWeek).execute();
+                    @Override
+                    protected void onPostExecute(ArrayList<RoosterInfoDownloader.Week> wekenArray) {
+                        try {
+                            FileOutputStream arraySaver = context.openFileOutput("wekenarray", MODE_PRIVATE);
+                            ObjectOutputStream arrayObjectOutputStream = new ObjectOutputStream(arraySaver);
+                            arrayObjectOutputStream.writeObject(wekenArray);
+                            arrayObjectOutputStream.close();
+                            arraySaver.close();
+                        } catch (Exception e) {
+                            Log.e("MainActivity", "Kon de weken niet opslaan", e);
+                            EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                            easyTracker.send(MapBuilder
+                                    .createException(new StandardExceptionParser(getActivity(), null)
+                                            .getDescription(Thread.currentThread().getName(), e), false)
+                                    .build());
+                        }
+                        addWekenToActionBar(wekenArray, context);
+                    }
+                }.execute();
             } else {
-                if (JSON.startsWith("error:")) {
-                    Log.w("MainActivity", JSON.substring(6));
-                } else {
-                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is niet van de goede week, de gewilde week is " + selectedWeek);
-                    Log.d("MainActivity", "De uit het geheugen geladen string is: " + JSON);
+                try {
+                    ObjectInputStream ois = new ObjectInputStream(context.openFileInput("wekenarray"));
+                    ArrayList<RoosterInfoDownloader.Week> weken = (ArrayList<RoosterInfoDownloader.Week>) ois.readObject();
+                    addWekenToActionBar(weken, context);
+                } catch (Exception e) {
+                    Log.e("MainActivity", "Kon de weken niet uit het geheugen laden", e);
+                    EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                    easyTracker.send(MapBuilder
+                            .createException(new StandardExceptionParser(getActivity(), null)
+                                    .getDescription(Thread.currentThread().getName(), e), false)
+                            .build());
                 }
-                new RoosterDownloader(context, v, true, refreshItem, selectedWeek).execute();
             }
         }
 
-        String laadInternal(int weeknr, Context context) {
-            if (weeknr == -1) {
-                weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        void addWekenToActionBar(ArrayList<RoosterInfoDownloader.Week> wekenArray, final Context context) {
+            final ArrayList<String> strings = new ArrayList<String>();
+            if (wekenArray == null) {
+                strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+            } else {
+
+                //Get the index of the current week
+                int indexCurrentWeek = 0;
+
+                int correctionForWeekends = 0;
+                if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7) {
+                    correctionForWeekends = 1;
+                }
+
+                loop:
+                for (int u = 0; u < wekenArray.size(); u++)
+                    if (wekenArray.get(u).week >= Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + correctionForWeekends) {
+                        indexCurrentWeek = u;
+                        break loop;
+                    }
+                final int NUMBER_OF_WEEKS_IN_SPINNER = 10;
+                for (int c = 0; c < NUMBER_OF_WEEKS_IN_SPINNER; c++) {
+                    strings.add("Week " + wekenArray.get((indexCurrentWeek + c) % wekenArray.size()).week);
+                }
             }
-            return PreferenceManager.getDefaultSharedPreferences(context).getString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), "error:Er is nog geen rooster in het geheugen opgeslagen voor week " + weeknr);
+            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings, type);
+            actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
+                @Override
+                public boolean onNavigationItemSelected(int i, long l) {
+                    if (PreferenceManager.getDefaultSharedPreferences(context).getString("key", null) != null) {
+                        String itemString = (String) actionBarSpinnerAdapter.getItem(i);
+                        int week = Integer.parseInt(itemString.substring(5));
+                        selectedWeek = week;
+                        laadRooster(context, getRootView(), type);
+                    }
+                    return true;
+                }
+            });
+        }
+
+        public void laadRooster(Context context, View rootView, Type type) {
+
+            if (type == Type.PERSOONLIJK_ROOSTER) {
+                //Probeer de string uit het geheugen te laden
+                RoosterWeek roosterWeek = RoosterWeek.laadUitGeheugen(selectedWeek, getActivity());
+
+                //Als het de goede week is, gebruik hem
+                if (roosterWeek != null && roosterWeek.getWeek() == selectedWeek) {
+                    new RoosterBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView, selectedWeek).buildLayout(roosterWeek);
+                    Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
+                    new RoosterDownloader(context, rootView, false, refreshItem.get(), selectedWeek).execute();
+                } else {
+                    if (roosterWeek == null) {
+                        Log.d("MainActivity", "Het uit het geheugen geladen rooster is null");
+                    } else {
+                        Log.d("MainActivity", "Het uit het geheugen geladen rooster is van week " + roosterWeek.getWeek() + ", de gewilde week is " + selectedWeek);
+                    }
+                    new RoosterDownloader(context, rootView, true, refreshItem.get(), selectedWeek).execute();
+                }
+            } else if (type == Type.KLASROOSTER) {
+                new RoosterDownloader(context, rootView, true, refreshItem.get(), selectedWeek, leraarLerlingselected, type).execute();
+            } else if (type == Type.DOCENTENROOSTER) {
+                new RoosterDownloader(context, rootView, true, refreshItem.get(), selectedWeek, leraarLerlingselected, type).execute();
+            }
+        }
+
+        public View getRootView() {
+            return rootView;
+        }
+
+        public void setRootView(View rootView) {
+            this.rootView = rootView;
+        }
+
+        public static enum Type {
+            PERSOONLIJK_ROOSTER,
+            KLASROOSTER,
+            DOCENTENROOSTER,
         }
     }
 }

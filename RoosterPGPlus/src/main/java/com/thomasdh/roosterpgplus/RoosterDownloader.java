@@ -11,6 +11,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.StandardExceptionParser;
+import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -18,26 +24,40 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Scanner;
 
 /**
  * Created by Thomas on 27-11-13.
  */
-public class RoosterDownloader extends AsyncTask<String, Void, String> {
+class RoosterDownloader extends AsyncTask<String, Void, String> {
 
-    public Context context;
-    public View rootView;
-    public boolean forceReload;
-    public MenuItem menuItem;
+    private final WeakReference<Context> context;
+    private WeakReference<View> rootView;
+    private final boolean forceReload;
+    private MenuItem menuItem;
+    private MainActivity.PlaceholderFragment.Type type;
     private int week;
+    private ViewPager viewPager;
+    private String klas;
+    private String docent;
+
+
+    //Voor docenten
+    public RoosterDownloader(Context context, View rooView, boolean forceReload, MenuItem menuItem, int week, String klas, MainActivity.PlaceholderFragment.Type type) {
+        this(context, rooView, forceReload, menuItem, week);
+        this.type = type;
+        this.klas = klas;
+    }
 
     public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
-        this.context = context;
-        this.rootView = rootView;
+        this.context = new WeakReference<Context>(context);
+        this.rootView = new WeakReference<View>(rootView);
         this.forceReload = forceReload;
         this.menuItem = menuItem;
         this.week = week;
+        this.type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
 
         if (this.menuItem != null) {
             LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -47,64 +67,83 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
         }
     }
 
+    public RoosterDownloader(Context context, boolean forceReload, int week) {
+        this.type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
+        this.context = new WeakReference<Context>(context);
+        this.forceReload = forceReload;
+        this.week = week;
+    }
+
     @Override
     protected String doInBackground(String... params) {
 
         //Controleer of het apparaat een internetverbinding heeft
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) context.get().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
-        if (netInfo != null && netInfo.isConnectedOrConnecting() && (itIsTimeToReload() || forceReload)) {
-            Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
-            String JSON = laadViaInternet();
-            slaOp(JSON, week);
-            Log.d(getClass().getSimpleName(), "Loaded from internet");
-            if (JSON == null) {
-                Log.d(getClass().getSimpleName(), "The string is null");
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            if ((itIsTimeToReload() || forceReload)) {
+                Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
+                String JSON = laadViaInternet();
+                Log.d(getClass().getSimpleName(), "Loaded from internet");
+                if (JSON == null) {
+                    Log.d(getClass().getSimpleName(), "The string is null");
+                }
+                return JSON;
             }
-            return JSON;
+            Log.d(getClass().getSimpleName(), "Het rooster is uit het geheugen geladen");
+            return null;
         }
-        return null;
+        return "error:Geen internetverbinding";
     }
 
     boolean itIsTimeToReload() {
-        if (PreferenceManager.getDefaultSharedPreferences(context).getLong("lastRefreshTime", 0) +
-                context.getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis()) {
-            return true;
-        }
-        return false;
+        return PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0) +
+                context.get().getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis();
     }
 
     @Override
     protected void onPostExecute(String string) {
-        if (string != null) {
-            if (this.menuItem != null) {
-                MenuItemCompat.setActionView(this.menuItem, null);
-            } else {
-                Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
-            }
-
-            new RoosterBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView).buildLayout(string);
+        if (this.menuItem != null) {
+            MenuItemCompat.setActionView(this.menuItem, null);
         } else {
-            Log.d(getClass().getSimpleName(), "Got a null string.");
+            Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
         }
-    }
-
-    void slaOp(String JSON, int weeknr) {
-        if (weeknr == -1) {
-            weeknr = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        if (string != null) {
+            if (string.startsWith("error:")) {
+                Toast.makeText(context.get(), string.substring(6), Toast.LENGTH_SHORT).show();
+            } else {
+                RoosterWeek roosterWeek = new RoosterWeek(string);
+                if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
+                    roosterWeek.slaOp(context.get());
+                }
+                if (context != null && rootView.get() != null) {
+                    if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER)
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                    if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_docent), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                    if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_leerling), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                }
+            }
         }
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("week" + (weeknr % context.getResources().getInteger(R.integer.number_of_saved_weeks)), JSON).commit();
     }
 
     String laadViaInternet() {
 
-        String apikey = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
+        String apikey = PreferenceManager.getDefaultSharedPreferences(context.get()).getString("key", null);
         HttpClient httpclient = new DefaultHttpClient();
         if (week == -1) {
             week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         }
-        HttpGet httpGet = new HttpGet("http://rooster.fwest98.nl/api/rooster/?key=" + apikey + "&week=" + week);
+        HttpGet httpGet = null;
+        if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
+            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?key=" + apikey + "&week=" + week);
+        } else if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
+            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?leraar=" + klas + "&week=" + week);
+        } else if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER) {
+            httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?klas=" + klas + "&week=" + week);
+        }
 
         // Execute HTTP Post Request
         try {
@@ -125,14 +164,19 @@ public class RoosterDownloader extends AsyncTask<String, Void, String> {
                 }
 
                 // Sla de tijd op wanneer het rooster voor het laatst gedownload is.
-                PreferenceManager.getDefaultSharedPreferences(context).edit().putLong("lastRefreshTime", System.currentTimeMillis()).commit();
+                PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putLong("lastRefreshTime", System.currentTimeMillis()).commit();
 
                 return s;
             } else {
                 return "error:Onbekende status: " + status;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(getClass().getSimpleName(), "Fout bij het laden van de weken", e);
+            EasyTracker easyTracker = EasyTracker.getInstance(context.get());
+            easyTracker.send(MapBuilder
+                    .createException(new StandardExceptionParser(context.get(), null)
+                            .getDescription(Thread.currentThread().getName(), e), false)
+                    .build());
         }
         return null;
     }

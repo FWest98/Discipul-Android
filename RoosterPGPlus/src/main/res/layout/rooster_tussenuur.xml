@@ -7,14 +7,24 @@
     android:layout_marginBottom="0dp"
     android:background="@drawable/basic_rect_nobottom">
 
+    <ImageView
+        android:id="@+id/layers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_margin="5dp"
+        android:contentDescription="@string/rooster_dubbel_uur"
+        android:src="@drawable/layers"
+        android:visibility="gone" />
+
     <RelativeLayout
-        android:layout_height="80dp"
         android:layout_width="match_parent"
+        android:layout_height="80dp"
         android:layout_marginLeft="1dp"
-        android:layout_marginTop="1dp"
         android:layout_marginRight="1dp"
+        android:layout_marginTop="1dp"
         android:background="@drawable/diagonal_stripes">
 
-        </RelativeLayout>
+    </RelativeLayout>
 
 </RelativeLayout>
