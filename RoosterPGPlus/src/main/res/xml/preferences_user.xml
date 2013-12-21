@@ -7,7 +7,7 @@
 
     <Preference
         android:key="log_in"
-        android:summary="Log opnieuw in"
+        android:summary="Log in als een andere gebruiker"
         android:title="Log in" />
 
     <Preference

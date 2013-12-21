@@ -1,6 +1,7 @@
 package com.thomasdh.roosterpgplus;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -9,6 +10,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
@@ -75,10 +77,16 @@ public class PreferencesActivity extends PreferenceActivity {
         }
 
         if (action!=null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment")){
+            final Context context = this;
             findPreference("account_upgraden").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     //TODO code toevoegen voor android 2.x
+                    try {
+                        user.extend();
+                    } catch(Exception e) {
+                        Toast.makeText(context, context.getString(R.string.extenddialog_isExtended), Toast.LENGTH_SHORT).show();
+                    }
                     return false;
                 }
             });
@@ -177,10 +185,16 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
             }.execute();
 
+            final Context context = getActivity();
+
             findPreference("account_upgraden").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    //TODO code toevoegen
+                    try {
+                        user.extend();
+                    } catch(Exception e) {
+                        Toast.makeText(context, context.getString(R.string.extenddialog_isExtended), Toast.LENGTH_SHORT).show();
+                    }
                     return false;
                 }
             });

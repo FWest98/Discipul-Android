@@ -653,12 +653,13 @@ public class Account {
                             case 500:
                                 return "error:Serverfout";
                             case 200:
-                                return new Scanner(response.getEntity().getContent()).nextLine();
+                                return "nothing";
                             default:
                                 return "error:Onbekende fout";
                         }
                     } catch (Exception e) {
-                        s = "error:"+e.toString();
+                        s = "error:"+e.getMessage();
+                        e.printStackTrace();
                     }
                     return s;
                 }

@@ -16,7 +16,7 @@
     <string name="menu_refresh">Refresh</string>
 
     <string name="action_bar_dropdown_week">Week</string>
-    <string name="action_bar_dropdown_persoonlijk_rooster"> - Persoonlijk rooster</string>
+    <string name="action_bar_dropdown_persoonlijk_rooster"> - Eigen rooster</string>
     <string name="action_bar_dropdown_klassenrooster"> - Klassenrooster</string>
     <string name="action_bar_dropdown_docentenrooster"> - Docentenrooster</string>
 
@@ -59,6 +59,7 @@
     <string name="registerdialog_repass_hint">Wachtwoord (bevestiging)</string>
     <string name="extenddialog_text">Upgrade je leerlingaccount</string>
     <string name="extenddialog_extendbutton">Upgrade</string>
+    <string name="extenddialog_isExtended">Dit account is al geüpgraded!</string>
 
 
 </resources>
