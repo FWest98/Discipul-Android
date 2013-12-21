@@ -29,27 +29,57 @@ android {
         minSdkVersion 7
         targetSdkVersion 19
     }
-}
 
-task askForPasswords << {
-    // Must create String because System.readPassword() returns char[]
-    // (and assigning that below fails silently)
-    def storePw = new String(System.console().readPassword("Keystore password: "))
-    def keyPw  = new String(System.console().readPassword("Key password: "))
-
-    android.signingConfigs.release.storePassword = storePw
-    android.signingConfigs.release.keyPassword = keyPw
-}
-
-tasks.whenTaskAdded { theTask ->
-    if (theTask.name.equals("packageRelease")) {
-        theTask.dependsOn "askForPasswords"
+    signingConfigs {
+        release
     }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+        debug{
+
+        }
+    }
+
+}
+
+def Properties props = new Properties()
+def propFile = new File("signing.properties")
+if (propFile.canRead()) {
+    props.load(new FileInputStream(propFile))
+
+    if (props!= null
+            && props.containsKey("KEYSTORE_FILE")
+            && props.containsKey("KEYSTORE_PASSWORD")
+            && props.containsKey("KEY_ALIAS")
+            && props.containsKey("KEY_PASSWORD")) {
+
+        def keystoreFile = new File(props["KEYSTORE_FILE"])
+        if (keystoreFile.canRead()) {
+            android.signingConfigs.release.storeFile = keystoreFile
+            android.signingConfigs.release.storePassword = props["KEYSTORE_PASSWORD"]
+            android.signingConfigs.release.keyAlias = props["KEY_ALIAS"]
+            android.signingConfigs.release.keyPassword = props["KEY_PASSWORD"]
+        }
+        else {
+            println("keystore file not found: " + props["KEYSTORE_FILE"])
+            android.buildTypes.release.signingConfig = null
+        }
+    }
+    else {
+        println("signing.properties found but some entries missing")
+        android.buildTypes.release.signingConfig = null
+    }
+} else {
+    println("signing.properties not found")
+    android.buildTypes.release.signingConfig = null
 }
 
 dependencies {
-	compile 'com.android.support:support-v4:19.0.0'
-	compile 'com.android.support:gridlayout-v7:19.0.0'
-	compile 'com.android.support:appcompat-v7:19.0.0'
+    compile 'com.android.support:support-v4:19.0.0'
+    compile 'com.android.support:gridlayout-v7:19.0.0'
+    compile 'com.android.support:appcompat-v7:19.0.0'
     compile files('libs/libGoogleAnalyticsServices.jar')
 }
