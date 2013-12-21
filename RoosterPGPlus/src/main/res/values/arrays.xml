@@ -11,5 +11,7 @@
 		<item>#ALL#</item>
 		<item>Test1 Value</item>
 		<item>Test2 Value</item>
+        <item>Test1 Value</item>
+        <item>Test2 Value</item>
 	</string-array>
 </resources>

@@ -51,13 +51,14 @@ public class LoginDialogClass {
     /**
      * Inloggen met leerlingnummer
      */
-
     private void login(int leerlingnummer) {
         login(leerlingnummer, false, false);
     }
+
     private void login(int leerlingnummer, boolean laadRooster) {
         login(leerlingnummer, false, laadRooster);
     }
+
     private void login(final int leerlingnummer, boolean force, final boolean laadRooster) {
         new AsyncTask<String, Void, String>() {
             @Override
@@ -171,6 +172,7 @@ public class LoginDialogClass {
     private void login(String gebruikersnaam, String wachtwoord) {
         login(gebruikersnaam, wachtwoord, false);
     }
+
     private void login(String gebruikersnaam, String wachtwoord, final boolean laadRooster) {
         new AsyncTask<String, Void, String>() {
             @Override
@@ -252,7 +254,6 @@ public class LoginDialogClass {
         }.execute(gebruikersnaam, wachtwoord);
     }
 
-
     /**
      * Registreren
      */
@@ -263,6 +264,7 @@ public class LoginDialogClass {
     private void register() {
         register(false);
     }
+
     private void register(final boolean laadRooster) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(context);
         final LayoutInflater inflater = LayoutInflater.from(context);
@@ -295,19 +297,19 @@ public class LoginDialogClass {
                 final EditText llnr = (EditText) dialogView.findViewById(R.id.registerdialog_llnr);
                 final EditText email = (EditText) dialogView.findViewById(R.id.registerdialog_email);
                 username.requestFocus();
-                if(username.getText().toString().equals("")) {
+                if (username.getText().toString().equals("")) {
                     Toast.makeText(context, "Gebruikersnaam is verplicht!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(password.getText().toString().equals("")) {
+                if (password.getText().toString().equals("")) {
                     Toast.makeText(context, "Wachtwoord is verplicht!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(!password.getText().toString().equals(repass.getText().toString())) {
+                if (!password.getText().toString().equals(repass.getText().toString())) {
                     Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText().toString() + "  " + repass.getText().toString(), Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(llnr.getText().toString().equals("")) {
+                if (llnr.getText().toString().equals("")) {
                     Toast.makeText(context, "Leerlingnummer is verplicht!", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -337,7 +339,7 @@ public class LoginDialogClass {
                     postParameters.add(new BasicNameValuePair("password", params[1]));
                     postParameters.add(new BasicNameValuePair("llnr", Integer.toString(llnr)));
                     postParameters.add(new BasicNameValuePair("email", params[2]));
-                    if(force) {
+                    if (force) {
                         postParameters.add(new BasicNameValuePair("force", "true"));
                     }
                     UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
@@ -346,7 +348,7 @@ public class LoginDialogClass {
                     HttpResponse response = httpClient.execute(httpPost);
                     int status = response.getStatusLine().getStatusCode();
 
-                    switch(status) {
+                    switch (status) {
                         case 204:
                             return "duplicate";
                         case 500:
@@ -368,12 +370,12 @@ public class LoginDialogClass {
 
             @Override
             protected void onPostExecute(String s) {
-                Log.e(this.getClass().getName(), "The string is: "+s);
-                if(s.startsWith("error:")) {
+                Log.e(this.getClass().getName(), "The string is: " + s);
+                if (s.startsWith("error:")) {
                     Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
-                } else if(s.equals("conflict")) {
+                } else if (s.equals("conflict")) {
                     Toast.makeText(context, "Deze gebruikersnaam is al in gebruik", Toast.LENGTH_LONG).show();
-                } else if(s.equals("duplicate")) {
+                } else if (s.equals("duplicate")) {
                     final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
                     dialog.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
                     dialog.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
@@ -383,12 +385,12 @@ public class LoginDialogClass {
                             register(username, password, llnr, email, laadRooster, true);
                         }
                     })
-                    .setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // nothing
-                        }
-                    });
+                            .setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // nothing
+                                }
+                            });
                     dialog.show();
                 } else {
                     hideRegisterDialog();
@@ -419,8 +421,6 @@ public class LoginDialogClass {
             }
         }.execute(username, password, email);
     }
-
-
 
     /**
      * Dialogstuff

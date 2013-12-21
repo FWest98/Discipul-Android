@@ -9,11 +9,14 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
+import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -126,6 +129,59 @@ public class PreferencesActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_user);
             preferenceListener = new PreferenceListener();
+
+            final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
+            subklassen.setEntries(new String[]{"Subklassen"});
+            subklassen.setEntryValues(new String[]{"Subklassen"});
+            new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Subklas>>() {
+                @Override
+                protected ArrayList<RoosterInfoDownloader.Subklas> doInBackground(Void... params) {
+                    try {
+                        return RoosterInfoDownloader.getSubklassen(getActivity());
+                    } catch (Exception e) {
+                        //TODO analytics
+                        Log.e("PreferenceActivity", "Fout", e);
+                        return null;
+                    }
+                }
+
+                @Override
+                protected void onPostExecute(ArrayList<RoosterInfoDownloader.Subklas> subklasArray) {
+                    if (subklassen != null && subklasArray != null) {
+                        ArrayList<String> strings = new ArrayList<String>();
+                        ArrayList<String> namen = new ArrayList<String>();
+                        for (RoosterInfoDownloader.Subklas subklas : subklasArray) {
+                            strings.add(subklas.subklas + ": " + subklas.vak + " van " + subklas.leraar);
+                            namen.add(subklas.subklas);
+                        }
+
+                        subklassen.setEntries(strings.toArray(new String[strings.size()]));
+                        subklassen.setEntryValues(namen.toArray(new String[namen.size()]));
+
+                        subklassen.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                            @Override
+                            public boolean onPreferenceChange(Preference preference, final Object newValue) {
+                                new AsyncTask<Void, Void, Void>(){
+                                    @Override
+                                    protected Void doInBackground(Void... params) {
+                                        try {
+                                            RoosterInfoDownloader.setSubklassen(getActivity(),
+                                                    ((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
+                                        } catch (Exception e) {
+                                            Log.e("PreferencesActivity", "SetSubklasfout", e);
+                                        }
+                                        return null;
+                                    }
+                                }.execute();
+                                return true;
+                            }
+                        });
+                    } else {
+                        Log.d("PreferenceActivity", "Ze zijn null");
+                    }
+                }
+            }.execute();
+
         }
 
         @Override
@@ -144,22 +200,6 @@ public class PreferencesActivity extends PreferenceActivity {
                     return true;
                 }
             });
-
-            final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
-            new AsyncTask<Void, Void, String[]>() {
-                @Override
-                protected String[] doInBackground(Void... params) {
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(String[] s) {
-                    if (subklassen != null && s != null) {
-                        subklassen.setEntries(s);
-                        subklassen.setEntryValues(s);
-                    }
-                }
-            }.execute();
         }
 
         @Override
