@@ -103,7 +103,7 @@ public class PreferencesActivity extends PreferenceActivity {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private static class InfoFragment extends PreferenceFragment {
+    public static class InfoFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
