@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * Created by Thomas on 27-11-13.
  */
 public class MyPagerAdapter extends PagerAdapter {
-    private ArrayList<View> views = new ArrayList<View>();
+    private final ArrayList<View> views = new ArrayList<View>();
 
     @Override
     public int getCount() {
@@ -43,14 +43,12 @@ public class MyPagerAdapter extends PagerAdapter {
         container.removeView(views.get(position));
     }
 
-    public void deleteItems(){
+    public void deleteItems() {
         views.clear();
     }
 
-    public int addView(View v) {
-        int position = views.size();
+    public void addView(View v) {
         views.add(v);
-        return position;
     }
 
 }

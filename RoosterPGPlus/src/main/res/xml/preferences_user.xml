@@ -7,13 +7,18 @@
 
     <Preference
         android:key="log_in"
-        android:summary="Log opnieuw in"
+        android:summary="Log in als een andere gebruiker"
         android:title="Log in" />
 
+    <Preference
+        android:key="account_upgraden"
+        android:summary="Upgrade je account om nieuwe features te unlocken"
+        android:title="Account upgraden" />
 
     <com.thomasdh.roosterpgplus.ListPreferenceMultiSelect
         android:defaultValue="#ALL#"
         android:dialogTitle="Image folders to monitor"
+        android:enabled="false"
         android:entries="@array/pref_upload_buckets_default_entries"
         android:entryValues="@array/pref_upload_buckets_default_values"
         android:key="subklassen"

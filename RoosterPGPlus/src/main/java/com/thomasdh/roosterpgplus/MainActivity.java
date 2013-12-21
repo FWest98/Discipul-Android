@@ -46,12 +46,13 @@ import java.util.Calendar;
 
 public class MainActivity extends ActionBarActivity {
 
-    public static WeakReference<MenuItem> refreshItem;
-    public static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
-    public static ActionBar actionBar;
-    public static int selectedWeek = -1;
-    public ActionBarDrawerToggle actionBarDrawerToggle;
-    public PlaceholderFragment mainFragment;
+    private static WeakReference<MenuItem> refreshItem;
+    private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
+    private static ActionBar actionBar;
+    private static int selectedWeek = -1;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
+    private PlaceholderFragment mainFragment;
+    private Account user;
 
     @Override
     protected void onStop() {
@@ -131,10 +132,13 @@ public class MainActivity extends ActionBarActivity {
                         return false;
                     }
                 };
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>());
+        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, new ArrayList<String>(), PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
         //Voeg beide toe
         getSupportActionBar().setListNavigationCallbacks(actionBarSpinnerAdapter, onNavigationListener);
 
+
+        /** Aanmaken User */
+        this.user = new Account(this, mainFragment);
     }
 
     @Override
@@ -142,7 +146,6 @@ public class MainActivity extends ActionBarActivity {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
         actionBarDrawerToggle.syncState();
-        // new Notify(this);
     }
 
     @Override
@@ -181,9 +184,10 @@ public class MainActivity extends ActionBarActivity {
     public static class PlaceholderFragment extends Fragment {
 
         public static String leraarLerlingselected;
-        private View rootView;
         public ViewPager viewPager;
-        public Type type;
+        public final Type type;
+        public Account user;
+        private View rootView;
 
         public PlaceholderFragment(Type type) {
             this.type = type;
@@ -192,14 +196,15 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+            /** Aanmaken User */
+            this.user = new Account(getActivity(), this);
             if (type == Type.PERSOONLIJK_ROOSTER) {
                 setRootView(inflater.inflate(R.layout.fragment_main, container, false));
                 viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager);
                 viewPager.setAdapter(new MyPagerAdapter());
 
-                if (PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("key", null) == null) {
-                    //Laat de gebruiker inloggen -> wel rooster laden daarna
-                    new LoginDialogClass(getActivity(), getRootView(), this).showLoginDialog(true);
+                if(!this.user.isSet) {
+                    this.user.showLoginDialog(true);
                 }
 
                 Tracker easyTracker = EasyTracker.getInstance(getActivity());
@@ -396,8 +401,7 @@ public class MainActivity extends ActionBarActivity {
             final ArrayList<String> strings = new ArrayList<String>();
             if (wekenArray == null) {
                 strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-            }
-            if (wekenArray != null) {
+            } else {
 
                 //Get the index of the current week
                 int indexCurrentWeek = 0;
@@ -418,7 +422,7 @@ public class MainActivity extends ActionBarActivity {
                     strings.add("Week " + wekenArray.get((indexCurrentWeek + c) % wekenArray.size()).week);
                 }
             }
-            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings);
+            actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(getActivity(), strings, type);
             actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, new ActionBar.OnNavigationListener() {
                 @Override
                 public boolean onNavigationItemSelected(int i, long l) {
