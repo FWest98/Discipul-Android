@@ -25,6 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/action_bar_app_name"
+        android:layout_marginLeft="4dp"
         android:layout_toRightOf="@+id/action_bar_text_field"
         android:text="@string/action_bar_dropdown_persoonlijk_rooster"
         android:textColor="#888"
