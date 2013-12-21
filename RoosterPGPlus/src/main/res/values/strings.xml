@@ -57,6 +57,8 @@
     <string name="registerdialog_cancelbutton">Annuleer</string>
     <string name="registerdialog_email_hint">Emailadres (optioneel)</string>
     <string name="registerdialog_repass_hint">Wachtwoord (bevestiging)</string>
+    <string name="extenddialog_text">Upgrade je leerlingaccount</string>
+    <string name="extenddialog_extendbutton">Upgrade</string>
 
 
 </resources>
