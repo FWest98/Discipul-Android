@@ -233,7 +233,7 @@ public class RoosterInfoDownloader {
         return getWeken(false, numberOfWeeks);
     }
 
-    static public ArrayList<Week> getWeken(boolean AllWeeks, int numberOfWeeks) throws IOException, JSONException {
+    private static ArrayList<Week> getWeken(boolean AllWeeks, int numberOfWeeks) throws IOException, JSONException {
 
         if (numberOfWeeks == 0)
             numberOfWeeks = 1000;
@@ -267,8 +267,8 @@ public class RoosterInfoDownloader {
     }
 
     public static class Leraar {
-        public String korteNaam;
-        public String naam;
+        public final String korteNaam;
+        public final String naam;
 
         public Leraar(String korteNaam, String naam) {
             this.naam = naam;
@@ -277,8 +277,8 @@ public class RoosterInfoDownloader {
     }
 
     public static class Vak {
-        public String naam;
-        public ArrayList<Leraar> leraren;
+        public final String naam;
+        public final ArrayList<Leraar> leraren;
 
         public Vak(String naam) {
             this.naam = naam;
@@ -288,8 +288,8 @@ public class RoosterInfoDownloader {
 
     public static class Week implements Serializable {
         private static final long serialVersionUID = 102947213471347253L;
-        public int week;
-        public boolean vakantieweek;
+        public final int week;
+        public final boolean vakantieweek;
 
         public Week(int week, boolean vakantieweek) {
             this.week = week;

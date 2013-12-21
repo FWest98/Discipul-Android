@@ -30,7 +30,7 @@ import java.util.List;
 public class ListPreferenceMultiSelect extends ListPreference {
     private static final String DEFAULT_SEPARATOR = "OV=I=XseparatorX=I=VO";
     private static final String LOG_TAG = "ListPreferenceMultiSelect";
-    private String separator;
+    private final String separator;
     private String checkAllKey = null;
     private boolean[] mClickedDialogEntryIndices;
 
@@ -38,7 +38,9 @@ public class ListPreferenceMultiSelect extends ListPreference {
     public ListPreferenceMultiSelect(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ListPreferenceMultiSelect);
-        checkAllKey = a.getString(R.styleable.ListPreferenceMultiSelect_checkAll);
+        if (a != null) {
+            checkAllKey = a.getString(R.styleable.ListPreferenceMultiSelect_checkAll);
+        }
         String s = a.getString(R.styleable.ListPreferenceMultiSelect_separator);
         if (s != null) {
             separator = s;
@@ -55,8 +57,8 @@ public class ListPreferenceMultiSelect extends ListPreference {
     }
 
     // Credits to kurellajunior on this post http://snippets.dzone.com/posts/show/91
-    protected static String join(Iterable<? extends Object> pColl, String separator) {
-        Iterator<? extends Object> oIter;
+    protected static String join(Iterable<?> pColl, String separator) {
+        Iterator<?> oIter;
         if (pColl == null || (!(oIter = pColl.iterator()).hasNext()))
             return "";
         StringBuilder oBuilder = new StringBuilder(String.valueOf(oIter.next()));
@@ -76,8 +78,8 @@ public class ListPreferenceMultiSelect extends ListPreference {
             separator = DEFAULT_SEPARATOR;
         }
         String[] vals = haystack.split(separator);
-        for (int i = 0; i < vals.length; i++) {
-            if (vals[i].equals(straw)) {
+        for (String val : vals) {
+            if (val.equals(straw)) {
                 return true;
             }
         }
@@ -104,7 +106,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
         builder.setMultiChoiceItems(entries, mClickedDialogEntryIndices,
                 new DialogInterface.OnMultiChoiceClickListener() {
                     public void onClick(DialogInterface dialog, int which, boolean val) {
-                        if (isCheckAllValue(which) == true) {
+                        if (isCheckAllValue(which)) {
                             checkAll(dialog, val);
                         }
                         mClickedDialogEntryIndices[which] = val;
@@ -114,10 +116,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
 
     private boolean isCheckAllValue(int which) {
         final CharSequence[] entryValues = getEntryValues();
-        if (checkAllKey != null) {
-            return entryValues[which].equals(checkAllKey);
-        }
-        return false;
+        return checkAllKey != null && entryValues[which].equals(checkAllKey);
     }
 
     private void checkAll(DialogInterface dialog, boolean val) {
@@ -168,10 +167,10 @@ public class ListPreferenceMultiSelect extends ListPreference {
         CharSequence[] entryValues = getEntryValues();
         if (positiveResult && entryValues != null) {
             for (int i = 0; i < entryValues.length; i++) {
-                if (mClickedDialogEntryIndices[i] == true) {
+                if (mClickedDialogEntryIndices[i]) {
                     // Don't save the state of check all option - if any
                     String val = (String) entryValues[i];
-                    if (checkAllKey == null || (val.equals(checkAllKey) == false)) {
+                    if (checkAllKey == null || (!val.equals(checkAllKey))) {
                         values.add(val);
                     }
                 }

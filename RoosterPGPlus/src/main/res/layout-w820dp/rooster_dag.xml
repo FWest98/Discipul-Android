@@ -9,32 +9,32 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingTop="@dimen/weekdag_marginSize"
-        android:paddingBottom="@dimen/weekdag_marginSize">
+        android:paddingBottom="@dimen/weekdag_marginSize"
+        android:paddingTop="@dimen/weekdag_marginSize">
+
         <TextView
             android:id="@+id/weekdagnaam"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Weekdag"
-            android:textSize="@dimen/weekdag_fontSize"
             android:layout_centerHorizontal="true"
-            />
+            android:text="@string/rooster_weekdag"
+            android:textSize="@dimen/weekdag_fontSize" />
+
         <TextView
+            android:id="@id/weekdagdatum"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@id/weekdagdatum"
-            android:text="Datum"
-            android:textSize="@dimen/weekdag_datum_textSize"
-            android:textColor="#888"
-            android:layout_marginTop="@dimen/weekdag_datum_marginTop"
             android:layout_marginLeft="4dp"
-            android:layout_toRightOf="@+id/weekdagnaam"/>
+            android:layout_marginTop="@dimen/weekdag_datum_marginTop"
+            android:layout_toRightOf="@+id/weekdagnaam"
+            android:text="@string/rooster_datum"
+            android:textColor="#888"
+            android:textSize="@dimen/weekdag_datum_textSize" />
     </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/rooster_dag_linearlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
-    </LinearLayout>
+        android:orientation="vertical" />
 </LinearLayout>
