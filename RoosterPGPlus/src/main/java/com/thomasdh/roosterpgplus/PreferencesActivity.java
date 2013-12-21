@@ -73,6 +73,16 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
             });
         }
+
+        if (action!=null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment")){
+            findPreference("account_upgraden").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    //TODO code toevoegen voor android 2.x
+                    return false;
+                }
+            });
+        }
     }
 
     @Override
@@ -166,6 +176,14 @@ public class PreferencesActivity extends PreferenceActivity {
                     }
                 }
             }.execute();
+
+            findPreference("account_upgraden").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    //TODO code toevoegen
+                    return false;
+                }
+            });
         }
 
         @Override

@@ -10,6 +10,10 @@
         android:summary="Log opnieuw in"
         android:title="Log in" />
 
+    <Preference
+        android:key="account_upgraden"
+        android:summary="Upgrade je account om nieuwe features te unlocken"
+        android:title="Account upgraden" />
 
     <com.thomasdh.roosterpgplus.ListPreferenceMultiSelect
         android:defaultValue="#ALL#"
