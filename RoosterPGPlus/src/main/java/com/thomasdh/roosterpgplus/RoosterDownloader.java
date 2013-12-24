@@ -31,11 +31,11 @@ import java.util.Scanner;
 /**
  * Created by Thomas on 27-11-13.
  */
-class RoosterDownloader extends AsyncTask<String, Void, String> {
+class RoosterDownloader extends AsyncTask<String, Exception, String> {
 
     private final WeakReference<Context> context;
-    private WeakReference<View> rootView;
     private final boolean forceReload;
+    private WeakReference<View> rootView;
     private MenuItem menuItem;
     private MainActivity.PlaceholderFragment.Type type;
     private int week;
@@ -76,25 +76,43 @@ class RoosterDownloader extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
+        try {
+            //Controleer of het apparaat een internetverbinding heeft
+            ConnectivityManager cm = (ConnectivityManager) context.get().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
-        //Controleer of het apparaat een internetverbinding heeft
-        ConnectivityManager cm = (ConnectivityManager) context.get().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-
-        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-            if ((itIsTimeToReload() || forceReload)) {
-                Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
-                String JSON = laadViaInternet();
-                Log.d(getClass().getSimpleName(), "Loaded from internet");
-                if (JSON == null) {
-                    Log.d(getClass().getSimpleName(), "The string is null");
+            if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+                if ((itIsTimeToReload() || forceReload)) {
+                    Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
+                    String JSON = laadViaInternet();
+                    Log.d(getClass().getSimpleName(), "Loaded from internet");
+                    if (JSON == null) {
+                        Log.d(getClass().getSimpleName(), "The string is null");
+                    }
+                    return JSON;
                 }
-                return JSON;
+                Log.d(getClass().getSimpleName(), "Het rooster is uit het geheugen geladen");
             }
-            Log.d(getClass().getSimpleName(), "Het rooster is uit het geheugen geladen");
-            return null;
+            throw new IOException("Geen internetverbinding");
+        } catch (Exception e) {
+            publishProgress(e);
         }
-        return "error:Geen internetverbinding";
+        return null;
+    }
+
+    @Override
+    protected void onProgressUpdate(Exception... e) {
+        if (context.get() != null) {
+            Toast.makeText(context.get(), e[0].getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e("PreferencesActivity", "SetSubklasfout", e[0]);
+            EasyTracker easyTracker = EasyTracker.getInstance(context.get());
+            easyTracker.send(MapBuilder
+                    .createException(new StandardExceptionParser(context.get(), null)
+                            //True betekent geen fatale exceptie
+                            .getDescription(Thread.currentThread().getName(), e[0]), true)
+                    .build()
+            );
+        }
     }
 
     boolean itIsTimeToReload() {
