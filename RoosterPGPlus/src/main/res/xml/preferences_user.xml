@@ -17,8 +17,7 @@
 
     <com.thomasdh.roosterpgplus.ListPreferenceMultiSelect
         android:defaultValue="#ALL#"
-        android:dialogTitle="Image folders to monitor"
-        android:enabled="false"
+        android:dialogTitle="Subklassen"
         android:entries="@array/pref_upload_buckets_default_entries"
         android:entryValues="@array/pref_upload_buckets_default_values"
         android:key="subklassen"

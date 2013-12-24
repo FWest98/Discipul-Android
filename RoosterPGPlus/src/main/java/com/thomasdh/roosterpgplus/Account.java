@@ -15,6 +15,10 @@ import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import com.google.analytics.tracking.android.EasyTracker;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.StandardExceptionParser;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -36,12 +40,6 @@ import java.util.Scanner;
  */
 public class Account {
 
-    private Context context;
-    private AlertDialog LoginDialog;
-    private AlertDialog RegisterDialog;
-    private AlertDialog ExtendDialog;
-    private MainActivity.PlaceholderFragment mainFragment;
-
     public Boolean isSet;
     public String name;
     public String apikey;
@@ -50,19 +48,24 @@ public class Account {
     public Boolean isAppAccount;
     public UserTypes userType;
     public String code;
+    private Context context;
+    private AlertDialog LoginDialog;
+    private AlertDialog RegisterDialog;
+    private AlertDialog ExtendDialog;
+    private MainActivity.PlaceholderFragment mainFragment;
 
     public Account(Context context) {
         this.context = context;
         this.mainFragment = null;
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
-        if(preferences.getString("key", null) == null) {
+        if (preferences.getString("key", null) == null) {
             this.isSet = false;
         } else {
             this.isSet = true;
             this.name = preferences.getString("naam", null);
             this.apikey = preferences.getString("key", null);
-            if(preferences.getString("code", null) == null) {
+            if (preferences.getString("code", null) == null) {
                 this.userType = UserTypes.LEERLING;
                 this.klas = preferences.getString("klas", null);
                 this.vertegenwoordiger = preferences.getBoolean("vertegenwoordiger", false);
@@ -80,13 +83,13 @@ public class Account {
         this.mainFragment = mainFragment;
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
-        if(preferences.getString("key", null) == null) {
+        if (preferences.getString("key", null) == null) {
             this.isSet = false;
         } else {
             this.isSet = true;
             this.name = preferences.getString("naam", null);
             this.apikey = preferences.getString("key", null);
-            if(preferences.getString("code", null) == null) {
+            if (preferences.getString("code", null) == null) {
                 this.userType = UserTypes.LEERLING;
                 this.klas = preferences.getString("klas", null);
                 this.vertegenwoordiger = preferences.getBoolean("vertegenwoordiger", false);
@@ -103,38 +106,35 @@ public class Account {
     //region JSON-verwerking
 
     final public Account JSON_InitializeAccount(String s) throws JSONException {
-        try {
-            JSONObject object = new JSONObject(s);
-            SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
-            e.putString("key", object.getString("key"));
-            this.apikey = object.getString("key");
-            System.out.println("The key: " + object.getString("key"));
-            e.putString("naam", object.getString("naam"));
-            this.name = object.getString("naam");
-            if (object.has("klas")) {
-                this.userType = UserTypes.LEERLING;
-                e.putString("klas", object.getString("klas"));
-                this.klas = object.getString("klas");
-                e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
-                this.vertegenwoordiger = object.getBoolean("vertegenwoordiger");
-            } else {
-                this.userType = UserTypes.LERAAR;
-                e.putString("code", object.getString("code"));
-                this.code = object.getString("code");
-            }
-            e.putBoolean("appaccount", object.getBoolean("app_user"));
-            this.isAppAccount = object.getBoolean("app_user");
-            e.commit();
-
-            return this;
-        } catch (JSONException e) {
-            throw e;
+        JSONObject object = new JSONObject(s);
+        SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        e.putString("key", object.getString("key"));
+        this.apikey = object.getString("key");
+        System.out.println("The key: " + object.getString("key"));
+        e.putString("naam", object.getString("naam"));
+        this.name = object.getString("naam");
+        if (object.has("klas")) {
+            this.userType = UserTypes.LEERLING;
+            e.putString("klas", object.getString("klas"));
+            this.klas = object.getString("klas");
+            e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
+            this.vertegenwoordiger = object.getBoolean("vertegenwoordiger");
+        } else {
+            this.userType = UserTypes.LERAAR;
+            e.putString("code", object.getString("code"));
+            this.code = object.getString("code");
         }
+        e.putBoolean("appaccount", object.getBoolean("app_user"));
+        this.isAppAccount = object.getBoolean("app_user");
+        e.commit();
+
+        return this;
     }
 
     //endregion
 
     //region Login
+
     /**
      * Inloggen met leerlingnummer
      */
@@ -142,11 +142,13 @@ public class Account {
     private void login(int leerlingnummer) {
         login(leerlingnummer, false, false);
     }
+
     private void login(int leerlingnummer, boolean laadRooster) {
         login(leerlingnummer, false, laadRooster);
     }
+
     private void login(final int leerlingnummer, boolean force, final boolean laadRooster) {
-        new AsyncTask<String, Void, String>() {
+        new AsyncTask<String, Exception, String>() {
             @Override
             protected String doInBackground(String... params) {
 
@@ -159,7 +161,6 @@ public class Account {
 
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/login.php");
-                String s;
 
                 try {
                     // LLNR toevoegen
@@ -179,74 +180,96 @@ public class Account {
 
                     switch (status) {
                         case 500:
-                            return "error:Serverfout";
+                            throw new IOException("Serverfout");
                         case 204:
                             return "duplicate";
                         case 200:
-                            return new Scanner(response.getEntity().getContent()).nextLine();
+                            String string = "";
+                            Scanner s = new Scanner(response.getEntity().getContent());
+                            while (s.hasNext()) {
+                                string += s.nextLine();
+                            }
+                            return string;
                         default:
-                            return "error:Onbekende fout";
+                            throw new Exception("Onbekende fout");
                     }
-                } catch (ClientProtocolException e) {
-                    s = "error:" + e.toString();
-                } catch (IOException e) {
-                    s = "error:" + e.toString();
+                } catch (Exception e) {
+                    publishProgress(e);
                 }
-                return s;
+                return null;
+            }
+
+            @Override
+            protected void onProgressUpdate(Exception... values) {
+                EasyTracker easyTracker = EasyTracker.getInstance(context);
+                easyTracker.send(MapBuilder
+                        .createException(new StandardExceptionParser(context, null)
+                                //True betekent geen fatale exceptie
+                                .getDescription(Thread.currentThread().getName(), values[0]), true)
+                        .build()
+                );
+                Toast.makeText(context, values[0].getMessage(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             protected void onPostExecute(String s) {
-                Log.e(this.getClass().getName(), "The string is: " + s);
-                if (s.startsWith("error:")) {
-                    Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
-                } else if (s.equals("duplicate")) {
-                    // Maak een mooie notifybox en blablabla *sich*
-                    final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-                    dialog.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
-                    dialog.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
-                    dialog.setPositiveButton(context.getResources().getString(R.string.logindialog_warning_submitButton), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            login(leerlingnummer, laadRooster, true);
-                        }
-                    })
-                            .setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // do nothing
-                                }
-                            });
+                if (s != null) {
+                    Log.e(this.getClass().getName(), "The string is: " + s);
+                    if (s.equals("duplicate")) {
+                        // Maak een mooie notifybox en blablabla *sich*
+                        final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                        dialog.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
+                        dialog.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
+                        dialog.setPositiveButton(context.getResources().getString(R.string.logindialog_warning_submitButton), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                login(leerlingnummer, laadRooster, true);
+                            }
+                        })
+                                .setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // do nothing
+                                    }
+                                });
 
-                    dialog.show();
-                } else {
-                    hideLoginDialog();
-                    if (s.startsWith("nr1")) {
-                        Toast.makeText(context, "Al bestaande app-account gekozen", Toast.LENGTH_LONG).show();
-                        s = s.substring(4);
-                    }
-                    try {
-                        JSONObject object = new JSONObject(s);
-                        SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
-                        e.putString("key", object.getString("key"));
-                        System.out.println("The key: " + object.getString("key"));
-                        e.putString("naam", object.getString("naam"));
-                        if (object.has("klas")) {
-                            e.putString("klas", object.getString("klas"));
-                            e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
-                        } else {
-                            e.putString("code", object.getString("code"));
+                        dialog.show();
+                    } else {
+                        hideLoginDialog();
+                        if (s.startsWith("nr1")) {
+                            Toast.makeText(context, "Al bestaande app-account gekozen", Toast.LENGTH_LONG).show();
+                            s = s.substring(4);
                         }
-                        e.commit();
-                        Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
-                        //Laad het rooster als de boolean true is
-                        if (laadRooster) {
-                            mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
+                        try {
+                            JSONObject object = new JSONObject(s);
+                            SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
+                            e.putString("key", object.getString("key"));
+                            System.out.println("The key: " + object.getString("key"));
+                            e.putString("naam", object.getString("naam"));
+                            if (object.has("klas")) {
+                                e.putString("klas", object.getString("klas"));
+                                e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
+                            } else {
+                                e.putString("code", object.getString("code"));
+                            }
+                            e.commit();
+                            Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+                            //Laad het rooster als de boolean true is
+                            if (laadRooster) {
+                                mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
+                            }
+                        } catch (JSONException e) {
+                            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e("PreferencesActivity", "Loginfout", e);
+                            EasyTracker easyTracker = EasyTracker.getInstance(context);
+                            easyTracker.send(MapBuilder
+                                    .createException(new StandardExceptionParser(context, null)
+                                            //True betekent geen fatale exceptie
+                                            .getDescription(Thread.currentThread().getName(), e), true)
+                                    .build()
+                            );
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
                     }
-                    super.onPostExecute(s);
                 }
             }
         }.execute(Integer.toString(leerlingnummer), (force ? "ja" : "nee"));
@@ -258,13 +281,13 @@ public class Account {
     private void login(String gebruikersnaam, String wachtwoord) {
         login(gebruikersnaam, wachtwoord, false);
     }
+
     private void login(String gebruikersnaam, String wachtwoord, final boolean laadRooster) {
-        new AsyncTask<String, Void, String>() {
+        new AsyncTask<String, Exception, String>() {
             @Override
             protected String doInBackground(String... params) {
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/login.php");
-                String s;
                 try {
                     // Add your data
                     List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
@@ -282,30 +305,44 @@ public class Account {
 
                     switch (status) {
                         case 400:
-                            return "error:Missende parameters";
+                            throw new IOException("Missende parameters");
                         case 401:
-                            return "error:Ongeldige logingegevens";
+                            throw new IOException("Ongeldige logingegevens");
                         case 500:
-                            return "error:Serverfout";
+                            throw new IOException("Serverfout");
                         case 200:
-                            return new Scanner(response.getEntity().getContent()).nextLine();
+                            String string = "";
+                            Scanner s = new Scanner(response.getEntity().getContent());
+                            while (s.hasNext()) {
+                                string += s.nextLine();
+                            }
+                            return string;
                         default:
-                            return "error:Onbekende fout";
+                            throw new Exception("Onbekende fout");
                     }
-                } catch (ClientProtocolException e) {
-                    s = "error:" + e.toString();
-                } catch (IOException e) {
-                    s = "error:" + e.toString();
+                } catch (Exception e) {
+                    publishProgress(e);
                 }
-                return s;
+                return null;
+            }
+
+            @Override
+            protected void onProgressUpdate(Exception... e) {
+                Toast.makeText(context, e[0].getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("PreferencesActivity", "SetSubklasfout", e[0]);
+                EasyTracker easyTracker = EasyTracker.getInstance(context);
+                easyTracker.send(MapBuilder
+                        .createException(new StandardExceptionParser(context, null)
+                                //True betekent geen fatale exceptie
+                                .getDescription(Thread.currentThread().getName(), e[0]), true)
+                        .build()
+                );
             }
 
             @Override
             protected void onPostExecute(String s) {
-                Log.e(this.getClass().getName(), "The string is: " + s);
-                if (s.startsWith("error:")) {
-                    Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
-                } else {
+                if (s != null) {
+                    Log.e(this.getClass().getName(), "The string is: " + s);
                     try {
                         Account account = JSON_InitializeAccount(s);
                         Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
@@ -322,13 +359,12 @@ public class Account {
                     }
 
                 }
-                super.onPostExecute(s);
-
             }
         }.execute(gebruikersnaam, wachtwoord);
     }
     //endregion
     //region Registreren
+
     /**
      * Registreren
      */
@@ -487,6 +523,7 @@ public class Account {
     }
     //endregion
     //region Logindialogs
+
     /**
      * Dialogstuff
      */
@@ -578,7 +615,7 @@ public class Account {
     }
 
     public void extend() throws Exception {
-        if(this.isAppAccount) {
+        if (this.isAppAccount) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(context);
             final LayoutInflater inflater = LayoutInflater.from(context);
             final View dialogView = inflater.inflate(R.layout.extenddialog, null);
@@ -608,21 +645,21 @@ public class Account {
                     final EditText email = (EditText) dialogView.findViewById(R.id.extenddialog_email);
                     username.requestFocus();
 
-                    if(username.getText().toString().equals("")) {
+                    if (username.getText().toString().equals("")) {
                         Toast.makeText(context, "Gebruikersnaam is verplicht!", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if(password.getText().toString().equals("")) {
+                    if (password.getText().toString().equals("")) {
                         Toast.makeText(context, "Wachtwoord is verplicht!", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if(!password.getText().toString().equals(repass.getText().toString())) {
+                    if (!password.getText().toString().equals(repass.getText().toString())) {
                         Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText().toString() + "  " + repass.getText().toString(), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     try {
                         extend(username.getText().toString(), password.getText().toString(), email.getText().toString());
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -633,7 +670,7 @@ public class Account {
     }
 
     public void extend(final String username, final String password, final String email) throws Exception {
-        if(this.isAppAccount) {
+        if (this.isAppAccount) {
             new AsyncTask<String, Void, String>() {
                 @Override
                 protected String doInBackground(String... params) {
@@ -645,7 +682,7 @@ public class Account {
                         postParameters.add(new BasicNameValuePair("key", params[0]));
                         postParameters.add(new BasicNameValuePair("username", params[1]));
                         postParameters.add(new BasicNameValuePair("password", params[2]));
-                        if(!email.equals("")) {
+                        if (!email.equals("")) {
                             postParameters.add(new BasicNameValuePair("email", email));
                         }
 
@@ -655,7 +692,7 @@ public class Account {
                         HttpResponse response = httpClient.execute(httpPost);
                         int status = response.getStatusLine().getStatusCode();
 
-                        switch(status) {
+                        switch (status) {
                             case 409:
                                 return "conflict";
                             case 400:
@@ -668,7 +705,7 @@ public class Account {
                                 return "error:Onbekende fout";
                         }
                     } catch (Exception e) {
-                        s = "error:"+e.getMessage();
+                        s = "error:" + e.getMessage();
                         e.printStackTrace();
                     }
                     return s;
@@ -676,10 +713,10 @@ public class Account {
 
                 @Override
                 protected void onPostExecute(String s) {
-                    Log.e(this.getClass().getName(), "The string is:"+s);
-                    if(s.startsWith("error:")) {
+                    Log.e(this.getClass().getName(), "The string is:" + s);
+                    if (s.startsWith("error:")) {
                         Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
-                    } else if(s.equals("conflict")) {
+                    } else if (s.equals("conflict")) {
                         Toast.makeText(context, "Deze gebruikersnaam is al in gebruik", Toast.LENGTH_LONG).show();
                     } else {
                         hideExtendDialog();

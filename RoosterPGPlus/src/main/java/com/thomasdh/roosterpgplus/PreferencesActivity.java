@@ -16,6 +16,7 @@ import android.util.Log;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
 
 import java.util.ArrayList;
@@ -184,16 +185,29 @@ public class PreferencesActivity extends PreferenceActivity {
                         subklassen.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                             @Override
                             public boolean onPreferenceChange(Preference preference, final Object newValue) {
-                                new AsyncTask<Void, Void, Void>(){
+                                new AsyncTask<Void, Exception, Void>(){
                                     @Override
                                     protected Void doInBackground(Void... params) {
                                         try {
                                             RoosterInfoDownloader.setSubklassen(getActivity(),
                                                     ((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
                                         } catch (Exception e) {
-                                            Log.e("PreferencesActivity", "SetSubklasfout", e);
+                                            publishProgress(e);
                                         }
                                         return null;
+                                    }
+
+                                    @Override
+                                    protected void onProgressUpdate(Exception... e) {
+                                        Toast.makeText(getActivity(), e[0].getMessage(), Toast.LENGTH_SHORT).show();
+                                        Log.e("PreferencesActivity", "SetSubklasfout", e[0]);
+                                        EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
+                                        easyTracker.send(MapBuilder
+                                                .createException(new StandardExceptionParser(getActivity(), null)
+                                                        //True betekent geen fatale exceptie
+                                                        .getDescription(Thread.currentThread().getName(), e[0]), true)
+                                                .build()
+                                        );
                                     }
                                 }.execute();
                                 return true;

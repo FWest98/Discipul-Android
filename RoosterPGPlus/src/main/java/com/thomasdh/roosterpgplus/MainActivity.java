@@ -68,9 +68,11 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        //TODO ANALYTICS DRY RUN, geen gegevens worden naar analytics verzonden in de debug versie
         GoogleAnalytics.getInstance(this).setDryRun(true);
+
+        setContentView(R.layout.activity_main);
 
         actionBar = getSupportActionBar();
 
@@ -184,8 +186,8 @@ public class MainActivity extends ActionBarActivity {
     public static class PlaceholderFragment extends Fragment {
 
         public static String leraarLerlingselected;
-        public ViewPager viewPager;
         public final Type type;
+        public ViewPager viewPager;
         public Account user;
         private View rootView;
 
@@ -203,7 +205,7 @@ public class MainActivity extends ActionBarActivity {
                 viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager);
                 viewPager.setAdapter(new MyPagerAdapter());
 
-                if(!this.user.isSet) {
+                if (!this.user.isSet) {
                     this.user.showLoginDialog(true);
                 }
 
