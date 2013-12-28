@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.thomasdh.roosterpgplus.Lesuur;
+import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,7 +31,7 @@ public class RoosterWeek implements Serializable {
     private static final long serialVersionUID = 1029472134713472957L;
     private Lesuur[][][] uren;
 
-    public RoosterWeek(String roosterJSON) {
+    public RoosterWeek(String roosterJSON, Context context) {
         try {
             JSONObject weekArray = new JSONObject(roosterJSON);
             uren = new Lesuur[5][7][];
@@ -42,14 +43,14 @@ public class RoosterWeek implements Serializable {
                             JSONArray uurArray = dagArray.getJSONArray(String.valueOf(hour + 1));
                             uren[day][hour] = new Lesuur[uurArray.length()];
                             for (int p = 0; p < uurArray.length(); p++) {
-                                uren[day][hour][p] = new Lesuur(uurArray.getJSONObject(p));
+                                uren[day][hour][p] = new Lesuur(uurArray.getJSONObject(p), context);
                             }
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ExceptionHandler.handleException(e, context, "Fout bij het verwerken van de roostergegevens", RoosterWeek.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
 
@@ -87,8 +88,7 @@ public class RoosterWeek implements Serializable {
             fis.close();
             return roosterWeek;
         } catch (Exception e) {
-            Log.e("MainActivity", "Kon het rooster niet laden", e);
-            e.printStackTrace();
+            ExceptionHandler.handleException(e, context, "Kon het rooster niet uit het geheugen laden", RoosterWeek.class.getSimpleName(), ExceptionHandler.HandleType.SILENT);
         }
         return null;
     }
@@ -102,8 +102,7 @@ public class RoosterWeek implements Serializable {
                 oos.close();
                 fos.close();
             } catch (Exception e) {
-                Log.e("RoosterWeek", "Kon het bestand niet opslaan", e);
-                e.printStackTrace();
+                ExceptionHandler.handleException(e, context, "Kon het rooster niet opslaan", RoosterWeek.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
             }
         }
     }

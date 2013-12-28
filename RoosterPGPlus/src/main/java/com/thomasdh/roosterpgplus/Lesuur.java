@@ -1,5 +1,9 @@
 package com.thomasdh.roosterpgplus;
 
+import android.content.Context;
+
+import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +34,7 @@ public class Lesuur implements Serializable{
     public boolean master;
     public int bijzonder;
 
-    public Lesuur(JSONObject JSON) {
+    public Lesuur(JSONObject JSON, Context context) {
         try {
             this.unique = JSON.getString("unique");
             this.dag = JSON.getInt("dag");
@@ -50,7 +54,7 @@ public class Lesuur implements Serializable{
             this.master = JSON.getInt("master") == 1;
             this.bijzonder = JSON.getInt("bijzonder");
         } catch (JSONException e) {
-            e.printStackTrace();
+            ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", getClass().getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
     public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen) {
