@@ -54,7 +54,7 @@ public class Lesuur implements Serializable{
             this.master = JSON.getInt("master") == 1;
             this.bijzonder = JSON.getInt("bijzonder");
         } catch (JSONException e) {
-            ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", getClass().getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
+            ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", Lesuur.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
     public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen) {
