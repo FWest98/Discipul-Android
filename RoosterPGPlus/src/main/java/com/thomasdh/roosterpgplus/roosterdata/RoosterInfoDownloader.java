@@ -69,7 +69,7 @@ public class RoosterInfoDownloader {
 
     static public boolean setSubklassen(Context context, String[] subklassen) throws UnsupportedEncodingException, IOException{
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/login.php");
+        HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/manager/subklassen");
         String s;
         // Add your data
         List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
@@ -80,7 +80,7 @@ public class RoosterInfoDownloader {
             Log.d("RoosterInfoDownloader", subklassen[index]);
             postParameters.add(new BasicNameValuePair("subklassen[" + index + "]", subklassen[index]));
         }
-        postParameters.add(new BasicNameValuePair("setAll", "true"));
+        postParameters.add(new BasicNameValuePair("setAll", "1"));
         UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
         httppost.setEntity(form);
 

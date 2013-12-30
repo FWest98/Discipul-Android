@@ -102,15 +102,20 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             subklassen.setEntries(new String[]{"Subklassen"});
             subklassen.setEntryValues(new String[]{"Subklassen"});
-            new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Subklas>>() {
+            new AsyncTask<Void, Exception, ArrayList<RoosterInfoDownloader.Subklas>>() {
                 @Override
                 protected ArrayList<RoosterInfoDownloader.Subklas> doInBackground(Void... params) {
                     try {
                         return RoosterInfoDownloader.getSubklassen(getApplicationContext());
                     } catch (Exception e) {
-                        ExceptionHandler.handleException(e, getApplicationContext(), "Fout bij het laden van subklassen", "PreferencesActivity", ExceptionHandler.HandleType.EXTENSIVE);
+                        publishProgress(e);
                         return null;
                     }
+                }
+
+                @Override
+                protected void onProgressUpdate(Exception... values) {
+                    ExceptionHandler.handleException(values[0], getApplicationContext(), "Fout bij het ophalen van de subklassen", "PreferencesActivity", ExceptionHandler.HandleType.EXTENSIVE);
                 }
 
                 @Override
@@ -270,16 +275,20 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             subklassen.setEntries(new String[]{"Subklassen"});
             subklassen.setEntryValues(new String[]{"Subklassen"});
-            new AsyncTask<Void, Void, ArrayList<RoosterInfoDownloader.Subklas>>() {
+            new AsyncTask<Void, Exception, ArrayList<RoosterInfoDownloader.Subklas>>() {
                 @Override
                 protected ArrayList<RoosterInfoDownloader.Subklas> doInBackground(Void... params) {
                     try {
                         return RoosterInfoDownloader.getSubklassen(getActivity());
                     } catch (Exception e) {
-                        //TODO analytics
-                        Log.e("PreferenceActivity", "Fout", e);
+                        publishProgress(e);
                         return null;
                     }
+                }
+
+                @Override
+                protected void onProgressUpdate(Exception... values) {
+                    ExceptionHandler.handleException(values[0], getActivity(), "Fout bij het ophalen van de subklassen", "PreferencesActivity", ExceptionHandler.HandleType.EXTENSIVE);
                 }
 
                 @Override

@@ -125,8 +125,13 @@ public class Account {
             e.putString("code", object.getString("code"));
             this.code = object.getString("code");
         }
-        e.putBoolean("appaccount", object.getBoolean("app_user"));
-        this.isAppAccount = object.getBoolean("app_user");
+        if (object.has("app_user")) {
+            e.putBoolean("appaccount", object.getBoolean("app_user"));
+            this.isAppAccount = object.getBoolean("app_user");
+        }else{
+            e.putBoolean("appaccount", false);
+            this.isAppAccount = false;
+        }
         e.commit();
 
         return this;
