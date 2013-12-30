@@ -187,18 +187,33 @@ public class MainActivity extends ActionBarActivity {
     public static class PlaceholderFragment extends Fragment {
 
         public static String leraarLerlingselected;
-        public final Type type;
+        public Type type;
         public ViewPager viewPager;
         public Account user;
         private View rootView;
+
+        public PlaceholderFragment() {
+
+        }
 
         public PlaceholderFragment(Type type) {
             this.type = type;
         }
 
         @Override
+        public void onSaveInstanceState(Bundle outState) {
+            super.onSaveInstanceState(outState);
+            outState.putSerializable("fragmentType", type);
+        }
+
+        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+
+            if (savedInstanceState != null) {
+                type = (Type) savedInstanceState.getSerializable("fragmentType");
+            }
+
             /** Aanmaken User */
             this.user = new Account(getActivity(), this);
             if (type == Type.PERSOONLIJK_ROOSTER) {
