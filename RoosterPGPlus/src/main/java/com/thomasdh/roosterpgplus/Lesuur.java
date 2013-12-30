@@ -1,6 +1,7 @@
 package com.thomasdh.roosterpgplus;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
@@ -12,10 +13,9 @@ import java.io.Serializable;
 /**
  * Created by Floris on 3-12-13.
  */
-public class Lesuur implements Serializable{
+public class Lesuur implements Serializable {
 
     private static final long serialVersionUID = 7526472295622776147L;
-
     public String unique;
     public int dag;
     public int uur;
@@ -53,12 +53,14 @@ public class Lesuur implements Serializable{
             this.pw = JSON.getInt("pw") == 1;
             this.master = JSON.getInt("master") == 1;
             this.bijzonder = JSON.getInt("bijzonder");
+            this.unique = klas + dag + uur + week;
         } catch (JSONException e) {
             ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", Lesuur.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
+
     public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen) {
-        this.unique = klas+dag+uur+week;
+        this.unique = klas + dag + uur + week;
         this.dag = dag;
         this.uur = uur;
         this.week = week;
@@ -77,5 +79,12 @@ public class Lesuur implements Serializable{
         this.bijzonder = 0;
     }
 
-
+    @Override
+    public boolean equals(Object o) {
+        Lesuur lesuur = (Lesuur) o;
+        if (unique.equals(lesuur.unique)) {
+            return true;
+        }
+        return false;
+    }
 }
