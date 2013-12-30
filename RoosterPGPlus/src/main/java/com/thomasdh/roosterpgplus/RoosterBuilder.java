@@ -204,12 +204,16 @@ class RoosterBuilder {
                                             newView.setVisibility(View.VISIBLE);
                                             frameLayout.bringChildToFront(oldView);
                                             frameLayout.invalidate();
+                                            newView.setClickable(false);
+                                            oldView.setClickable(false);
                                             oldView.animate().alpha(0f).setDuration(shortAnimationTime).setListener(new AnimatorListenerAdapter() {
                                                 @Override
                                                 public void onAnimationEnd(Animator animation) {
                                                     oldView.setVisibility(View.GONE);
                                                     newView.setVisibility(View.VISIBLE);
                                                     newView.setAlpha(1f);
+                                                    newView.setClickable(true);
+                                                    oldView.setClickable(true);
                                                 }
                                             });
                                         } else {
