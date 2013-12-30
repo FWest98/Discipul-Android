@@ -225,7 +225,7 @@ class RoosterBuilder {
                             }
                             frameLayout.addView(allUren.get(u));
                             allUren.get(0).setVisibility(View.VISIBLE);
-                            frameLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                            frameLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
                         ll.addView(frameLayout);
                     } else {
