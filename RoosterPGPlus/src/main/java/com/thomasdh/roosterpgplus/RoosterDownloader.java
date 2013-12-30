@@ -101,15 +101,7 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
     @Override
     protected void onProgressUpdate(Exception... e) {
         if (context.get() != null) {
-            Toast.makeText(context.get(), e[0].getMessage(), Toast.LENGTH_SHORT).show();
-            Log.e("PreferencesActivity", "SetSubklasfout", e[0]);
-            EasyTracker easyTracker = EasyTracker.getInstance(context.get());
-            easyTracker.send(MapBuilder
-                    .createException(new StandardExceptionParser(context.get(), null)
-                            //True betekent geen fatale exceptie
-                            .getDescription(Thread.currentThread().getName(), e[0]), true)
-                    .build()
-            );
+            ExceptionHandler.handleException(e[0], context.get(), "Fout bij het downloaden van het rooster", "RoosterDownloader", ExceptionHandler.HandleType.SIMPLE);
         }
     }
 

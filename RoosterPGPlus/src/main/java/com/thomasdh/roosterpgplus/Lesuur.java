@@ -1,5 +1,9 @@
 package com.thomasdh.roosterpgplus;
 
+import android.content.Context;
+
+import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
