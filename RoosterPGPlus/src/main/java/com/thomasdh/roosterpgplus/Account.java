@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.StandardExceptionParser;
+import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -241,33 +242,18 @@ public class Account {
                             s = s.substring(4);
                         }
                         try {
-                            JSONObject object = new JSONObject(s);
-                            SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
-                            e.putString("key", object.getString("key"));
-                            System.out.println("The key: " + object.getString("key"));
-                            e.putString("naam", object.getString("naam"));
-                            if (object.has("klas")) {
-                                e.putString("klas", object.getString("klas"));
-                                e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
-                            } else {
-                                e.putString("code", object.getString("code"));
-                            }
-                            e.commit();
-                            Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
-                            //Laad het rooster als de boolean true is
-                            if (laadRooster) {
+                            Account account = JSON_InitializeAccount(s);
+                            Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
+
+                            LoginDialog.dismiss();
+
+                            //Laad het rooster
+                            if (laadRooster && mainFragment != null) {
                                 mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
                             }
+
                         } catch (JSONException e) {
-                            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            Log.e("PreferencesActivity", "Loginfout", e);
-                            EasyTracker easyTracker = EasyTracker.getInstance(context);
-                            easyTracker.send(MapBuilder
-                                    .createException(new StandardExceptionParser(context, null)
-                                            //True betekent geen fatale exceptie
-                                            .getDescription(Thread.currentThread().getName(), e), true)
-                                    .build()
-                            );
+                            ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
                         }
                     }
                 }
@@ -328,15 +314,7 @@ public class Account {
 
             @Override
             protected void onProgressUpdate(Exception... e) {
-                Toast.makeText(context, e[0].getMessage(), Toast.LENGTH_SHORT).show();
-                Log.e("PreferencesActivity", "SetSubklasfout", e[0]);
-                EasyTracker easyTracker = EasyTracker.getInstance(context);
-                easyTracker.send(MapBuilder
-                        .createException(new StandardExceptionParser(context, null)
-                                //True betekent geen fatale exceptie
-                                .getDescription(Thread.currentThread().getName(), e[0]), true)
-                        .build()
-                );
+                ExceptionHandler.handleException(e[0], context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
             }
 
             @Override
@@ -355,7 +333,7 @@ public class Account {
                         }
 
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
                     }
 
                 }
@@ -514,7 +492,7 @@ public class Account {
                             mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
                         }
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
                     }
                     super.onPostExecute(s);
                 }
