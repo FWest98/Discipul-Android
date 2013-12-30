@@ -30,7 +30,16 @@ public class PreferencesActivity extends PreferenceActivity {
     private static PreferenceListener2 preferenceListener;
     private Account user2;
     final private Account user = user2;
-    
+
+    @Override
+    protected boolean isValidFragment(String fragmentName) {
+        if (UserFragment.class.getName().equals(fragmentName) ||
+                InfoFragment.class.getName().equals(fragmentName)){
+            return true;
+        }
+        return false;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -262,7 +271,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 public boolean onPreferenceClick(Preference preference) {
                     try {
                         user.extend();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         Toast.makeText(context, context.getString(R.string.extenddialog_isExtended), Toast.LENGTH_SHORT).show();
                     }
                     return false;
