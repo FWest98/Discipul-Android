@@ -1,22 +1,22 @@
 package com.thomasdh.roosterpgplus.roosterdata;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.util.Log;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.thomasdh.roosterpgplus.Lesuur;
+import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by Thomas on 13-12-13.
@@ -27,7 +27,31 @@ public class RoosterWeek implements Serializable {
     private static final long serialVersionUID = 1029472134713472957L;
     private Lesuur[][][] uren;
 
-    public RoosterWeek(String roosterJSON) {
+    public RoosterWeek(Cursor dagen) {
+        uren = new Lesuur[5][7][];
+        if (dagen.moveToFirst()) {
+            do {
+                Log.w("Les", LesuurData.cursorToLesuur(dagen).unique);
+                if (uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1] == null) {
+                    uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1] = new Lesuur[1];
+                    uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1][0] = LesuurData.cursorToLesuur(dagen);
+                } else {
+                    ArrayList<Lesuur> nieuw = new ArrayList<Lesuur>();
+                    for (Lesuur les : uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1]) {
+                        nieuw.add(les);
+                    }
+                    uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1] = new Lesuur[nieuw.size() + 1];
+                    for (int o = 0; o < nieuw.size(); o++) {
+                        uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1][o] = nieuw.get(o);
+                    }
+                    uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1][nieuw.size()] = LesuurData.cursorToLesuur(dagen);
+                }
+            } while (dagen.moveToNext());
+        }
+    }
+
+    public RoosterWeek(String roosterJSON, Context context) {
+
         try {
             JSONObject weekArray = new JSONObject(roosterJSON);
             uren = new Lesuur[5][7][];
@@ -39,14 +63,14 @@ public class RoosterWeek implements Serializable {
                             JSONArray uurArray = dagArray.getJSONArray(String.valueOf(hour + 1));
                             uren[day][hour] = new Lesuur[uurArray.length()];
                             for (int p = 0; p < uurArray.length(); p++) {
-                                uren[day][hour][p] = new Lesuur(uurArray.getJSONObject(p));
+                                uren[day][hour][p] = new Lesuur(uurArray.getJSONObject(p), context);
                             }
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ExceptionHandler.handleException(e, context, "Fout bij het verwerken van de roostergegevens", RoosterWeek.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
 
@@ -72,41 +96,45 @@ public class RoosterWeek implements Serializable {
     }
 
     public static RoosterWeek laadUitGeheugen(int week, Context context) {
-        if (week == -1) {
-            week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
-        }
-        RoosterWeek roosterWeek;
-        try {
-            FileInputStream fis = context.openFileInput("roosterWeek" + (week % 4));
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            roosterWeek = (RoosterWeek) ois.readObject();
-            ois.close();
-            fis.close();
-            return roosterWeek;
-        } catch (Exception e) {
-            Log.e("MainActivity", "Kon het rooster niet laden", e);
-            EasyTracker easyTracker = EasyTracker.getInstance(context);
-            easyTracker.send(MapBuilder.createException(
-                    new StandardExceptionParser(context, null)
-                            .getDescription(Thread.currentThread().getName(), e), true).build()
-            );
-        }
-        return null;
+        LesuurData ld = new LesuurData(context);
+        ld.open();
+        Cursor cursor = ld.db.query(SQLRooster.TABLE_ROOSTER, LesuurData.allLesuren,
+                SQLRooster.COLUMN_WEEK + " = " + week, null, null, null, null);
+        return new RoosterWeek(cursor);
     }
 
     public void slaOp(Context context) {
-        if (getWeek() != -1) {
-            try {
-                FileOutputStream fos = context.openFileOutput("roosterWeek" + (getWeek() % 4), Context.MODE_PRIVATE);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                oos.writeObject(this);
-                oos.close();
-                fos.close();
-            } catch (Exception e) {
-                Log.e("RoosterWeek", "Kon het bestand niet opslaan", e);
-                e.printStackTrace();
+        LesuurData ld = new LesuurData(context);
+        ld.open();
+        List<Lesuur> savedLesuren = ld.getAllLesuren();
+        if (uren != null) {
+            for (Lesuur[][] lesuur1 : uren) {
+                if (lesuur1 != null) {
+                    for (Lesuur[] lesuur2 : lesuur1) {
+                        if (lesuur2 != null) {
+                            for (Lesuur lesuur3 : lesuur2) {
+                                if (lesuur3 != null) {
+                                    boolean copy = false;
+                                    for (Lesuur saved : savedLesuren) {
+                                        if (saved.unique.equals(lesuur3.unique)) {
+                                            copy = true;
+                                        }
+                                    }
+                                    if (!copy) {
+                                        Log.d("Lesuur saved", "Het was geen kopie!?");
+                                        ld.addLesuur(lesuur3);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+        for (Lesuur lesuur : ld.getAllLesuren()) {
+            Log.e("RoosterWeek", "!" + lesuur.vak);
+        }
+        ld.close();
     }
 
     public int getWeek() {

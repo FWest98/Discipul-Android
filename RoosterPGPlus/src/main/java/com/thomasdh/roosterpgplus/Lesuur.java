@@ -11,8 +11,7 @@ import java.io.Serializable;
 public class Lesuur implements Serializable{
 
     private static final long serialVersionUID = 7526472295622776147L;
-
-    private String unique;
+    public String unique;
     public int dag;
     public int uur;
     public int week;
@@ -29,7 +28,7 @@ public class Lesuur implements Serializable{
     private boolean master;
     private int bijzonder;
 
-    public Lesuur(JSONObject JSON) {
+    public Lesuur(JSONObject JSON, Context context) {
         try {
             this.unique = JSON.getString("unique");
             this.dag = JSON.getInt("dag");
@@ -48,12 +47,14 @@ public class Lesuur implements Serializable{
             this.pw = JSON.getInt("pw") == 1;
             this.master = JSON.getInt("master") == 1;
             this.bijzonder = JSON.getInt("bijzonder");
+            this.unique = klas + dag + uur + week;
         } catch (JSONException e) {
-            e.printStackTrace();
+            ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", Lesuur.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
+
     public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen) {
-        this.unique = klas+dag+uur+week;
+        this.unique = klas + dag + uur + week;
         this.dag = dag;
         this.uur = uur;
         this.week = week;
@@ -72,5 +73,12 @@ public class Lesuur implements Serializable{
         this.bijzonder = 0;
     }
 
-
+    @Override
+    public boolean equals(Object o) {
+        Lesuur lesuur = (Lesuur) o;
+        if (unique.equals(lesuur.unique)) {
+            return true;
+        }
+        return false;
+    }
 }

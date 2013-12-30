@@ -181,41 +181,33 @@ public class RoosterInfoDownloader {
     }
 
     /* Klassen downloader */
-    static public ArrayList<String> getKlassen() {
+    static public ArrayList<String> getKlassen() throws IOException, JSONException {
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet Get = new HttpGet(Settings.API_Base_URL + "rooster/info?klassen");
 
-        try {
-            HttpResponse response = httpClient.execute(Get);
-            int status = response.getStatusLine().getStatusCode();
+        HttpResponse response = httpClient.execute(Get);
+        int status = response.getStatusLine().getStatusCode();
 
-            if (status == 200) {
-                String s = "";
-                Scanner sc = new Scanner(response.getEntity().getContent());
-                while (sc.hasNext()) {
-                    s += sc.nextLine();
-                }
-                if (!s.equals("")) {
-                    Log.e("Klassen:", s);
-                    // verder verwerken
-                    ArrayList<String> klassen = new ArrayList<String>();
-                    JSONArray jsonArray = new JSONArray(s);
-
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        klassen.add(jsonArray.getString(i));
-                    }
-
-                    return klassen;
-                }
-            } else {
-                throw new IOException("Onbekende status: " + status);
+        if (status == 200) {
+            String s = "";
+            Scanner sc = new Scanner(response.getEntity().getContent());
+            while (sc.hasNext()) {
+                s += sc.nextLine();
             }
-        } catch (JSONException e) {
-            Log.e("RoosterInfoDownloader", "JSONfout", e);
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.e("RoosterInfoDownloader", "Fout bij laden van de klassen", e);
-            e.printStackTrace();
+            if (!s.equals("")) {
+                Log.e("Klassen:", s);
+                // verder verwerken
+                ArrayList<String> klassen = new ArrayList<String>();
+                JSONArray jsonArray = new JSONArray(s);
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    klassen.add(jsonArray.getString(i));
+                }
+
+                return klassen;
+            }
+        } else {
+            throw new IOException("Onbekende status: " + status);
         }
         return null;
     }

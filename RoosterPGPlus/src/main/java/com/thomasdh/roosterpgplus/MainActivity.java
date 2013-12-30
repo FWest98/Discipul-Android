@@ -36,6 +36,7 @@ import com.thomasdh.roosterpgplus.adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
@@ -299,12 +300,22 @@ public class MainActivity extends ActionBarActivity {
                 viewPager.setAdapter(new MyPagerAdapter());
 
                 final Spinner klasspinner = (Spinner) getRootView().findViewById(R.id.main_fragment_spinner_klas);
-                new AsyncTask<Void, Void, ArrayList<String>>() {
+                new AsyncTask<Void, Exception, ArrayList<String>>() {
 
 
                     @Override
                     protected ArrayList<String> doInBackground(Void... params) {
-                        return RoosterInfoDownloader.getKlassen();
+                        try {
+                            return RoosterInfoDownloader.getKlassen();
+                        } catch (Exception e) {
+                            publishProgress(e);
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    protected void onProgressUpdate(Exception... values) {
+                        ExceptionHandler.handleException(values[0], getActivity(), "Kon de klassen niet ophalen", getClass().getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
                     }
 
                     @Override

@@ -13,10 +13,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.analytics.tracking.android.EasyTracker;
-import com.google.analytics.tracking.android.MapBuilder;
-import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -131,17 +129,17 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
             if (string.startsWith("error:")) {
                 Toast.makeText(context.get(), string.substring(6), Toast.LENGTH_SHORT).show();
             } else {
-                RoosterWeek roosterWeek = new RoosterWeek(string);
+                RoosterWeek roosterWeek = new RoosterWeek(string, context.get());
                 if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
                     roosterWeek.slaOp(context.get());
                 }
                 if (context != null && rootView.get() != null) {
                     if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_docent), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_docent), rootView.get(), week).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_leerling), rootView.get(), week).buildLayout(new RoosterWeek(string));
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_leerling), rootView.get(), week).buildLayout(new RoosterWeek(string, context.get()));
                 }
             }
         }
@@ -189,12 +187,9 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
                 return "error:Onbekende status: " + status;
             }
         } catch (IOException e) {
-            Log.e(getClass().getSimpleName(), "Fout bij het laden van de weken", e);
-            EasyTracker easyTracker = EasyTracker.getInstance(context.get());
-            easyTracker.send(MapBuilder
-                    .createException(new StandardExceptionParser(context.get(), null)
-                            .getDescription(Thread.currentThread().getName(), e), false)
-                    .build());
+            if (context.get() != null) {
+                ExceptionHandler.handleException(e, context.get(), "Kon het rooster niet downloaden", getClass().getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
+            }
         }
         return null;
     }
