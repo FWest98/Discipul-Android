@@ -1,7 +1,11 @@
 package com.thomasdh.roosterpgplus;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -9,6 +13,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -173,6 +178,8 @@ class RoosterBuilder {
 
 
                         final boolean multipleViews = (uurArray.length > 1);
+
+                        final FrameLayout frameLayout = new FrameLayout(context.get());
                         for (int u = 0; u < uurArray.length; u++) {
                             final int k = u;
                             Lesuur lesuur = uurArray[u];
@@ -180,20 +187,43 @@ class RoosterBuilder {
                             if (multipleViews) {
                                 allUren.get(u).findViewById(R.id.layers).setVisibility(View.VISIBLE);
                             }
+
+                            final int shortAnimationTime = context.get().getResources().getInteger(
+                                    android.R.integer.config_shortAnimTime);
+
                             allUren.get(u).setVisibility(View.GONE);
                             if (uurArray.length > 1) {
                                 allUren.get(u).setOnClickListener(new View.OnClickListener() {
                                     @Override
+                                    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
                                     public void onClick(View v) {
-                                        allUren.get(k).setVisibility(View.GONE);
-                                        allUren.get((k + 1) % allUren.size()).setVisibility(View.VISIBLE);
-                                        ll.invalidate();
+                                        final View oldView = allUren.get(k);
+                                        final View newView = allUren.get((k + 1) % allUren.size());
+                                        if (Build.VERSION.SDK_INT >= 12) {
+                                            newView.setAlpha(1f);
+                                            newView.setVisibility(View.VISIBLE);
+                                            frameLayout.bringChildToFront(oldView);
+                                            frameLayout.invalidate();
+                                            oldView.animate().alpha(0f).setDuration(shortAnimationTime).setListener(new AnimatorListenerAdapter() {
+                                                @Override
+                                                public void onAnimationEnd(Animator animation) {
+                                                    oldView.setVisibility(View.GONE);
+                                                    newView.setVisibility(View.VISIBLE);
+                                                    newView.setAlpha(1f);
+                                                }
+                                            });
+                                        } else {
+                                            oldView.setVisibility(View.GONE);
+                                            newView.setVisibility(View.VISIBLE);
+                                        }
                                     }
                                 });
                             }
-                            ll.addView(allUren.get(u));
+                            frameLayout.addView(allUren.get(u));
                             allUren.get(0).setVisibility(View.VISIBLE);
+                            frameLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                         }
+                        ll.addView(frameLayout);
                     } else {
                         View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
                         vrij.setMinimumHeight((int) convertDPToPX(80, context.get()));
@@ -316,5 +346,4 @@ class RoosterBuilder {
         uur.setMinimumHeight((int) convertDPToPX(81, context.get()));
         return uur;
     }
-
 }

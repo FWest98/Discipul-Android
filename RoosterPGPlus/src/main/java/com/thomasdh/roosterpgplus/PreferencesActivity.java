@@ -53,6 +53,8 @@ public class PreferencesActivity extends PreferenceActivity {
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
         }
+
+        user = new Account(this);
     }
 
     @Override
@@ -260,6 +262,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
             // Initialize subklassen
             final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
+            user = new Account(getActivity());
             if (user.isAppAccount){
                 subklassen.setEnabled(false);
             }else{
