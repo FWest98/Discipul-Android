@@ -4,10 +4,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.preference.PreferenceManager;
 
 import com.thomasdh.roosterpgplus.Lesuur;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -15,8 +17,6 @@ import java.util.List;
  */
 public class LesuurData {
 
-    public SQLRooster dbHelper;
-    public SQLiteDatabase db;
     public static String[] allLesuren = {SQLRooster.COLUMN_ID,
             SQLRooster.COLUMN_DAG,
             SQLRooster.COLUMN_UUR,
@@ -30,9 +30,25 @@ public class LesuurData {
             SQLRooster.COLUMN_VAK,
             SQLRooster.COLUMN_LOKAAL,
             SQLRooster.COLUMN_LERAAR};
+    public SQLRooster dbHelper;
+    public SQLiteDatabase db;
+    private Context context;
 
     public LesuurData(Context context) {
         dbHelper = new SQLRooster(context);
+        this.context = context;
+    }
+
+    public static Lesuur cursorToLesuur(Cursor cursor) {
+        Lesuur lesuur = new Lesuur(cursor.getInt(1),
+                cursor.getInt(2),
+                cursor.getInt(3),
+                cursor.getString(9),
+                cursor.getString(12),
+                cursor.getString(10),
+                cursor.getString(11),
+                cursor.getInt(5) > 0);
+        return lesuur;
     }
 
     public void open() {
@@ -56,6 +72,12 @@ public class LesuurData {
         db.insert(SQLRooster.TABLE_ROOSTER, null, values);
     }
 
+    public void deleteOldWeeks() {
+        int dezeWeek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        int aantalOpgeslagenWeken = PreferenceManager.getDefaultSharedPreferences(context).getInt("opgeslagenWeken", 10);
+        db.delete(SQLRooster.TABLE_ROOSTER, "(" + SQLRooster.COLUMN_WEEK + " < " + dezeWeek + " and " + SQLRooster.COLUMN_WEEK + " > " + (dezeWeek - 52 + aantalOpgeslagenWeken) + ") and " + SQLRooster.COLUMN_WEEK + " > " + (aantalOpgeslagenWeken + dezeWeek), null);
+    }
+
     public void deleteLesuur(Cursor cursor) {
         int id = cursor.getInt(0);
         db.delete(SQLRooster.TABLE_ROOSTER, SQLRooster.COLUMN_ID + " = " + id, null);
@@ -72,18 +94,6 @@ public class LesuurData {
         }
         cursor.close();
         return lesuren;
-    }
-
-    public static Lesuur cursorToLesuur(Cursor cursor) {
-        Lesuur lesuur = new Lesuur(cursor.getInt(1),
-                cursor.getInt(2),
-                cursor.getInt(3),
-                cursor.getString(9),
-                cursor.getString(12),
-                cursor.getString(10),
-                cursor.getString(11),
-                cursor.getInt(5) > 0);
-        return lesuur;
     }
 
 }

@@ -51,7 +51,6 @@ public class RoosterWeek implements Serializable {
     }
 
     public RoosterWeek(String roosterJSON, Context context) {
-
         try {
             JSONObject weekArray = new JSONObject(roosterJSON);
             uren = new Lesuur[5][7][];
@@ -134,6 +133,7 @@ public class RoosterWeek implements Serializable {
         for (Lesuur lesuur : ld.getAllLesuren()) {
             Log.e("RoosterWeek", "!" + lesuur.vak);
         }
+        ld.deleteOldWeeks();
         ld.close();
     }
 

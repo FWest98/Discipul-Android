@@ -80,7 +80,7 @@ public class RoosterInfoDownloader {
             Log.d("RoosterInfoDownloader", subklassen[index]);
             postParameters.add(new BasicNameValuePair("subklassen[" + index + "]", subklassen[index]));
         }
-        postParameters.add(new BasicNameValuePair("setAll", "1"));
+        postParameters.add(new BasicNameValuePair("setAll", "true"));
         UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
         httppost.setEntity(form);
 

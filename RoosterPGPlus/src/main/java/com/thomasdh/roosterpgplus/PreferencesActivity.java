@@ -50,6 +50,10 @@ public class PreferencesActivity extends PreferenceActivity {
             addPreferencesFromResource(R.xml.preferences_info);
         } else if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferenceActivity$UserFragment")) {
             addPreferencesFromResource(R.xml.preferences_user);
+        } else if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferenceActivity$OverigFragment")) {
+            addPreferencesFromResource(R.xml.preferences_overig);
+        } else if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferenceActivity$ActergrondFragment")) {
+            addPreferencesFromResource(R.xml.preferences_achtergrond);
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
         }
@@ -95,9 +99,9 @@ public class PreferencesActivity extends PreferenceActivity {
 
             // Initialize subklassen
             final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
-            if (user.isAppAccount){
+            if (user.isAppAccount) {
                 subklassen.setEnabled(false);
-            }else{
+            } else {
                 subklassen.setEnabled(true);
             }
             subklassen.setEntries(new String[]{"Subklassen"});
@@ -190,7 +194,7 @@ public class PreferencesActivity extends PreferenceActivity {
             /* account upgraden */
             if (!new Account(context).isAppAccount) {
                 findPreference("account_upgraden").setEnabled(false);
-            }else{
+            } else {
                 findPreference("account_upgraden").setEnabled(true);
             }
             findPreference("account_upgraden").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -253,6 +257,24 @@ public class PreferencesActivity extends PreferenceActivity {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class OverigFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.preferences_overig);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class AchtergrondFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.preferences_achtergrond);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class UserFragment extends PreferenceFragment {
 
         public PreferenceListener preferenceListener;
@@ -268,9 +290,9 @@ public class PreferencesActivity extends PreferenceActivity {
             // Initialize subklassen
             final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
             user = new Account(getActivity());
-            if (user.isAppAccount){
+            if (user.isAppAccount) {
                 subklassen.setEnabled(false);
-            }else{
+            } else {
                 subklassen.setEnabled(true);
             }
             subklassen.setEntries(new String[]{"Subklassen"});
@@ -363,7 +385,7 @@ public class PreferencesActivity extends PreferenceActivity {
             /* account upgraden */
             if (!new Account(context).isAppAccount) {
                 findPreference("account_upgraden").setEnabled(false);
-            }else{
+            } else {
                 findPreference("account_upgraden").setEnabled(true);
             }
             findPreference("account_upgraden").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -394,6 +416,7 @@ public class PreferencesActivity extends PreferenceActivity {
         public class PreferenceListener implements SharedPreferences.OnSharedPreferenceChangeListener {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                user = new Account(getActivity());
                 findPreference("mijn_account").setSummary(
                         "Naam: " + user.name + ", " +
                                 "Klas: " + user.klas
@@ -412,6 +435,7 @@ public class PreferencesActivity extends PreferenceActivity {
     private class PreferenceListener2 implements SharedPreferences.OnSharedPreferenceChangeListener {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            user = new Account(getApplicationContext());
             findPreference("mijn_account").setSummary(
                     "Naam: " + user.name + ", " +
                             "Klas: " + user.klas

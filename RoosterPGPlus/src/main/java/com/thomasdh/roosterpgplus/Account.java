@@ -66,6 +66,8 @@ public class Account {
             this.isSet = true;
             this.name = preferences.getString("naam", null);
             this.apikey = preferences.getString("key", null);
+
+            // Of er een leraarcode is
             if (preferences.getString("code", null) == null) {
                 this.userType = UserTypes.LEERLING;
                 this.klas = preferences.getString("klas", null);
@@ -80,27 +82,8 @@ public class Account {
     }
 
     public Account(Context context, MainActivity.PlaceholderFragment mainFragment) {
-        this.context = context;
+        this(context);
         this.mainFragment = mainFragment;
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
-        if (preferences.getString("key", null) == null) {
-            this.isSet = false;
-        } else {
-            this.isSet = true;
-            this.name = preferences.getString("naam", null);
-            this.apikey = preferences.getString("key", null);
-            if (preferences.getString("code", null) == null) {
-                this.userType = UserTypes.LEERLING;
-                this.klas = preferences.getString("klas", null);
-                this.vertegenwoordiger = preferences.getBoolean("vertegenwoordiger", false);
-            } else {
-                this.userType = UserTypes.LERAAR;
-                this.code = preferences.getString("code", null);
-            }
-
-            this.isAppAccount = preferences.getBoolean("appaccount", true);
-        }
     }
 
 
@@ -207,14 +190,7 @@ public class Account {
 
             @Override
             protected void onProgressUpdate(Exception... values) {
-                EasyTracker easyTracker = EasyTracker.getInstance(context);
-                easyTracker.send(MapBuilder
-                        .createException(new StandardExceptionParser(context, null)
-                                //True betekent geen fatale exceptie
-                                .getDescription(Thread.currentThread().getName(), values[0]), true)
-                        .build()
-                );
-                Toast.makeText(context, values[0].getMessage(), Toast.LENGTH_SHORT).show();
+                ExceptionHandler.handleException(values[0], context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
             }
 
             @Override
@@ -243,7 +219,7 @@ public class Account {
                     } else {
                         hideLoginDialog();
                         if (s.startsWith("nr1")) {
-                            Toast.makeText(context, "Al bestaande app-account gekozen", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Al bestaand app-account gekozen", Toast.LENGTH_LONG).show();
                             s = s.substring(4);
                         }
                         try {

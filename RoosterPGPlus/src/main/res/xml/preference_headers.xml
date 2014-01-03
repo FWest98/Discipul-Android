@@ -5,7 +5,16 @@
         android:title="Gebruiker" />
 
     <header
+        android:fragment="com.thomasdh.roosterpgplus.PreferencesActivity$AchtergrondFragment"
+        android:title="Achtergrond" />
+
+    <header
+        android:fragment="com.thomasdh.roosterpgplus.PreferencesActivity$OverigFragment"
+        android:title="Overig" />
+
+    <header
         android:fragment="com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment"
         android:title="Info" />
+
 
 </preference-headers>

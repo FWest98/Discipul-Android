@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:enabled="false"
+        android:key="notificaties"
+        android:summary="Of notificaties worden weergegeven"
+        android:title="Notificaties" />
+
+    <ListPreference
+        android:defaultValue="1800000"
+        android:enabled="false"
+        android:entries="@array/interval"
+        android:entryValues="@array/intervalEntries"
+        android:key="notificatieInterval"
+        android:summary="De interval waarop moet worden gecheckt voor notificaties"
+        android:title="Interval" />
+
+</PreferenceScreen>

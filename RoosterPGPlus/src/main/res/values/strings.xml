@@ -13,6 +13,24 @@
         <item>Week</item>
     </array>
 
+    <string-array name="interval">
+        <item>5 minuten</item>
+        <item>10 minuten</item>
+        <item>30 minuten</item>
+        <item>1 uur</item>
+        <item>2 uur</item>
+        <item>6 uur</item>
+    </string-array>
+
+    <string-array name="intervalEntries">
+        <item>300000</item>
+        <item>600000</item>
+        <item>1800000</item>
+        <item>3600000</item>
+        <item>7200000</item>
+        <item>21600000</item>
+    </string-array>
+
     <string name="menu_refresh">Refresh</string>
 
     <string name="action_bar_dropdown_week">Week</string>
