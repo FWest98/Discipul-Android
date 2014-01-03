@@ -67,7 +67,7 @@ public class RoosterInfoDownloader {
         }
     }
 
-    static public boolean setSubklassen(Context context, String[] subklassen) throws UnsupportedEncodingException, IOException{
+    static public boolean setSubklassen(Context context, String[] subklassen) throws UnsupportedEncodingException, IOException {
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/manager/subklassen");
         String s;
@@ -76,10 +76,19 @@ public class RoosterInfoDownloader {
 
         String key = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
         postParameters.add(new BasicNameValuePair("key", key));
+        String klassen = "";
         for (int index = 0; index < subklassen.length; index++) {
+            if (!klassen.equals("")) {
+                klassen += ",";
+            }
+            klassen += subklassen[index];
+            /*
             Log.d("RoosterInfoDownloader", subklassen[index]);
             postParameters.add(new BasicNameValuePair("subklassen[" + index + "]", subklassen[index]));
+        */
+
         }
+        postParameters.add(new BasicNameValuePair("subklassen", klassen));
         postParameters.add(new BasicNameValuePair("setAll", "true"));
         UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
         httppost.setEntity(form);
@@ -98,7 +107,7 @@ public class RoosterInfoDownloader {
             case 200:
                 return true;
             default:
-                return false;
+                throw new IOException("Onbekende fout: " + status);
         }
 
     }
