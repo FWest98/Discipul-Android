@@ -16,7 +16,6 @@ import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.StandardExceptionParser;
-import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import java.util.ArrayList;
@@ -99,6 +98,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
             // Initialize subklassen
             final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
+            user = new Account(this);
             if (user.isAppAccount) {
                 subklassen.setEnabled(false);
             } else {
@@ -106,11 +106,11 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             subklassen.setEntries(new String[]{"Subklassen"});
             subklassen.setEntryValues(new String[]{"Subklassen"});
-            new AsyncTask<Void, Exception, ArrayList<RoosterInfoDownloader.Subklas>>() {
+            new AsyncTask<Void, Exception, ArrayList<Account.Subklas>>() {
                 @Override
-                protected ArrayList<RoosterInfoDownloader.Subklas> doInBackground(Void... params) {
+                protected ArrayList<Account.Subklas> doInBackground(Void... params) {
                     try {
-                        return RoosterInfoDownloader.getSubklassen(getApplicationContext());
+                        return user.getSubklassen(getApplicationContext());
                     } catch (Exception e) {
                         publishProgress(e);
                         return null;
@@ -123,11 +123,11 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
 
                 @Override
-                protected void onPostExecute(ArrayList<RoosterInfoDownloader.Subklas> subklasArray) {
+                protected void onPostExecute(ArrayList<Account.Subklas> subklasArray) {
                     if (subklassen != null && subklasArray != null) {
                         ArrayList<String> strings = new ArrayList<String>();
                         ArrayList<String> namen = new ArrayList<String>();
-                        for (RoosterInfoDownloader.Subklas subklas : subklasArray) {
+                        for (Account.Subklas subklas : subklasArray) {
                             strings.add(subklas.subklas + ": " + subklas.vak + " van " + subklas.leraar);
                             namen.add(subklas.subklas);
                         }
@@ -142,7 +142,7 @@ public class PreferencesActivity extends PreferenceActivity {
                                     @Override
                                     protected Void doInBackground(Void... params) {
                                         try {
-                                            RoosterInfoDownloader.setSubklassen(getApplicationContext(),
+                                            user.setSubklassen(getApplicationContext(),
                                                     ((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
                                         } catch (Exception e) {
                                             publishProgress(e);
@@ -297,11 +297,11 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             subklassen.setEntries(new String[]{"Subklassen"});
             subklassen.setEntryValues(new String[]{"Subklassen"});
-            new AsyncTask<Void, Exception, ArrayList<RoosterInfoDownloader.Subklas>>() {
+            new AsyncTask<Void, Exception, ArrayList<Account.Subklas>>() {
                 @Override
-                protected ArrayList<RoosterInfoDownloader.Subklas> doInBackground(Void... params) {
+                protected ArrayList<Account.Subklas> doInBackground(Void... params) {
                     try {
-                        return RoosterInfoDownloader.getSubklassen(getActivity());
+                        return user.getSubklassen(getActivity());
                     } catch (Exception e) {
                         publishProgress(e);
                         return null;
@@ -314,11 +314,11 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
 
                 @Override
-                protected void onPostExecute(ArrayList<RoosterInfoDownloader.Subklas> subklasArray) {
+                protected void onPostExecute(ArrayList<Account.Subklas> subklasArray) {
                     if (subklassen != null && subklasArray != null) {
                         ArrayList<String> strings = new ArrayList<String>();
                         ArrayList<String> namen = new ArrayList<String>();
-                        for (RoosterInfoDownloader.Subklas subklas : subklasArray) {
+                        for (Account.Subklas subklas : subklasArray) {
                             strings.add(subklas.subklas + ": " + subklas.vak + " van " + subklas.leraar);
                             namen.add(subklas.subklas);
                         }
@@ -333,7 +333,7 @@ public class PreferencesActivity extends PreferenceActivity {
                                     @Override
                                     protected Void doInBackground(Void... params) {
                                         try {
-                                            RoosterInfoDownloader.setSubklassen(getActivity(),
+                                            user.setSubklassen(getActivity(),
                                                     ((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
                                         } catch (Exception e) {
                                             publishProgress(e);

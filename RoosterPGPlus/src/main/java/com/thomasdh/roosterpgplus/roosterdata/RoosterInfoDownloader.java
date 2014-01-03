@@ -1,31 +1,23 @@
 package com.thomasdh.roosterpgplus.roosterdata;
 
-import android.content.Context;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.thomasdh.roosterpgplus.Settings;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -33,82 +25,6 @@ import java.util.Scanner;
  */
 public class RoosterInfoDownloader {
 
-    /* Subklassen */
-    static public ArrayList<Subklas> getSubklassen(Context context) throws IOException, JSONException {
-        HttpClient httpClient = new DefaultHttpClient();
-        HttpGet get = new HttpGet(Settings.API_Base_URL + "account/manage/subklassen?key=" +
-                PreferenceManager.getDefaultSharedPreferences(context).getString("key", null));
-        HttpResponse response = httpClient.execute(get);
-        int status = response.getStatusLine().getStatusCode();
-        if (status == 200) {
-            String s = "";
-            Scanner scanner = new Scanner(response.getEntity().getContent());
-            while (scanner.hasNext()) {
-                s += scanner.nextLine();
-            }
-            Log.d("RoosterInfoDownloader", "Subklassen: " + s);
-            ArrayList<Subklas> subklassen = new ArrayList<Subklas>();
-            JSONArray jsonArray = new JSONArray(s);
-            for (int o = 0; o < jsonArray.length(); o++) {
-                JSONObject subklas = jsonArray.getJSONObject(o);
-                subklassen.add(new Subklas(subklas));
-            }
-            Log.d("RoosterInfoDownloader", "The size is " + jsonArray.length());
-            return subklassen;
-
-        } else if (status == 400) {
-            throw new IOException("Er mist een parameter");
-        } else if (status == 401) {
-            throw new IOException("Account bestaat niet");
-        } else if (status == 500) {
-            throw new IOException("Serverfout");
-        } else {
-            throw new IOException("Onbekende status: " + status);
-        }
-    }
-
-    static public boolean setSubklassen(Context context, String[] subklassen) throws IOException {
-        HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/manage/subklassen");
-        String s;
-        // Add your data
-        List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-
-        String key = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
-        Log.d("Key", key);
-        postParameters.add(new BasicNameValuePair("key", key));
-        String klassen = "";
-        for (int index = 0; index < subklassen.length; index++) {
-            Log.d("RoosterInfoDownloader", subklassen[index]);
-            postParameters.add(new BasicNameValuePair("subklassen[" + index + "]", subklassen[index]));
-        }
-        postParameters.add(new BasicNameValuePair("setAll", "true"));
-        UrlEncodedFormEntity form = new UrlEncodedFormEntity(postParameters);
-        httppost.setEntity(form);
-
-        // Execute HTTP Post Request
-        HttpResponse response = httpclient.execute(httppost);
-        int status = response.getStatusLine().getStatusCode();
-
-        switch (status) {
-            case 400:
-                String err = "";
-                Scanner scanner = new Scanner(response.getEntity().getContent());
-                while (scanner.hasNext()) {
-                    err += scanner.nextLine();
-                }
-                throw new IOException("Er mist een parameter: " + err);
-            case 401:
-                throw new IOException("Verkeerde logingegevens");
-            case 500:
-                throw new IOException("Serverfout");
-            case 200:
-                return true;
-            default:
-                throw new IOException("Onbekende fout: " + status);
-        }
-
-    }
 
     /* Lerarendownloader */
     static public ArrayList<Vak> getLeraren() throws IOException, JSONException {
@@ -296,27 +212,5 @@ public class RoosterInfoDownloader {
         }
     }
 
-    public static class Subklas {
-        public String subklas;
-        public int jaarlaag;
-        public String vak;
-        public String leraar;
-        public int nummer;
 
-        public Subklas(String subklas, int jaarlaag, String vak, String leraar, int nummer) {
-            this.subklas = subklas;
-            this.jaarlaag = jaarlaag;
-            this.vak = vak;
-            this.leraar = leraar;
-            this.nummer = nummer;
-        }
-
-        public Subklas(JSONObject object) throws JSONException {
-            this(object.getString("subklas"),
-                    object.getInt("jaarlaag"),
-                    object.getString("vak"),
-                    object.getString("leraar"),
-                    object.getInt("nummer"));
-        }
-    }
 }
