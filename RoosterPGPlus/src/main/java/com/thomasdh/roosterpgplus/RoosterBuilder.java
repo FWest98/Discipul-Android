@@ -89,11 +89,15 @@ class RoosterBuilder {
 
     public void buildLayout(RoosterWeek roosterWeek) {
         if (viewPager.get() != null) {
-            viewPager.get().setAdapter(new MyPagerAdapter());
+            if (viewPager.get().getAdapter() == null) {
+                viewPager.get().setAdapter(new MyPagerAdapter());
+            }
         }
         boolean weekView = PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("weekview", context.get().getResources().getBoolean(R.bool.big_screen));
 
         if (roosterWeek != null) {
+
+            ((MyPagerAdapter) viewPager.get().getAdapter()).deleteItems();
 
             LinearLayout weekLinearLayout = null;
             if (weekView) {

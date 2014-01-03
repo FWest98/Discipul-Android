@@ -67,7 +67,7 @@ public class RoosterInfoDownloader {
         }
     }
 
-    static public boolean setSubklassen(Context context, String[] subklassen) throws UnsupportedEncodingException, IOException {
+    static public boolean setSubklassen(Context context, String[] subklassen) throws IOException {
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/manage/subklassen");
         String s;
@@ -75,6 +75,7 @@ public class RoosterInfoDownloader {
         List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
 
         String key = PreferenceManager.getDefaultSharedPreferences(context).getString("key", null);
+        Log.d("Key", key);
         postParameters.add(new BasicNameValuePair("key", key));
         String klassen = "";
         for (int index = 0; index < subklassen.length; index++) {
@@ -91,7 +92,12 @@ public class RoosterInfoDownloader {
 
         switch (status) {
             case 400:
-                throw new IOException("Er mist een parameter");
+                String err = "";
+                Scanner scanner = new Scanner(response.getEntity().getContent());
+                while (scanner.hasNext()) {
+                    err += scanner.nextLine();
+                }
+                throw new IOException("Er mist een parameter: " + err);
             case 401:
                 throw new IOException("Verkeerde logingegevens");
             case 500:
