@@ -89,7 +89,7 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
                     }
                     return JSON;
                 }
-                Log.d(getClass().getSimpleName(), "Het rooster is uit het geheugen geladen");
+                return null;
             }
             throw new IOException("Geen internetverbinding");
         } catch (Exception e) {
