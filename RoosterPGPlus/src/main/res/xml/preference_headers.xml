@@ -2,19 +2,19 @@
 
     <header
         android:fragment="com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment"
-        android:title="Gebruiker" />
+        android:title="@string/settings_user_title"/>
 
     <header
         android:fragment="com.thomasdh.roosterpgplus.PreferencesActivity$AchtergrondFragment"
-        android:title="Achtergrond" />
+        android:title="@string/settings_background_title"/>
 
     <header
         android:fragment="com.thomasdh.roosterpgplus.PreferencesActivity$OverigFragment"
-        android:title="Overig" />
+        android:title="@string/settings_other_title" />
 
     <header
         android:fragment="com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment"
-        android:title="Info" />
+        android:title="@string/settings_info_title" />
 
 
 </preference-headers>
