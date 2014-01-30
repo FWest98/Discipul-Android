@@ -74,7 +74,8 @@ public class LesuurData {
 
     public void deleteOldWeeks() {
         int dezeWeek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
-        int aantalOpgeslagenWeken = PreferenceManager.getDefaultSharedPreferences(context).getInt("opgeslagenWeken", 10);
+        //int aantalOpgeslagenWeken = PreferenceManager.getDefaultSharedPreferences(context).getInt("opgeslagenWeken", 10);
+        int aantalOpgeslagenWeken = 10;
         db.delete(SQLRooster.TABLE_ROOSTER, "(" + SQLRooster.COLUMN_WEEK + " < " + dezeWeek + " and " + SQLRooster.COLUMN_WEEK + " > " + (dezeWeek - 52 + aantalOpgeslagenWeken) + ") and " + SQLRooster.COLUMN_WEEK + " > " + (aantalOpgeslagenWeken + dezeWeek), null);
     }
 
