@@ -2,21 +2,10 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="80dp"
     android:layout_margin="3dp"
-    android:layout_marginBottom="0dp"
     android:background="@drawable/basic_rect_nobottom"
     android:orientation="vertical">
-
-    <ImageView
-        android:id="@+id/layers"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_margin="5dp"
-        android:contentDescription="@string/rooster_dubbel_uur"
-        android:src="@drawable/layers"
-        android:visibility="gone" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -25,9 +14,20 @@
         android:layout_marginRight="1dp"
         android:layout_marginTop="1dp"
         android:background="@drawable/diagonal_stripes_red"
-        android:paddingLeft="7dp"
-        android:paddingRight="10dp"
-        android:paddingTop="3dp">
+        android:paddingLeft="6dp"
+        android:paddingRight="9dp"
+        android:paddingTop="2dp">
+
+        <ImageView
+            android:id="@+id/layers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_margin="5dp"
+            android:layout_marginRight="2dp"
+            android:contentDescription="@string/rooster_dubbel_uur"
+            android:src="@drawable/layers"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/vervallen_tekst"
