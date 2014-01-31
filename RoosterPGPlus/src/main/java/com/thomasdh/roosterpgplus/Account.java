@@ -726,15 +726,15 @@ public class Account {
         }
     }
 
-    public boolean setSubklassen(Context context, String[] subklassen) throws IOException {
+    public boolean setSubklassen(String[] subklassen) throws IOException {
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/manage/subklassen");
-        String s;
+
         // Add your data
         List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
 
-        postParameters.add(new BasicNameValuePair("key", apikey));
         String klassen = "";
+        postParameters.add(new BasicNameValuePair("key", apikey));
         for (int index = 0; index < subklassen.length; index++) {
             Log.d("RoosterInfoDownloader", subklassen[index]);
             postParameters.add(new BasicNameValuePair("subklassen[" + index + "]", subklassen[index]));

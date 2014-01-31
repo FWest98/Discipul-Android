@@ -2,7 +2,7 @@
 
 <resources>
     <!--Replace placeholder ID with your tracking ID-->
-    <string name="ga_trackingId">UA-33877081-2</string>
+    <string name="ga_trackingId">UA-33877081-3</string>
 
     <!--Enable automatic exception tracking-->
     <bool name="ga_reportUncaughtExceptions">true</bool>

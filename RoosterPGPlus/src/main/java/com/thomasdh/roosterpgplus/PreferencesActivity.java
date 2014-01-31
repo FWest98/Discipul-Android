@@ -142,8 +142,7 @@ public class PreferencesActivity extends PreferenceActivity {
                                     @Override
                                     protected Void doInBackground(Void... params) {
                                         try {
-                                            user.setSubklassen(getApplicationContext(),
-                                                    ((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
+                                            user.setSubklassen(((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
                                         } catch (Exception e) {
                                             publishProgress(e);
                                         }
@@ -333,8 +332,7 @@ public class PreferencesActivity extends PreferenceActivity {
                                     @Override
                                     protected Void doInBackground(Void... params) {
                                         try {
-                                            user.setSubklassen(getActivity(),
-                                                    ((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
+                                            user.setSubklassen(((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
                                         } catch (Exception e) {
                                             publishProgress(e);
                                         }

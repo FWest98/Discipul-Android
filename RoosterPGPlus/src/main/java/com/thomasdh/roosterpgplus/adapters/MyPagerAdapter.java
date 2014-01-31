@@ -19,7 +19,7 @@ public class MyPagerAdapter extends PagerAdapter {
 
     @Override
     public boolean isViewFromObject(View view, Object o) {
-        return view.equals(o);
+        return view == o;
     }
 
     @Override
@@ -38,9 +38,10 @@ public class MyPagerAdapter extends PagerAdapter {
         return v;
     }
 
+
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
-        container.removeView(views.get(position));
+        container.removeView((View) object);
     }
 
     public void deleteItems() {
@@ -49,6 +50,14 @@ public class MyPagerAdapter extends PagerAdapter {
 
     public void addView(View v) {
         views.add(v);
+    }
+
+    public void setView(View v, int position) {
+        if (views.size() <= position) {
+            views.add(position, v);
+        } else {
+            views.set(position, v);
+        }
     }
 
 }
