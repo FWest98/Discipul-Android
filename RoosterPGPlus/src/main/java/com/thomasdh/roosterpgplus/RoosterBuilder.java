@@ -259,7 +259,7 @@ class RoosterBuilder {
                     PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("geselecteerdeweek", week).commit();
 
                     ll.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
-                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2);
+                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
                 }
             }
             if (weekView) {
@@ -279,7 +279,7 @@ class RoosterBuilder {
 
                 ScrollView weekScrollView = new ScrollView(context.get());
                 weekScrollView.addView(completeLinearLayout);
-                ((MyPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0);
+                ((MyPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
             }
             viewPager.get().getAdapter().notifyDataSetChanged();
             if (!weekView)

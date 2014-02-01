@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".MainActivity"
+        android:animateLayoutChanges="true"
         tools:ignore="MergeRootFrame" />
 
     <ListView
@@ -19,6 +20,6 @@
         android:background="#F5F5F5"
         android:choiceMode="singleChoice"
         android:divider="@drawable/abc_list_divider_holo_light"
-        android:dividerHeight="1dp"/>
+        android:dividerHeight="1dp" />
 
 </android.support.v4.widget.DrawerLayout>
