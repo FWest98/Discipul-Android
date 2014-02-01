@@ -147,8 +147,6 @@ class RoosterBuilder {
                 date.set(Calendar.WEEK_OF_YEAR, week);
                 ((TextView) dagView.findViewById(R.id.weekdagdatum)).setText(dateFormat.format(date.getTime()));
 
-                Log.e("OPHALEN", dateFormat.format(date.getTime()));
-
                 //Ga langs alle uren
                 for (int y = 0; y < 7; y++) {
                     if (roosterWeek.getUren(day, y) != null && roosterWeek.getUren(day, y).length != 0) {
@@ -168,7 +166,6 @@ class RoosterBuilder {
                             for (int x = 1; x < uitgevallenUren.size(); x++) {
                                 uurNamen += " & " + uitgevallenUren.get(x).vak;
                             }
-                            Log.d(getClass().getSimpleName(), uurNamen);
                             tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
                                     uitgevallenUren.get(0).uur,
                                     uitgevallenUren.get(0).week,

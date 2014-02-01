@@ -178,6 +178,10 @@ public class MainActivity extends ActionBarActivity {
             case R.id.menu_item_refresh:
                 if (mainFragment.type == PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
                     new RoosterDownloader(this, mainFragment.getRootView(), true, item, selectedWeek).execute();
+                }else if (mainFragment.type == PlaceholderFragment.Type.KLASROOSTER){
+                    new RoosterDownloader(this, mainFragment.getRootView(), true, item, selectedWeek, mainFragment.leraarLerlingselected, PlaceholderFragment.Type.KLASROOSTER).execute();
+                }else if (mainFragment.type == PlaceholderFragment.Type.DOCENTENROOSTER){
+                    new RoosterDownloader(this, mainFragment.getRootView(), true, item, selectedWeek, mainFragment.leraarLerlingselected, PlaceholderFragment.Type.DOCENTENROOSTER).execute();
                 }
                 return true;
         }

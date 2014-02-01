@@ -31,7 +31,6 @@ public class RoosterWeek implements Serializable {
         uren = new Lesuur[5][7][];
         if (dagen.moveToFirst()) {
             do {
-                Log.w("Les", LesuurData.cursorToLesuur(dagen).unique);
                 if (uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1] == null) {
                     uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1] = new Lesuur[1];
                     uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1][0] = LesuurData.cursorToLesuur(dagen);
