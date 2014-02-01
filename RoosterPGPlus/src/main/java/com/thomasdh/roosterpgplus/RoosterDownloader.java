@@ -127,11 +127,11 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
                 }
                 if (context != null && rootView.get() != null) {
                     if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_docent), rootView.get(), week).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_docent), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_leerling), rootView.get(), week).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_leerling), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
                 }
             }
         }

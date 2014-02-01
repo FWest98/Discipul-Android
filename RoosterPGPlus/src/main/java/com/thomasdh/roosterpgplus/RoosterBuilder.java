@@ -37,13 +37,15 @@ class RoosterBuilder {
     private final WeakReference<Context> context;
     private final WeakReference<ViewPager> viewPager;
     private final int week;
+    private MainActivity.PlaceholderFragment.Type type;
 
 
-    public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week) {
+    public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week, MainActivity.PlaceholderFragment.Type type) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
         WeakReference<View> rootView1 = new WeakReference<View>(rootView);
         this.week = week;
+        this.type = type;
     }
 
     private static String getTijden(int x) {
@@ -98,7 +100,7 @@ class RoosterBuilder {
         if (roosterWeek != null) {
 
             // Verwijder alle bestaande items
-           // ((MyPagerAdapter) viewPager.get().getAdapter()).deleteItems();
+            // ((MyPagerAdapter) viewPager.get().getAdapter()).deleteItems();
 
             LinearLayout weekLinearLayout = null;
             if (weekView) {
@@ -335,10 +337,16 @@ class RoosterBuilder {
                 uur = inflater.inflate(R.layout.rooster_uur, null);
             }
             ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
-            if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
-                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
+            if (type != MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
+                // Vul de leraar in
+                if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
+                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
+                } else {
+                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
+                }
             } else {
-                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
+                //Geef bij een docentenrooster de klas in plaats van de leraar
+                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.klas);
             }
             ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(lesuur.lokaal);
             ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));

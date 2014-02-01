@@ -2,6 +2,7 @@ package com.thomasdh.roosterpgplus.adapters;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.support.v4.view.PagerAdapter;
@@ -57,6 +58,7 @@ public class MyPagerAdapter extends PagerAdapter {
         views.add(v);
     }
 
+    @TargetApi(12)
     public void setView(View newView, int position, Context context) {
         if (views.size() <= position) {
             FrameLayout parent = new FrameLayout(context);
@@ -65,7 +67,7 @@ public class MyPagerAdapter extends PagerAdapter {
         }
 
         final FrameLayout parent = ((FrameLayout) views.get(position));
-        boolean animationsBeschikbaar = Build.VERSION.SDK_INT >= 11;
+        boolean animationsBeschikbaar = Build.VERSION.SDK_INT >= 12;
 
         if (animationsBeschikbaar) {
             int shortAnimationDuration = context.getResources().getInteger(
