@@ -502,7 +502,7 @@ public class Account {
         final LayoutInflater inflater = LayoutInflater.from(context);
         final View dialogView = inflater.inflate(R.layout.logindialog, null);
 
-        TabHost tabHost = (TabHost) dialogView.findViewById(R.id.DialogTabs);
+        final TabHost tabHost = (TabHost) dialogView.findViewById(R.id.DialogTabs);
         tabHost.setup();
 
 // create tabs
@@ -553,15 +553,30 @@ public class Account {
                 final EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
                 final EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
                 final EditText llnr = (EditText) dialogView.findViewById(R.id.logindialogllnr);
-                username.requestFocus();
-                try {
-                    login(Integer.parseInt(llnr.getText().toString()), laadRooster);
-                    // dismissen IN de login functie
-                } catch (Exception e) {
-                    login(username.getText().toString(), password.getText().toString(), laadRooster);
-                    // dismiss IN login functie
-                }
 
+                username.requestFocus();
+                int tab = tabHost.getCurrentTab();
+                if(tab == 0) { // UserPass
+                    if(username.getText().toString().equals("")) {
+                        Toast.makeText(context, "Gebruikersnaam is verplicht!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if(password.getText().toString().equals("")) {
+                        Toast.makeText(context, "Wachtwoord is verplicht!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    login(username.getText().toString(), password.getText().toString(), laadRooster);
+                } else if(tab == 1) {
+                    if(llnr.getText().toString().equals("")) {
+                        Toast.makeText(context, "Leerlingnummer is verplicht!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    login(Integer.parseInt(llnr.getText().toString()), laadRooster);
+                } else {
+                    Toast.makeText(context, "Er ging iets mis in de app; herstart de app en probeer het opnieuw", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
