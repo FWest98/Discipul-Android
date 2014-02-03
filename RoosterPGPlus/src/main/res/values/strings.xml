@@ -90,6 +90,12 @@
     <string name="settings_notifications_summary">Notificaties zijn nog niet beschikbaar</string>
     <string name="settings_notificationsInterval_summary">De tijd tussen vernieuwen van notificaties</string>
     <string name="settings_notificationInterval_title">Controlefrequentie</string>
+    <string name="settings_user_clusterklassen_title">Clusterklassen</string>
+    <string name="settings_user_clusterklassen_summary">Kies de clusterklassen die in jouw rooster missen</string>
+    <string name="settings_user_upgrade_summary">Voltooi je registratie voor volledige personalisatie</string>
+    <string name="settings_user_upgrade_title">Registratie voltooien</string>
+    <string name="settings_user_relogin_summary">Log in als een andere gebruiker</string>
+    <string name="settings_user_relogin_title">Andere gebruiker</string>
 
 
 </resources>

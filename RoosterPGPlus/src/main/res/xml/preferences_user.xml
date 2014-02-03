@@ -7,13 +7,13 @@
 
     <Preference
         android:key="log_in"
-        android:summary="Log in als een andere gebruiker"
-        android:title="Log in" />
+        android:summary="@string/settings_user_relogin_summary"
+        android:title="@string/settings_user_relogin_title" />
 
     <Preference
         android:key="account_upgraden"
-        android:summary="Upgrade je account om nieuwe features te unlocken"
-        android:title="Account upgraden" />
+        android:summary="@string/settings_user_upgrade_summary"
+        android:title="@string/settings_user_upgrade_title" />
 
     <com.thomasdh.roosterpgplus.ListPreferenceMultiSelect
         android:defaultValue="#ALL#"
@@ -21,8 +21,8 @@
         android:entries="@array/pref_upload_buckets_default_entries"
         android:entryValues="@array/pref_upload_buckets_default_values"
         android:key="subklassen"
-        android:summary="Kies de subklassen die je bij jouw account wil zien"
-        android:title="Subklassen"
+        android:summary="@string/settings_user_clusterklassen_summary"
+        android:title="@string/settings_user_clusterklassen_title"
         thomasdhprefs:checkAll="check"
         thomasdhprefs:separator="|" />
 
