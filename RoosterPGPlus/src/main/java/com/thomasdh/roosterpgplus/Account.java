@@ -567,6 +567,7 @@ public class Account {
                     }
 
                     login(username.getText().toString(), password.getText().toString(), laadRooster);
+
                 } else if(tab == 1) {
                     if(llnr.getText().toString().equals("")) {
                         Toast.makeText(context, "Leerlingnummer is verplicht!", Toast.LENGTH_SHORT).show();
