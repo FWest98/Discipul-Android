@@ -47,7 +47,8 @@ public class LesuurData {
                 cursor.getString(12),
                 cursor.getString(10),
                 cursor.getString(11),
-                cursor.getInt(5) > 0);
+                cursor.getInt(5) > 0,
+                cursor.getInt(4) > 0);
         return lesuur;
     }
 
@@ -69,6 +70,7 @@ public class LesuurData {
         values.put(SQLRooster.COLUMN_VAK, lesuur.vak);
         values.put(SQLRooster.COLUMN_LOKAAL, lesuur.lokaal);
         values.put(SQLRooster.COLUMN_VERVALLEN, lesuur.vervallen);
+        values.put(SQLRooster.COLUMN_VERANDERING, lesuur.verandering);
         db.insert(SQLRooster.TABLE_ROOSTER, null, values);
     }
 
@@ -76,6 +78,10 @@ public class LesuurData {
         int dezeWeek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         int aantalOpgeslagenWeken = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("opgeslagenWeken", "10"));
         db.delete(SQLRooster.TABLE_ROOSTER, "(" + SQLRooster.COLUMN_WEEK + " < " + dezeWeek + " and " + SQLRooster.COLUMN_WEEK + " > " + (dezeWeek - 52 + aantalOpgeslagenWeken) + ") and " + SQLRooster.COLUMN_WEEK + " > " + (aantalOpgeslagenWeken + dezeWeek), null);
+    }
+
+    public void deleteWeek(int week) {
+        db.delete(SQLRooster.TABLE_ROOSTER, SQLRooster.COLUMN_WEEK + " = " + week, null);
     }
 
     public void deleteLesuur(Cursor cursor) {

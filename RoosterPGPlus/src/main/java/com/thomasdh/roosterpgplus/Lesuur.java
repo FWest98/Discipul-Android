@@ -57,7 +57,7 @@ public class Lesuur implements Serializable{
         }
     }
 
-    public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen) {
+    public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen, boolean verandering) {
         this.unique = klas + dag + uur + week;
         this.dag = dag;
         this.uur = uur;
@@ -67,7 +67,7 @@ public class Lesuur implements Serializable{
         this.leraar2 = null;
         this.vak = vak;
         this.lokaal = lokaal;
-        this.verandering = false;
+        this.verandering = verandering;
         this.vervallen = vervallen;
         this.huiswerk = null;
         int bijlage_id = 0;

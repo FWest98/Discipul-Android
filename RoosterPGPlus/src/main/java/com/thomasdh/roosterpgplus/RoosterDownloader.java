@@ -123,7 +123,7 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
             } else {
                 RoosterWeek roosterWeek = new RoosterWeek(string, context.get());
                 if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
-                    roosterWeek.slaOp(context.get());
+                    roosterWeek.slaOp(context.get(), week);
                 }
                 if (context != null && rootView.get() != null) {
                     if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER)

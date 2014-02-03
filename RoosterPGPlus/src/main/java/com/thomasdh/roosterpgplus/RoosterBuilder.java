@@ -168,6 +168,9 @@ class RoosterBuilder {
                             for (int x = 1; x < uitgevallenUren.size(); x++) {
                                 uurNamen += " & " + uitgevallenUren.get(x).vak;
                             }
+                            if(uitgevallenUren.size() > 1) {
+                                uurNamen += "MULTIPLE";
+                            }
                             tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
                                     uitgevallenUren.get(0).uur,
                                     uitgevallenUren.get(0).week,
@@ -175,7 +178,7 @@ class RoosterBuilder {
                                     uitgevallenUren.get(0).leraar,
                                     uurNamen,
                                     uitgevallenUren.get(0).lokaal,
-                                    true));
+                                    true, false));
                         }
                         final ArrayList<View> allUren = new ArrayList<View>();
                         uurArray = tempUurArray.toArray(new Lesuur[tempUurArray.size()]);
@@ -327,7 +330,12 @@ class RoosterBuilder {
         if (lesuur.vervallen) {
             uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
             uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
-            ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
+            if(lesuur.vak.endsWith("MULTIPLE")) {
+                String temp = lesuur.vak.replace("MULTIPLE", "");
+                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(temp + " vallen uit");
+            } else {
+                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
+            }
         } else {
             if (lesuur.verandering) {
                 paddingRight = false;

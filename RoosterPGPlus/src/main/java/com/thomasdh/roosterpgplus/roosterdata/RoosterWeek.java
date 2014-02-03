@@ -101,10 +101,10 @@ public class RoosterWeek implements Serializable {
         return new RoosterWeek(cursor);
     }
 
-    public void slaOp(Context context) {
+    public void slaOp(Context context, int week) {
         LesuurData ld = new LesuurData(context);
         ld.open();
-        List<Lesuur> savedLesuren = ld.getAllLesuren();
+        ld.deleteWeek(week);
         if (uren != null) {
             for (Lesuur[][] lesuur1 : uren) {
                 if (lesuur1 != null) {
@@ -112,16 +112,8 @@ public class RoosterWeek implements Serializable {
                         if (lesuur2 != null) {
                             for (Lesuur lesuur3 : lesuur2) {
                                 if (lesuur3 != null) {
-                                    boolean copy = false;
-                                    for (Lesuur saved : savedLesuren) {
-                                        if (saved.unique.equals(lesuur3.unique)) {
-                                            copy = true;
-                                        }
-                                    }
-                                    if (!copy) {
-                                        Log.d("Lesuur saved", "Het was geen kopie!?");
-                                        ld.addLesuur(lesuur3);
-                                    }
+                                    Log.d("Lesuur saved", "Jeej");
+                                    ld.addLesuur(lesuur3);
                                 }
                             }
                         }
