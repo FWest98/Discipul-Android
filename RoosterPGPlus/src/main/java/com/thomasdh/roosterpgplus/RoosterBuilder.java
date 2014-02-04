@@ -173,7 +173,9 @@ class RoosterBuilder {
                         if (uitgevallenUren.size() > 0) {
                             String uurNamen = uitgevallenUren.get(0).vak;
                             for (int x = 1; x < uitgevallenUren.size(); x++) {
-                                uurNamen += " & " + uitgevallenUren.get(x).vak;
+                                if(!uurNamen.contains(uitgevallenUren.get(x).vak)) {
+                                    uurNamen += " & " + uitgevallenUren.get(x).vak;
+                                }
                             }
                             if (uitgevallenUren.size() > 1) {
                                 uurNamen += "MULTIPLE";
