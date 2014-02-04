@@ -10,6 +10,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.analytics.tracking.android.EasyTracker;
@@ -32,7 +33,10 @@ public class PreferencesActivity extends PreferenceActivity {
     @Override
     protected boolean isValidFragment(String fragmentName) {
         if (UserFragment.class.getName().equals(fragmentName) ||
-                InfoFragment.class.getName().equals(fragmentName)) {
+                InfoFragment.class.getName().equals(fragmentName) ||
+                OverigFragment.class.getName().equals(fragmentName) ||
+                AchtergrondFragment.class.getName().equals(fragmentName)
+                ) {
             return true;
         }
         return false;
@@ -58,6 +62,12 @@ public class PreferencesActivity extends PreferenceActivity {
         }
 
         user = new Account(this);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        onBackPressed();
+        return true;
     }
 
     @Override

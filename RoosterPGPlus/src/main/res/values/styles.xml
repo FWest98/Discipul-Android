@@ -7,4 +7,13 @@
 
     <color name="logindialog_textcolor">#FFFFFF</color>
 
+
+    // Preferences gebruiken dit om de home button te hebben
+    <style name="PreferenceTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="actionBarStyle">@style/MyActionBar</item>
+    </style>
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
+        <item name="displayOptions">showHome|homeAsUp|showTitle</item>
+    </style>
+
 </resources>

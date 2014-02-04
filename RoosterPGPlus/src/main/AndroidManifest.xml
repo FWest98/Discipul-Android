@@ -27,6 +27,7 @@
         </activity>
         <activity
             android:name="com.thomasdh.roosterpgplus.PreferencesActivity"
+            android:theme="@style/PreferenceTheme"
             android:label="@string/action_settings" />
     </application>
 
