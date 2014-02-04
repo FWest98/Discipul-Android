@@ -32,14 +32,10 @@ public class PreferencesActivity extends PreferenceActivity {
 
     @Override
     protected boolean isValidFragment(String fragmentName) {
-        if (UserFragment.class.getName().equals(fragmentName) ||
+        return UserFragment.class.getName().equals(fragmentName) ||
                 InfoFragment.class.getName().equals(fragmentName) ||
                 OverigFragment.class.getName().equals(fragmentName) ||
-                AchtergrondFragment.class.getName().equals(fragmentName)
-                ) {
-            return true;
-        }
-        return false;
+                AchtergrondFragment.class.getName().equals(fragmentName);
     }
 
     @Override
@@ -49,13 +45,13 @@ public class PreferencesActivity extends PreferenceActivity {
         preferenceListener = new PreferenceListener2();
         // Voor android versies voor 3.0
         String action = getIntent().getAction();
-        if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment")) {
+        if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_info);
-        } else if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferenceActivity$UserFragment")) {
+        } else if ("com.thomasdh.roosterpgplus.PreferenceActivity$UserFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_user);
-        } else if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferenceActivity$OverigFragment")) {
+        } else if ("com.thomasdh.roosterpgplus.PreferenceActivity$OverigFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_overig);
-        } else if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferenceActivity$ActergrondFragment")) {
+        } else if ("com.thomasdh.roosterpgplus.PreferenceActivity$ActergrondFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_achtergrond);
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
@@ -85,7 +81,7 @@ public class PreferencesActivity extends PreferenceActivity {
     protected void onResume() {
         super.onResume();
         String action = getIntent().getAction();
-        if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment")) {
+        if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
             findPreference("mijn_account").setSummary(
                     "Naam: " + user.name + ", " +
@@ -101,7 +97,7 @@ public class PreferencesActivity extends PreferenceActivity {
             });
         }
 
-        if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment")) {
+        if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_user);
             preferenceListener = new PreferenceListener2();
 
@@ -120,7 +116,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 @Override
                 protected ArrayList<Account.Subklas> doInBackground(Void... params) {
                     try {
-                        return user.getSubklassen(getApplicationContext());
+                        return user.getSubklassen();
                     } catch (Exception e) {
                         publishProgress(e);
                         return null;
@@ -182,7 +178,7 @@ public class PreferencesActivity extends PreferenceActivity {
             }.execute();
 
             // Create user and fill in account information
-            this.user = new Account(this);
+            user = new Account(this);
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
             findPreference("mijn_account").setSummary(
                     "Naam: " + user.name + ", " +
@@ -224,7 +220,7 @@ public class PreferencesActivity extends PreferenceActivity {
     protected void onPause() {
         super.onPause();
         String action = getIntent().getAction();
-        if (action != null && action.equals("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment")) {
+        if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
             getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(preferenceListener);
         }
     }
@@ -310,7 +306,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 @Override
                 protected ArrayList<Account.Subklas> doInBackground(Void... params) {
                     try {
-                        return user.getSubklassen(getActivity());
+                        return user.getSubklassen();
                     } catch (Exception e) {
                         publishProgress(e);
                         return null;
@@ -364,7 +360,7 @@ public class PreferencesActivity extends PreferenceActivity {
             }.execute();
 
             // Create user and fill in account information
-            this.user = new Account(getActivity());
+            user = new Account(getActivity());
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
             findPreference("mijn_account").setSummary(
                     "Naam: " + user.name + ", " +

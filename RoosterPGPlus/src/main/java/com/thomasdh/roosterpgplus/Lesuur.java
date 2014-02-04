@@ -12,10 +12,10 @@ import java.io.Serializable;
 /**
  * Created by Floris on 3-12-13.
  */
-public class Lesuur implements Serializable{
+public class Lesuur implements Serializable {
 
     private static final long serialVersionUID = 7526472295622776147L;
-    public String unique;
+    private String unique;
     public int dag;
     public int uur;
     public int week;
@@ -34,54 +34,54 @@ public class Lesuur implements Serializable{
 
     public Lesuur(JSONObject JSON, Context context) {
         try {
-            this.unique = JSON.getString("unique");
-            this.dag = JSON.getInt("dag");
-            this.uur = JSON.getInt("uur");
-            this.week = JSON.getInt("week");
-            this.klas = JSON.getString("klas");
-            this.leraar = JSON.getString("leraar");
-            this.leraar2 = JSON.getString("leraar2");
-            this.vak = JSON.getString("vak");
-            this.lokaal = JSON.getString("lokaal");
-            this.verandering = JSON.getInt("verandering") == 1;
-            this.vervallen = JSON.getInt("vervallen") == 1;
-            this.huiswerk = JSON.getString("huiswerk");
+            unique = JSON.getString("unique");
+            dag = JSON.getInt("dag");
+            uur = JSON.getInt("uur");
+            week = JSON.getInt("week");
+            klas = JSON.getString("klas");
+            leraar = JSON.getString("leraar");
+            leraar2 = JSON.getString("leraar2");
+            vak = JSON.getString("vak");
+            lokaal = JSON.getString("lokaal");
+            verandering = JSON.getInt("verandering") == 1;
+            vervallen = JSON.getInt("vervallen") == 1;
+            huiswerk = JSON.getString("huiswerk");
             //this.bijlage_id = JSON.getInt("bijlage-id");
-            this.so = JSON.getInt("so") == 1;
-            this.pw = JSON.getInt("pw") == 1;
-            this.master = JSON.getInt("master") == 1;
-            this.bijzonder = JSON.getInt("bijzonder");
-            this.unique = klas + dag + uur + week;
+            so = JSON.getInt("so") == 1;
+            pw = JSON.getInt("pw") == 1;
+            master = JSON.getInt("master") == 1;
+            bijzonder = JSON.getInt("bijzonder");
+            unique = klas + dag + uur + week;
         } catch (JSONException e) {
             ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", Lesuur.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
 
     public Lesuur(int dag, int uur, int week, String klas, String leraar, String vak, String lokaal, boolean vervallen, boolean verandering) {
-        this.unique = klas + dag + uur + week;
+        unique = klas + dag + uur + week;
         this.dag = dag;
         this.uur = uur;
         this.week = week;
         this.klas = klas;
         this.leraar = leraar;
-        this.leraar2 = null;
+        leraar2 = null;
         this.vak = vak;
         this.lokaal = lokaal;
         this.verandering = verandering;
         this.vervallen = vervallen;
-        this.huiswerk = null;
+        huiswerk = null;
         int bijlage_id = 0;
-        this.so = false;
-        this.pw = false;
-        this.master = false;
-        this.bijzonder = 0;
+        so = false;
+        pw = false;
+        master = false;
+        bijzonder = 0;
     }
 
     @Override
     public boolean equals(Object o) {
-        Lesuur lesuur = (Lesuur) o;
-        if (unique.equals(lesuur.unique)) {
-            return true;
+        if (o.getClass() == Lesuur.class) {
+            Lesuur lesuur = (Lesuur) o;
+            return unique.equals(lesuur.unique);
         }
         return false;
     }

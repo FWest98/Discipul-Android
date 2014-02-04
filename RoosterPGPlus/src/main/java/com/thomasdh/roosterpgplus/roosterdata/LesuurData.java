@@ -30,7 +30,7 @@ public class LesuurData {
             SQLRooster.COLUMN_VAK,
             SQLRooster.COLUMN_LOKAAL,
             SQLRooster.COLUMN_LERAAR};
-    public SQLRooster dbHelper;
+    private SQLRooster dbHelper;
     public SQLiteDatabase db;
     private Context context;
 
@@ -40,7 +40,7 @@ public class LesuurData {
     }
 
     public static Lesuur cursorToLesuur(Cursor cursor) {
-        Lesuur lesuur = new Lesuur(cursor.getInt(1),
+        return new Lesuur(cursor.getInt(1),
                 cursor.getInt(2),
                 cursor.getInt(3),
                 cursor.getString(9),
@@ -49,7 +49,6 @@ public class LesuurData {
                 cursor.getString(11),
                 cursor.getInt(5) > 0,
                 cursor.getInt(4) > 0);
-        return lesuur;
     }
 
     public void open() {

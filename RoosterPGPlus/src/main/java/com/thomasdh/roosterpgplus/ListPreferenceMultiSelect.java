@@ -49,7 +49,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
         }
         // Initialize the array of boolean to the same size as number of entries
         CharSequence[] entries = getEntries();
-        mClickedDialogEntryIndices = new boolean[(entries != null) ? entries.length : 0];
+        mClickedDialogEntryIndices = new boolean[entries != null ? entries.length : 0];
     }
 
     public ListPreferenceMultiSelect(Context context) {
@@ -59,7 +59,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
     // Credits to kurellajunior on this post http://snippets.dzone.com/posts/show/91
     protected static String join(Iterable<?> pColl, String separator) {
         Iterator<?> oIter;
-        if (pColl == null || (!(oIter = pColl.iterator()).hasNext()))
+        if (pColl == null || !(oIter = pColl.iterator()).hasNext())
             return "";
         StringBuilder oBuilder = new StringBuilder(String.valueOf(oIter.next()));
         while (oIter.hasNext())
@@ -170,7 +170,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
                 if (mClickedDialogEntryIndices[i]) {
                     // Don't save the state of check all option - if any
                     String val = (String) entryValues[i];
-                    if (checkAllKey == null || (!val.equals(checkAllKey))) {
+                    if (checkAllKey == null || !val.equals(checkAllKey)) {
                         values.add(val);
                     }
                 }

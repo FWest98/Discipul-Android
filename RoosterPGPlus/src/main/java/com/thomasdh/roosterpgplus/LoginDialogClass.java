@@ -43,7 +43,7 @@ public class LoginDialogClass {
     private Context context;
     private AlertDialog LoginDialog;
     private AlertDialog RegisterDialog;
-    private View rootView;
+    View rootView;
     private MainActivity.PlaceholderFragment mainFragment;
 
     public LoginDialogClass(Context context, View rootView, MainActivity.PlaceholderFragment mainFragment) {
@@ -120,7 +120,7 @@ public class LoginDialogClass {
 
             @Override
             protected void onPostExecute(String s) {
-                Log.e(this.getClass().getName(), "The string is: " + s);
+                Log.e(getClass().getName(), "The string is: " + s);
                 if (s.startsWith("error:")) {
                     Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
                 } else if (s.equals("duplicate")) {
@@ -179,7 +179,7 @@ public class LoginDialogClass {
                     super.onPostExecute(s);
                 }
             }
-        }.execute(Integer.toString(leerlingnummer), (force ? "ja" : "nee"));
+        }.execute(Integer.toString(leerlingnummer), force ? "ja" : "nee");
     }
 
     /**
@@ -224,16 +224,16 @@ public class LoginDialogClass {
                             return "error:Onbekende fout";
                     }
                 } catch (ClientProtocolException e) {
-                    s = "error:" + e.toString();
+                    s = "error:" + e;
                 } catch (IOException e) {
-                    s = "error:" + e.toString();
+                    s = "error:" + e;
                 }
                 return s;
             }
 
             @Override
             protected void onPostExecute(String s) {
-                Log.e(this.getClass().getName(), "The string is: " + s);
+                Log.e(getClass().getName(), "The string is: " + s);
                 if (s.startsWith("error:")) {
                     Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
                 } else {
@@ -328,7 +328,7 @@ public class LoginDialogClass {
                     return;
                 }
                 if (!password.getText().toString().equals(repass.getText().toString())) {
-                    Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText().toString() + "  " + repass.getText().toString(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText() + "  " + repass.getText(), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (llnr.getText().toString().equals("")) {
@@ -383,16 +383,16 @@ public class LoginDialogClass {
                             return "error:Onbekende fout";
                     }
                 } catch (ClientProtocolException e) {
-                    s = "error:" + e.toString();
+                    s = "error:" + e;
                 } catch (IOException e) {
-                    s = "error:" + e.toString();
+                    s = "error:" + e;
                 }
                 return s;
             }
 
             @Override
             protected void onPostExecute(String s) {
-                Log.e(this.getClass().getName(), "The string is: " + s);
+                Log.e(getClass().getName(), "The string is: " + s);
                 if (s.startsWith("error:")) {
                     Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
                 } else if (s.equals("conflict")) {

@@ -66,7 +66,7 @@ public class MyPagerAdapter extends PagerAdapter {
             views.add(parent);
         }
 
-        final FrameLayout parent = ((FrameLayout) views.get(position));
+        final FrameLayout parent = (FrameLayout) views.get(position);
         boolean animationsBeschikbaar = Build.VERSION.SDK_INT >= 12;
 
         if (animationsBeschikbaar) {
