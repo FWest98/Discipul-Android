@@ -16,7 +16,7 @@
         android:paddingLeft="6dp"
         android:paddingRight="9dp"
         android:paddingTop="2dp"
-        android:background="@drawable/diagonal_stripes"
+        android:background="@drawable/diagonal_stripes_optioneeluur"
         android:id="@+id/optioneel_container">
 
         <TextView

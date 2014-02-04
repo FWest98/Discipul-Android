@@ -37,16 +37,17 @@ class RoosterBuilder {
     private final WeakReference<Context> context;
     private final WeakReference<ViewPager> viewPager;
     private final int week;
-    private final MainActivity.PlaceholderFragment.Type type;
-    private String klas;
+    private MainActivity.PlaceholderFragment.Type type;
+    String klas;
 
 
     public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week, MainActivity.PlaceholderFragment.Type type) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
+        WeakReference<View> rootView1 = new WeakReference<View>(rootView);
         this.week = week;
         this.type = type;
-        klas = null;
+        this.klas = null;
     }
 
     public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week, MainActivity.PlaceholderFragment.Type type, String klas) {
@@ -120,11 +121,11 @@ class RoosterBuilder {
 
             for (int day = 2; day < 7; day++) {
                 View dagView;
-                LinearLayout ll;
+                final LinearLayout ll;
                 dagView = inflater.inflate(R.layout.rooster_dag, null);
                 ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
 
-                TextView dagTextView = (TextView) dagView.findViewById(R.id.weekdagnaam);
+                TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
                 dagTextView.setText(getDayOfWeek(day));
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");
@@ -157,9 +158,8 @@ class RoosterBuilder {
 
                 //Ga langs alle uren
                 for (int y = 0; y < 7; y++) {
-                    Lesuur[] uren = roosterWeek.getUren(day, y);
-                    if (uren != null && uren.length != 0) {
-                        Lesuur[] uurArray = uren;
+                    if (roosterWeek.getUren(day, y) != null && roosterWeek.getUren(day, y).length != 0) {
+                        Lesuur[] uurArray = roosterWeek.getUren(day, y);
                         ArrayList<Lesuur> tempUurArray = new ArrayList<Lesuur>(Arrays.asList(uurArray));
                         ArrayList<Lesuur> uitgevallenUren = new ArrayList<Lesuur>();
                         Iterator<Lesuur> iter = tempUurArray.iterator();
@@ -170,7 +170,7 @@ class RoosterBuilder {
                                 iter.remove();
                             }
                         }
-                        if (uitgevallenUren.isEmpty()) {
+                        if (uitgevallenUren.size() > 0) {
                             String uurNamen = uitgevallenUren.get(0).vak;
                             int count = 1;
                             for (int x = 1; x < uitgevallenUren.size(); x++) {
@@ -195,7 +195,7 @@ class RoosterBuilder {
                         uurArray = tempUurArray.toArray(new Lesuur[tempUurArray.size()]);
 
 
-                        boolean multipleViews = uurArray.length > 1;
+                        final boolean multipleViews = (uurArray.length > 1);
 
                         final FrameLayout frameLayout = new FrameLayout(context.get());
                         for (int u = 0; u < uurArray.length; u++) {
@@ -358,6 +358,9 @@ class RoosterBuilder {
                 //Als het geen algemeen uur is
                 if (klas != null && !lesuur.klas.equals(klas)) {
                     uur = inflater.inflate(R.layout.rooster_uur_optioneel, null);
+                    uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(50);
+
+                    paddingRight = true;
                 } else {
                     uur = inflater.inflate(R.layout.rooster_uur, null);
                 }
@@ -369,12 +372,6 @@ class RoosterBuilder {
                     ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
                 } else {
                     ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
-                }
-
-                if (!lesuur.verandering && klas != null && !lesuur.klas.equals(klas)) {
-                    uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(50);
-
-                    paddingRight = true;
                 }
             } else {
                 //Geef bij een docentenrooster de klas in plaats van de leraar
