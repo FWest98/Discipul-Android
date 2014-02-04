@@ -262,8 +262,6 @@ class RoosterBuilder {
                     dataTextView.setText("Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate));
                     ll.addView(dataTextView);
 
-                    PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("geselecteerdeweek", week).commit();
-
                     ll.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
                 }
@@ -295,14 +293,16 @@ class RoosterBuilder {
                     viewPager.get().setCurrentItem(PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("dagvandeweeklaatst", 0));
                 } else if (Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) == week) {
                     Log.d(getClass().getSimpleName(), "De geselecteerde week is veranderd, en is deze week, de dag wordt " + (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2));
-                    viewPager.get().setCurrentItem(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
-                    PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("dagvandeweek", Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2).commit();
+                    int goedeDag = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2;
+                    viewPager.get().setCurrentItem(goedeDag);
+                    PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("dagvandeweek", goedeDag).commit();
                 } else {
                     Log.d(getClass().getSimpleName(), "De geselecteerde week is veranderd en is niet deze week, de dag wordt maandag.");
                     viewPager.get().setCurrentItem(0);
                     PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("dagvandeweek", 0).commit();
                 }
 
+            PreferenceManager.getDefaultSharedPreferences(context.get()).edit().putInt("geselecteerdeweek", week).commit();
 
             viewPager.get().setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
