@@ -168,7 +168,7 @@ class RoosterBuilder {
                             for (int x = 1; x < uitgevallenUren.size(); x++) {
                                 uurNamen += " & " + uitgevallenUren.get(x).vak;
                             }
-                            if(uitgevallenUren.size() > 1) {
+                            if (uitgevallenUren.size() > 1) {
                                 uurNamen += "MULTIPLE";
                             }
                             tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
@@ -192,7 +192,9 @@ class RoosterBuilder {
                             Lesuur lesuur = uurArray[u];
                             allUren.add(makeView(lesuur, inflater, y));
                             if (multipleViews) {
-                                allUren.get(u).findViewById(R.id.layers).setVisibility(View.VISIBLE);
+                                TextView lagen = (TextView) allUren.get(u).findViewById(R.id.layers);
+                                lagen.setVisibility(View.VISIBLE);
+                                lagen.setText("(" + (u + 1) + "/" + uurArray.length + ")");
                             }
 
                             final int shortAnimationTime = context.get().getResources().getInteger(
@@ -330,7 +332,7 @@ class RoosterBuilder {
         if (lesuur.vervallen) {
             uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
             uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
-            if(lesuur.vak.endsWith("MULTIPLE")) {
+            if (lesuur.vak.endsWith("MULTIPLE")) {
                 String temp = lesuur.vak.replace("MULTIPLE", "");
                 ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(temp + " vallen uit");
             } else {
