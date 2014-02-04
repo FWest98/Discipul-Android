@@ -145,6 +145,14 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (mainFragment != null && mainFragment.getRootView() != null && refreshItem != null){
+            mainFragment.laadRooster(this, mainFragment.getRootView(), mainFragment.type);
+        }
+    }
+
+    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.

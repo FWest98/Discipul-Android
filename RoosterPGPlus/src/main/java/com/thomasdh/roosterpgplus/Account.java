@@ -18,6 +18,8 @@ import android.widget.Toast;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.StandardExceptionParser;
+import com.thomasdh.roosterpgplus.roosterdata.LesuurData;
+import com.thomasdh.roosterpgplus.roosterdata.SQLRooster;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
@@ -231,6 +233,12 @@ public class Account {
 
                             LoginDialog.dismiss();
 
+                            // Verwijder alle weken
+                            LesuurData ld = new LesuurData(context);
+                            ld.open();
+                            ld.db.delete(SQLRooster.TABLE_ROOSTER, null, null);
+                            ld.close();
+
                             //Laad het rooster
                             if (laadRooster && mainFragment != null) {
                                 mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
@@ -310,6 +318,12 @@ public class Account {
                         Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
 
                         LoginDialog.dismiss();
+
+                        // Verwijder alle weken
+                        LesuurData ld = new LesuurData(context);
+                        ld.open();
+                        ld.db.delete(SQLRooster.TABLE_ROOSTER, null, null);
+                        ld.close();
 
                         //Laad het rooster
                         if (laadRooster && mainFragment != null) {
@@ -699,7 +713,6 @@ public class Account {
                     } else {
                         hideExtendDialog();
                         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("appaccount", false).commit();
-                        super.onPostExecute(s);
                     }
                 }
             }.execute(this.apikey, username, password);

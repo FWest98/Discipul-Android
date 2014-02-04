@@ -341,15 +341,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
                                     @Override
                                     protected void onProgressUpdate(Exception... e) {
-                                        Toast.makeText(getActivity(), e[0].getMessage(), Toast.LENGTH_SHORT).show();
-                                        Log.e("PreferencesActivity", "SetSubklasfout", e[0]);
-                                        EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
-                                        easyTracker.send(MapBuilder
-                                                .createException(new StandardExceptionParser(getActivity(), null)
-                                                        //True betekent geen fatale exceptie
-                                                        .getDescription(Thread.currentThread().getName(), e[0]), true)
-                                                .build()
-                                        );
+                                        ExceptionHandler.handleException(e[0], getActivity(), "SetSubklasfout", "PreferencesActivity", ExceptionHandler.HandleType.SIMPLE);
                                     }
                                 }.execute();
                                 return true;

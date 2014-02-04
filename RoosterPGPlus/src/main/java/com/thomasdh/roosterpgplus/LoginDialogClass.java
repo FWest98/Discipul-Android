@@ -15,6 +15,8 @@ import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import com.thomasdh.roosterpgplus.roosterdata.LesuurData;
+import com.thomasdh.roosterpgplus.roosterdata.SQLRooster;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
@@ -160,6 +162,13 @@ public class LoginDialogClass {
                         }
                         e.commit();
                         Toast.makeText(context, "Welkom, " + object.getString("naam") + "!", Toast.LENGTH_SHORT).show();
+
+                        // Verwijder alle weken
+                        LesuurData ld = new LesuurData(context);
+                        ld.open();
+                        ld.db.delete(SQLRooster.TABLE_ROOSTER, null, null);
+                        ld.close();
+
                         //Laad het rooster als de boolean true is
                         if (laadRooster) {
                             mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
@@ -244,6 +253,12 @@ public class LoginDialogClass {
                         Toast.makeText(context, "Welkom, " + jsonObject.getString("naam") + "!", Toast.LENGTH_SHORT).show();
 
                         LoginDialog.dismiss();
+
+                        // Verwijder alle weken
+                        LesuurData ld = new LesuurData(context);
+                        ld.open();
+                        ld.db.delete(SQLRooster.TABLE_ROOSTER, null, null);
+                        ld.close();
 
                         //Laad het rooster
                         if (laadRooster) {
