@@ -158,8 +158,9 @@ class RoosterBuilder {
 
                 //Ga langs alle uren
                 for (int y = 0; y < 7; y++) {
-                    if (roosterWeek.getUren(day, y) != null && roosterWeek.getUren(day, y).length != 0) {
-                        Lesuur[] uurArray = roosterWeek.getUren(day, y);
+                    Lesuur[] uren = roosterWeek.getUren(day, y);
+                    if (uren != null && uren.length != 0) {
+                        Lesuur[] uurArray = uren;
                         ArrayList<Lesuur> tempUurArray = new ArrayList<Lesuur>(Arrays.asList(uurArray));
                         ArrayList<Lesuur> uitgevallenUren = new ArrayList<Lesuur>();
                         Iterator<Lesuur> iter = tempUurArray.iterator();
@@ -172,12 +173,14 @@ class RoosterBuilder {
                         }
                         if (uitgevallenUren.size() > 0) {
                             String uurNamen = uitgevallenUren.get(0).vak;
+                            int count = 1;
                             for (int x = 1; x < uitgevallenUren.size(); x++) {
                                 if(!uurNamen.contains(uitgevallenUren.get(x).vak)) {
+                                    count++;
                                     uurNamen += " & " + uitgevallenUren.get(x).vak;
                                 }
                             }
-                            if (uitgevallenUren.size() > 1) {
+                            if (count > 1) {
                                 uurNamen += "MULTIPLE";
                             }
                             tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
@@ -251,6 +254,7 @@ class RoosterBuilder {
                         vrij.setMinimumHeight((int) convertDPToPX(80, context.get()));
                         if (y == 6) {
                             vrij.setBackgroundResource(R.drawable.basic_rect);
+                            vrij.setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));
                         }
                         ll.addView(vrij);
                     }
@@ -354,7 +358,7 @@ class RoosterBuilder {
             } else {
                 //Als het geen algemeen uur is
                 if (klas != null && !lesuur.klas.equals(klas)) {
-                    uur = inflater.inflate(R.layout.rooster_uur_ander_kleurtje, null);
+                    uur = inflater.inflate(R.layout.rooster_uur_optioneel, null);
                 } else {
                     uur = inflater.inflate(R.layout.rooster_uur, null);
                 }
@@ -367,6 +371,12 @@ class RoosterBuilder {
                 } else {
                     ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
                 }
+
+                if (!lesuur.verandering && klas != null && !lesuur.klas.equals(klas)) {
+                    uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(50);
+
+                    paddingRight = true;
+                }
             } else {
                 //Geef bij een docentenrooster de klas in plaats van de leraar
                 ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.klas);
@@ -378,6 +388,8 @@ class RoosterBuilder {
             uur.setBackgroundResource(R.drawable.basic_rect);
             if (!paddingRight) {
                 uur.setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
+            } else {
+                uur.setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));
             }
         }
         uur.setMinimumHeight((int) convertDPToPX(81, context.get()));
