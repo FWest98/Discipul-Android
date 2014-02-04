@@ -38,6 +38,7 @@ class RoosterBuilder {
     private final WeakReference<ViewPager> viewPager;
     private final int week;
     private MainActivity.PlaceholderFragment.Type type;
+    String klas;
 
 
     public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week, MainActivity.PlaceholderFragment.Type type) {
@@ -46,6 +47,12 @@ class RoosterBuilder {
         WeakReference<View> rootView1 = new WeakReference<View>(rootView);
         this.week = week;
         this.type = type;
+        this.klas = null;
+    }
+
+    public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week, MainActivity.PlaceholderFragment.Type type, String klas) {
+        this(context, viewPager, rootView, week, type);
+        this.klas = klas;
     }
 
     private static String getTijden(int x) {
@@ -339,12 +346,16 @@ class RoosterBuilder {
                 ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
             }
         } else {
+            paddingRight = false;
             if (lesuur.verandering) {
-                paddingRight = false;
                 uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
             } else {
-                paddingRight = false;
-                uur = inflater.inflate(R.layout.rooster_uur, null);
+                //Als het geen algemeen uur is
+                if (klas != null && !lesuur.klas.equals(klas)) {
+                    uur = inflater.inflate(R.layout.rooster_uur_ander_kleurtje, null);
+                } else {
+                    uur = inflater.inflate(R.layout.rooster_uur, null);
+                }
             }
             ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
             if (type != MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
