@@ -45,15 +45,15 @@ import java.util.Scanner;
  */
 public class Account {
 
-    public Boolean isSet;
+    public final Boolean isSet;
     public String name;
-    public String apikey;
+    private String apikey;
     public String klas;
-    public Boolean vertegenwoordiger;
+    private Boolean vertegenwoordiger;
     public Boolean isAppAccount;
-    public UserTypes userType;
-    public String code;
-    private Context context;
+    private UserTypes userType;
+    private String code;
+    private final Context context;
     private AlertDialog LoginDialog;
     private AlertDialog RegisterDialog;
     private AlertDialog ExtendDialog;
@@ -62,27 +62,27 @@ public class Account {
 
     public Account(Context context) {
         this.context = context;
-        this.mainFragment = null;
+        mainFragment = null;
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
         if (preferences.getString("key", null) == null) {
-            this.isSet = false;
+            isSet = false;
         } else {
-            this.isSet = true;
-            this.name = preferences.getString("naam", null);
-            this.apikey = preferences.getString("key", null);
+            isSet = true;
+            name = preferences.getString("naam", null);
+            apikey = preferences.getString("key", null);
 
             // Of er een leraarcode is
             if (preferences.getString("code", null) == null) {
-                this.userType = UserTypes.LEERLING;
-                this.klas = preferences.getString("klas", null);
-                this.vertegenwoordiger = preferences.getBoolean("vertegenwoordiger", false);
+                userType = UserTypes.LEERLING;
+                klas = preferences.getString("klas", null);
+                vertegenwoordiger = preferences.getBoolean("vertegenwoordiger", false);
             } else {
-                this.userType = UserTypes.LERAAR;
-                this.code = preferences.getString("code", null);
+                userType = UserTypes.LERAAR;
+                code = preferences.getString("code", null);
             }
 
-            this.isAppAccount = preferences.getBoolean("appaccount", true);
+            isAppAccount = preferences.getBoolean("appaccount", true);
         }
     }
 
@@ -94,31 +94,31 @@ public class Account {
 
     //region JSON-verwerking
 
-    final public Account JSON_InitializeAccount(String s) throws JSONException {
+    final Account JSON_InitializeAccount(String s) throws JSONException {
         JSONObject object = new JSONObject(s);
         SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
         e.putString("key", object.getString("key"));
-        this.apikey = object.getString("key");
+        apikey = object.getString("key");
         System.out.println("The key: " + object.getString("key"));
         e.putString("naam", object.getString("naam"));
-        this.name = object.getString("naam");
+        name = object.getString("naam");
         if (object.has("klas")) {
-            this.userType = UserTypes.LEERLING;
+            userType = UserTypes.LEERLING;
             e.putString("klas", object.getString("klas"));
-            this.klas = object.getString("klas");
+            klas = object.getString("klas");
             e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
-            this.vertegenwoordiger = object.getBoolean("vertegenwoordiger");
+            vertegenwoordiger = object.getBoolean("vertegenwoordiger");
         } else {
-            this.userType = UserTypes.LERAAR;
+            userType = UserTypes.LERAAR;
             e.putString("code", object.getString("code"));
-            this.code = object.getString("code");
+            code = object.getString("code");
         }
         if (object.has("app_user")) {
             e.putBoolean("appaccount", object.getBoolean("app_user"));
-            this.isAppAccount = object.getBoolean("app_user");
+            isAppAccount = object.getBoolean("app_user");
         }else{
             e.putBoolean("appaccount", false);
-            this.isAppAccount = false;
+            isAppAccount = false;
         }
         e.commit();
 
@@ -201,10 +201,10 @@ public class Account {
             @Override
             protected void onPostExecute(String s) {
                 if (s != null) {
-                    Log.e(this.getClass().getName(), "The string is: " + s);
+                    Log.e(getClass().getName(), "The string is: " + s);
                     if (s.equals("duplicate")) {
                         // Maak een mooie notifybox en blablabla *sich*
-                        final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
                         dialog.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
                         dialog.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
                         dialog.setPositiveButton(context.getResources().getString(R.string.logindialog_warning_submitButton), new DialogInterface.OnClickListener() {
@@ -250,7 +250,7 @@ public class Account {
                     }
                 }
             }
-        }.execute(Integer.toString(leerlingnummer), (force ? "ja" : "nee"));
+        }.execute(Integer.toString(leerlingnummer), force ? "ja" : "nee");
     }
 
     /**
@@ -312,7 +312,7 @@ public class Account {
             @Override
             protected void onPostExecute(String s) {
                 if (s != null) {
-                    Log.e(this.getClass().getName(), "The string is: " + s);
+                    Log.e(getClass().getName(), "The string is: " + s);
                     try {
                         Account account = JSON_InitializeAccount(s);
                         Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
@@ -378,11 +378,11 @@ public class Account {
             @Override
             public void onClick(View v) {
                 /* Alle velden en verwerken */
-                final EditText username = (EditText) dialogView.findViewById(R.id.registerdialog_username);
-                final EditText password = (EditText) dialogView.findViewById(R.id.registerdialog_password);
-                final EditText repass = (EditText) dialogView.findViewById(R.id.registerdialog_passwordcheck);
-                final EditText llnr = (EditText) dialogView.findViewById(R.id.registerdialog_llnr);
-                final EditText email = (EditText) dialogView.findViewById(R.id.registerdialog_email);
+                EditText username = (EditText) dialogView.findViewById(R.id.registerdialog_username);
+                EditText password = (EditText) dialogView.findViewById(R.id.registerdialog_password);
+                EditText repass = (EditText) dialogView.findViewById(R.id.registerdialog_passwordcheck);
+                EditText llnr = (EditText) dialogView.findViewById(R.id.registerdialog_llnr);
+                EditText email = (EditText) dialogView.findViewById(R.id.registerdialog_email);
                 username.requestFocus();
                 if (username.getText().toString().equals("")) {
                     Toast.makeText(context, "Gebruikersnaam is verplicht!", Toast.LENGTH_SHORT).show();
@@ -393,7 +393,7 @@ public class Account {
                     return;
                 }
                 if (!password.getText().toString().equals(repass.getText().toString())) {
-                    Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText().toString() + "  " + repass.getText().toString(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText() + "  " + repass.getText(), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (llnr.getText().toString().equals("")) {
@@ -448,16 +448,16 @@ public class Account {
                             return "error:Onbekende fout";
                     }
                 } catch (ClientProtocolException e) {
-                    s = "error:" + e.toString();
+                    s = "error:" + e;
                 } catch (IOException e) {
-                    s = "error:" + e.toString();
+                    s = "error:" + e;
                 }
                 return s;
             }
 
             @Override
             protected void onPostExecute(String s) {
-                Log.e(this.getClass().getName(), "The string is: " + s);
+                Log.e(getClass().getName(), "The string is: " + s);
                 if (s.startsWith("error:")) {
                     Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
                 } else if (s.equals("conflict")) {
@@ -607,7 +607,7 @@ public class Account {
     }
 
     public void extend() throws Exception {
-        if (this.isAppAccount) {
+        if (isAppAccount) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(context);
             final LayoutInflater inflater = LayoutInflater.from(context);
             final View dialogView = inflater.inflate(R.layout.extenddialog, null);
@@ -646,7 +646,7 @@ public class Account {
                         return;
                     }
                     if (!password.getText().toString().equals(repass.getText().toString())) {
-                        Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText().toString() + "  " + repass.getText().toString(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Wachtwoorden niet gelijk!" + password.getText() + "  " + repass.getText(), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     try {
@@ -661,8 +661,8 @@ public class Account {
         }
     }
 
-    public void extend(final String username, final String password, final String email) throws Exception {
-        if (this.isAppAccount) {
+    void extend(final String username, final String password, final String email) throws Exception {
+        if (isAppAccount) {
             new AsyncTask<String, Void, String>() {
                 @Override
                 protected String doInBackground(String... params) {
@@ -705,7 +705,7 @@ public class Account {
 
                 @Override
                 protected void onPostExecute(String s) {
-                    Log.e(this.getClass().getName(), "The string is:" + s);
+                    Log.e(getClass().getName(), "The string is:" + s);
                     if (s.startsWith("error:")) {
                         Toast.makeText(context, s.substring(6), Toast.LENGTH_LONG).show();
                     } else if (s.equals("conflict")) {
@@ -715,7 +715,7 @@ public class Account {
                         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("appaccount", false).commit();
                     }
                 }
-            }.execute(this.apikey, username, password);
+            }.execute(apikey, username, password);
         } else {
             throw new Exception("Je bent al geüpgrade");
         }
@@ -723,7 +723,7 @@ public class Account {
 
     //endregion
     //region Subklassen
-    public ArrayList<Subklas> getSubklassen(Context context) throws IOException, JSONException {
+    public ArrayList<Subklas> getSubklassen() throws IOException, JSONException {
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet get = new HttpGet(Settings.API_Base_URL + "account/manage/subklassen?key=" + apikey);
         HttpResponse response = httpClient.execute(get);
@@ -755,14 +755,13 @@ public class Account {
         }
     }
 
-    public boolean setSubklassen(String[] subklassen) throws IOException {
+    public void setSubklassen(String[] subklassen) throws IOException {
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/manage/subklassen/?key="+apikey);
 
         // Add your data
         List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
 
-        String klassen = "";
         for (int index = 0; index < subklassen.length; index++) {
             Log.d("RoosterInfoDownloader", subklassen[index]);
             postParameters.add(new BasicNameValuePair("subklassen[" + index + "]", subklassen[index]));
@@ -788,7 +787,7 @@ public class Account {
             case 500:
                 throw new IOException("Serverfout");
             case 200:
-                return true;
+                return;
             default:
                 throw new IOException("Onbekende fout: " + status);
         }
@@ -796,11 +795,11 @@ public class Account {
     }
 
     public static class Subklas {
-        public String subklas;
-        public int jaarlaag;
-        public String vak;
-        public String leraar;
-        public int nummer;
+        public final String subklas;
+        public final int jaarlaag;
+        public final String vak;
+        public final String leraar;
+        public final int nummer;
 
         public Subklas(String subklas, int jaarlaag, String vak, String leraar, int nummer) {
             this.subklas = subklas;

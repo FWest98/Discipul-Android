@@ -15,7 +15,7 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 public class ActionBarSpinnerAdapter implements SpinnerAdapter {
-    MainActivity.PlaceholderFragment.Type type;
+    private MainActivity.PlaceholderFragment.Type type;
     private final WeakReference<Context> context;
     private final List<String> data;
 

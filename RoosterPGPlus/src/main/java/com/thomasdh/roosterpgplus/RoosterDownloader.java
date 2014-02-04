@@ -37,9 +37,7 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
     private MenuItem menuItem;
     private MainActivity.PlaceholderFragment.Type type;
     private int week;
-    private ViewPager viewPager;
     private String klas;
-    private String docent;
 
 
     //Voor docenten
@@ -55,7 +53,7 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
         this.forceReload = forceReload;
         this.menuItem = menuItem;
         this.week = week;
-        this.type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
+        type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
 
         if (this.menuItem != null) {
             LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -63,13 +61,6 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
         } else {
             Log.w(getClass().getSimpleName(), "The MenuItem is null.");
         }
-    }
-
-    public RoosterDownloader(Context context, boolean forceReload, int week) {
-        this.type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
-        this.context = new WeakReference<Context>(context);
-        this.forceReload = forceReload;
-        this.week = week;
     }
 
     @Override
@@ -80,7 +71,7 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
             NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
             if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-                if ((itIsTimeToReload() || forceReload)) {
+                if (itIsTimeToReload() || forceReload) {
                     Log.d(getClass().getSimpleName(), "De app gaat de string van het internet downloaden.");
                     String JSON = laadViaInternet();
                     Log.d(getClass().getSimpleName(), "Loaded from internet");
@@ -112,8 +103,8 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
 
     @Override
     protected void onPostExecute(String string) {
-        if (this.menuItem != null) {
-            MenuItemCompat.setActionView(this.menuItem, null);
+        if (menuItem != null) {
+            MenuItemCompat.setActionView(menuItem, null);
         } else {
             Log.w(getClass().getSimpleName(), "The MenuItem is null on PostExecute.");
         }
@@ -133,11 +124,11 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
                 }
                 if (context != null && rootView.get() != null) {
                     if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_docent), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) (rootView.get()).findViewById(R.id.viewPager_leerling), rootView.get(), week, type, klas).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_leerling), rootView.get(), week, type, klas).buildLayout(new RoosterWeek(string, context.get()));
                 }
             }
         }
