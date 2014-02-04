@@ -279,7 +279,7 @@ public class MainActivity extends ActionBarActivity {
                                 vakNaam.add(vak.naam);
                             }
 
-                            docentenVakSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, vakNaam.toArray(new String[vakNaam.size()])));
+                            docentenVakSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, vakNaam.toArray(new String[vakNaam.size()])));
                             docentenVakSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
                                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -291,7 +291,7 @@ public class MainActivity extends ActionBarActivity {
                                         namenLeraren.add(leraar.naam);
                                     }
 
-                                    docentenNaamSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, namenLeraren.toArray(new String[namenLeraren.size()])));
+                                    docentenNaamSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, namenLeraren.toArray(new String[namenLeraren.size()])));
                                     docentenNaamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                         @Override
                                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -349,7 +349,7 @@ public class MainActivity extends ActionBarActivity {
                     protected void onPostExecute(final ArrayList<String> klassen) {
                         // doe iets met de klassen
                         if (klassen != null) {
-                            klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, klassen.toArray(new String[klassen.size()])));
+                            klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, klassen.toArray(new String[klassen.size()])));
                             klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
                                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
