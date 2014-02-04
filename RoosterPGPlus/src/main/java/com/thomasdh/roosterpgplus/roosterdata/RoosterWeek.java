@@ -51,8 +51,11 @@ public class RoosterWeek implements Serializable {
 
     public RoosterWeek(String roosterJSON, Context context) {
         try {
-            JSONObject weekArray = new JSONObject(roosterJSON);
             uren = new Lesuur[5][7][];
+            if(roosterJSON == null) {
+                return;
+            }
+            JSONObject weekArray = new JSONObject(roosterJSON);
             for (int day = 0; day < 5; day++) {
                 if (weekArray.has(getDayOfWeek(day + 2))) {
                     JSONObject dagArray = weekArray.getJSONObject(getDayOfWeek(day + 2));

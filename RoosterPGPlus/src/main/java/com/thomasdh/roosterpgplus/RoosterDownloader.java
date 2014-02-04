@@ -120,7 +120,13 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
         if (string != null) {
             if (string.startsWith("error:")) {
                 Toast.makeText(context.get(), string.substring(6), Toast.LENGTH_SHORT).show();
+            //} else if(string.equals("[]")) {
+//                RoosterWeek roosterWeek = new RoosterWeek(null, context.get());
+
             } else {
+                if(string.equals("[]")) {
+                    string = null;
+                }
                 RoosterWeek roosterWeek = new RoosterWeek(string, context.get());
                 if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
                     roosterWeek.slaOp(context.get(), week);
