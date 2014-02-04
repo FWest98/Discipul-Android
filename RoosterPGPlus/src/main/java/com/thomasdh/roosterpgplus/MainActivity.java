@@ -2,6 +2,7 @@ package com.thomasdh.roosterpgplus;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -147,7 +148,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mainFragment != null && mainFragment.getRootView() != null && refreshItem != null){
+        if (mainFragment != null && mainFragment.getRootView() != null && refreshItem != null) {
             mainFragment.laadRooster(this, mainFragment.getRootView(), mainFragment.type);
         }
     }
@@ -186,9 +187,9 @@ public class MainActivity extends ActionBarActivity {
             case R.id.menu_item_refresh:
                 if (mainFragment.type == PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
                     new RoosterDownloader(this, mainFragment.getRootView(), true, item, selectedWeek).execute();
-                }else if (mainFragment.type == PlaceholderFragment.Type.KLASROOSTER){
+                } else if (mainFragment.type == PlaceholderFragment.Type.KLASROOSTER) {
                     new RoosterDownloader(this, mainFragment.getRootView(), true, item, selectedWeek, mainFragment.leraarLerlingselected, PlaceholderFragment.Type.KLASROOSTER).execute();
-                }else if (mainFragment.type == PlaceholderFragment.Type.DOCENTENROOSTER){
+                } else if (mainFragment.type == PlaceholderFragment.Type.DOCENTENROOSTER) {
                     new RoosterDownloader(this, mainFragment.getRootView(), true, item, selectedWeek, mainFragment.leraarLerlingselected, PlaceholderFragment.Type.DOCENTENROOSTER).execute();
                 }
                 return true;
@@ -350,10 +351,21 @@ public class MainActivity extends ActionBarActivity {
                         // doe iets met de klassen
                         if (klassen != null) {
                             klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, klassen.toArray(new String[klassen.size()])));
+
+                            final boolean[] init = {true};
                             klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
                                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                                     leraarLerlingselected = ((TextView) view).getText().toString();
+
+                                    if (!init[0]) {
+                                        //Sla de geselecteerde klas op
+                                        Log.d("Spinner", "opgeslagen " + leraarLerlingselected);
+                                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                                        preferences.edit().putString("laatstGeselecteerdeKlas", leraarLerlingselected).commit();
+                                    }
+                                    init[0] = false;
+
                                     new RoosterDownloader(getActivity(), getRootView(), true, refreshItem.get(), selectedWeek,
                                             ((TextView) view).getText().toString(), Type.KLASROOSTER).execute();
                                 }
@@ -363,6 +375,18 @@ public class MainActivity extends ActionBarActivity {
 
                                 }
                             });
+
+                            // Ga naar de laatst gekozen klas toe
+                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                            String laatstGeselecteerd = preferences.getString("laatstGeselecteerdeKlas", null);
+                            if (laatstGeselecteerd != null) {
+                                for (int klasIndex = 0; klasIndex < klassen.size(); klasIndex++) {
+                                    if (klassen.get(klasIndex).equals(laatstGeselecteerd)) {
+                                        klasspinner.setSelection(klasIndex);
+                                        Log.d("Spinner", "selection set to " + laatstGeselecteerd);
+                                    }
+                                }
+                            }
                         }
                     }
                 }.execute();
