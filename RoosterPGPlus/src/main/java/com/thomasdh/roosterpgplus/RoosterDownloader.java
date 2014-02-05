@@ -33,8 +33,8 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
 
     private final WeakReference<Context> context;
     private final boolean forceReload;
-    private WeakReference<View> rootView;
-    private MenuItem menuItem;
+    private final WeakReference<View> rootView;
+    private final MenuItem menuItem;
     private MainActivity.PlaceholderFragment.Type type;
     private int week;
     private String klas;
@@ -124,11 +124,11 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
                 }
                 if (context != null && rootView.get() != null) {
                     if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager), week, type).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), rootView.get(), week, type).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), week, type).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_leerling), rootView.get(), week, type, klas).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_leerling), week, type, klas).buildLayout(new RoosterWeek(string, context.get()));
                 }
             }
         }

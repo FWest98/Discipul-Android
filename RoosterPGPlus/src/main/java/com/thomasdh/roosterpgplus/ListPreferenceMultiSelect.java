@@ -115,7 +115,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
     }
 
     private boolean isCheckAllValue(int which) {
-        final CharSequence[] entryValues = getEntryValues();
+        CharSequence[] entryValues = getEntryValues();
         return checkAllKey != null && entryValues[which].equals(checkAllKey);
     }
 

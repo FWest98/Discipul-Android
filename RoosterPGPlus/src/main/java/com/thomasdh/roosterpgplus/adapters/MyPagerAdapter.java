@@ -50,14 +50,6 @@ public class MyPagerAdapter extends PagerAdapter {
         container.removeView((View) object);
     }
 
-    public void deleteItems() {
-        views.clear();
-    }
-
-    public void addView(View v) {
-        views.add(v);
-    }
-
     @TargetApi(12)
     public void setView(View newView, int position, Context context) {
         if (views.size() <= position) {
