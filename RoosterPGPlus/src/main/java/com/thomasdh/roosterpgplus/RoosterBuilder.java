@@ -37,21 +37,20 @@ class RoosterBuilder {
     private final WeakReference<Context> context;
     private final WeakReference<ViewPager> viewPager;
     private final int week;
-    private MainActivity.PlaceholderFragment.Type type;
-    String klas;
+    private final MainActivity.PlaceholderFragment.Type type;
+    private String klas;
 
 
-    public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week, MainActivity.PlaceholderFragment.Type type) {
+    public RoosterBuilder(Context context, ViewPager viewPager, int week, MainActivity.PlaceholderFragment.Type type) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
-        WeakReference<View> rootView1 = new WeakReference<View>(rootView);
         this.week = week;
         this.type = type;
-        this.klas = null;
+        klas = null;
     }
 
-    public RoosterBuilder(Context context, ViewPager viewPager, View rootView, int week, MainActivity.PlaceholderFragment.Type type, String klas) {
-        this(context, viewPager, rootView, week, type);
+    public RoosterBuilder(Context context, ViewPager viewPager, int week, MainActivity.PlaceholderFragment.Type type, String klas) {
+        this(context, viewPager, week, type);
         this.klas = klas;
     }
 
@@ -121,11 +120,11 @@ class RoosterBuilder {
 
             for (int day = 2; day < 7; day++) {
                 View dagView;
-                final LinearLayout ll;
+                LinearLayout ll;
                 dagView = inflater.inflate(R.layout.rooster_dag, null);
                 ll = (LinearLayout) dagView.findViewById(R.id.rooster_dag_linearlayout);
 
-                TextView dagTextView = ((TextView) dagView.findViewById(R.id.weekdagnaam));
+                TextView dagTextView = (TextView) dagView.findViewById(R.id.weekdagnaam);
                 dagTextView.setText(getDayOfWeek(day));
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");
@@ -170,7 +169,7 @@ class RoosterBuilder {
                                 iter.remove();
                             }
                         }
-                        if (uitgevallenUren.size() > 0) {
+                        if (!uitgevallenUren.isEmpty()) {
                             String uurNamen = uitgevallenUren.get(0).vak;
                             int count = 1;
                             for (int x = 1; x < uitgevallenUren.size(); x++) {
@@ -199,7 +198,7 @@ class RoosterBuilder {
                         uurArray = tempUurArray.toArray(new Lesuur[tempUurArray.size()]);
 
 
-                        final boolean multipleViews = (uurArray.length > 1);
+                        boolean multipleViews = uurArray.length > 1;
 
                         final FrameLayout frameLayout = new FrameLayout(context.get());
                         for (int u = 0; u < uurArray.length; u++) {

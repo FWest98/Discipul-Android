@@ -140,14 +140,6 @@ public class RoosterInfoDownloader {
         return getWeken(false, 0);
     }
 
-    static public ArrayList<Week> getWeken(boolean AllWeeks) throws IOException, JSONException {
-        return getWeken(AllWeeks, 0);
-    }
-
-    static public ArrayList<Week> getWeken(int numberOfWeeks) throws IOException, JSONException {
-        return getWeken(false, numberOfWeeks);
-    }
-
     private static ArrayList<Week> getWeken(boolean AllWeeks, int numberOfWeeks) throws IOException, JSONException {
 
         if (numberOfWeeks == 0)

@@ -509,7 +509,7 @@ public class MainActivity extends ActionBarActivity {
 
                 //Als het de goede week is, gebruik hem
                 if (roosterWeek != null && roosterWeek.getWeek() == selectedWeek) {
-                    new RoosterBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), rootView, selectedWeek, type).buildLayout(roosterWeek);
+                    new RoosterBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), selectedWeek, type).buildLayout(roosterWeek);
                     Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
                     new RoosterDownloader(context, rootView, false, refreshItem.get(), selectedWeek).execute();
                 } else {

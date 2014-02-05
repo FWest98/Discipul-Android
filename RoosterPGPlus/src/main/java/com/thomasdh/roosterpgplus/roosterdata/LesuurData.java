@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class LesuurData {
 
-    public static String[] allLesuren = {SQLRooster.COLUMN_ID,
+    public static final String[] allLesuren = {SQLRooster.COLUMN_ID,
             SQLRooster.COLUMN_DAG,
             SQLRooster.COLUMN_UUR,
             SQLRooster.COLUMN_WEEK,
@@ -30,9 +30,9 @@ public class LesuurData {
             SQLRooster.COLUMN_VAK,
             SQLRooster.COLUMN_LOKAAL,
             SQLRooster.COLUMN_LERAAR};
-    private SQLRooster dbHelper;
+    private final SQLRooster dbHelper;
     public SQLiteDatabase db;
-    private Context context;
+    private final Context context;
 
     public LesuurData(Context context) {
         dbHelper = new SQLRooster(context);

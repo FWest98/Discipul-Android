@@ -15,9 +15,6 @@ import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.Toast;
 
-import com.google.analytics.tracking.android.EasyTracker;
-import com.google.analytics.tracking.android.MapBuilder;
-import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.thomasdh.roosterpgplus.roosterdata.LesuurData;
 import com.thomasdh.roosterpgplus.roosterdata.SQLRooster;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
@@ -41,7 +38,7 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Created by Thomas on 3-12-13.
+ * Created by rdiger on   publi.
  */
 public class Account {
 
@@ -116,7 +113,7 @@ public class Account {
         if (object.has("app_user")) {
             e.putBoolean("appaccount", object.getBoolean("app_user"));
             isAppAccount = object.getBoolean("app_user");
-        }else{
+        } else {
             e.putBoolean("appaccount", false);
             isAppAccount = false;
         }
@@ -353,8 +350,8 @@ public class Account {
     }
 
     private void register(final boolean laadRooster) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        final LayoutInflater inflater = LayoutInflater.from(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
         final View dialogView = inflater.inflate(R.layout.registerdialog, null);
 
         builder.setTitle("Registreer");
@@ -406,7 +403,7 @@ public class Account {
         });
     }
 
-    private void register(final String username, final String password, final int llnr, final String email) {
+    private void register(String username, String password, int llnr, String email) {
         register(username, password, llnr, email, false, false);
     }
 
@@ -463,7 +460,7 @@ public class Account {
                 } else if (s.equals("conflict")) {
                     Toast.makeText(context, "Deze gebruikersnaam is al in gebruik", Toast.LENGTH_LONG).show();
                 } else if (s.equals("duplicate")) {
-                    final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(context);
                     dialog.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
                     dialog.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
                     dialog.setPositiveButton(context.getResources().getString(R.string.logindialog_warning_submitButton), new DialogInterface.OnClickListener() {
@@ -512,8 +509,8 @@ public class Account {
     }
 
     public void showLoginDialog(final boolean laadRooster) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        final LayoutInflater inflater = LayoutInflater.from(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
         final View dialogView = inflater.inflate(R.layout.logindialog, null);
 
         final TabHost tabHost = (TabHost) dialogView.findViewById(R.id.DialogTabs);
@@ -564,26 +561,26 @@ public class Account {
         LoginDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
-                final EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
-                final EditText llnr = (EditText) dialogView.findViewById(R.id.logindialogllnr);
+                EditText username = (EditText) dialogView.findViewById(R.id.logindialogusername);
+                EditText password = (EditText) dialogView.findViewById(R.id.logindialogpassword);
+                EditText llnr = (EditText) dialogView.findViewById(R.id.logindialogllnr);
 
                 username.requestFocus();
                 int tab = tabHost.getCurrentTab();
-                if(tab == 0) { // UserPass
-                    if(username.getText().toString().equals("")) {
+                if (tab == 0) { // UserPass
+                    if (username.getText().toString().equals("")) {
                         Toast.makeText(context, "Gebruikersnaam is verplicht!", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if(password.getText().toString().equals("")) {
+                    if (password.getText().toString().equals("")) {
                         Toast.makeText(context, "Wachtwoord is verplicht!", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     login(username.getText().toString(), password.getText().toString(), laadRooster);
 
-                } else if(tab == 1) {
-                    if(llnr.getText().toString().equals("")) {
+                } else if (tab == 1) {
+                    if (llnr.getText().toString().equals("")) {
                         Toast.makeText(context, "Leerlingnummer is verplicht!", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -608,8 +605,8 @@ public class Account {
 
     public void extend() throws Exception {
         if (isAppAccount) {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            final LayoutInflater inflater = LayoutInflater.from(context);
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            LayoutInflater inflater = LayoutInflater.from(context);
             final View dialogView = inflater.inflate(R.layout.extenddialog, null);
 
             builder.setTitle("Upgrade account");
@@ -631,10 +628,10 @@ public class Account {
             ExtendDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    final EditText username = (EditText) dialogView.findViewById(R.id.extenddialog_username);
-                    final EditText password = (EditText) dialogView.findViewById(R.id.extenddialog_password);
-                    final EditText repass = (EditText) dialogView.findViewById(R.id.extenddialog_passwordcheck);
-                    final EditText email = (EditText) dialogView.findViewById(R.id.extenddialog_email);
+                    EditText username = (EditText) dialogView.findViewById(R.id.extenddialog_username);
+                    EditText password = (EditText) dialogView.findViewById(R.id.extenddialog_password);
+                    EditText repass = (EditText) dialogView.findViewById(R.id.extenddialog_passwordcheck);
+                    EditText email = (EditText) dialogView.findViewById(R.id.extenddialog_email);
                     username.requestFocus();
 
                     if (username.getText().toString().equals("")) {
@@ -661,7 +658,7 @@ public class Account {
         }
     }
 
-    void extend(final String username, final String password, final String email) throws Exception {
+    void extend(String username, String password, final String email) throws Exception {
         if (isAppAccount) {
             new AsyncTask<String, Void, String>() {
                 @Override
@@ -757,7 +754,7 @@ public class Account {
 
     public void setSubklassen(String[] subklassen) throws IOException {
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/manage/subklassen/?key="+apikey);
+        HttpPost httppost = new HttpPost(Settings.API_Base_URL + "account/manage/subklassen/?key=" + apikey);
 
         // Add your data
         List<NameValuePair> postParameters = new ArrayList<NameValuePair>();

@@ -4,9 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
-import com.google.analytics.tracking.android.EasyTracker;
-import com.google.analytics.tracking.android.MapBuilder;
-import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.thomasdh.roosterpgplus.Lesuur;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
@@ -16,18 +13,17 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
+import java.util.Collections;
 
 /**
  * Created by Thomas on 13-12-13.
  */
 public class RoosterWeek implements Serializable {
 
-    public static final int MAANDAG = 2;
     private static final long serialVersionUID = 1029472134713472957L;
     private Lesuur[][][] uren;
 
-    public RoosterWeek(Cursor dagen) {
+    private RoosterWeek(Cursor dagen) {
         uren = new Lesuur[5][7][];
         if (dagen.moveToFirst()) {
             do {
@@ -36,9 +32,7 @@ public class RoosterWeek implements Serializable {
                     uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1][0] = LesuurData.cursorToLesuur(dagen);
                 } else {
                     ArrayList<Lesuur> nieuw = new ArrayList<Lesuur>();
-                    for (Lesuur les : uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1]) {
-                        nieuw.add(les);
-                    }
+                    Collections.addAll(nieuw, uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1]);
                     uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1] = new Lesuur[nieuw.size() + 1];
                     for (int o = 0; o < nieuw.size(); o++) {
                         uren[LesuurData.cursorToLesuur(dagen).dag - 1][LesuurData.cursorToLesuur(dagen).uur - 1][o] = nieuw.get(o);
@@ -162,6 +156,5 @@ public class RoosterWeek implements Serializable {
     public Lesuur[][] getDag(int dag) {
         return uren[dag - 2];
     }
-
 
 }
