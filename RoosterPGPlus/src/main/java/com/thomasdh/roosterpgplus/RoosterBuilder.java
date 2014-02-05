@@ -174,7 +174,7 @@ class RoosterBuilder {
                             String uurNamen = uitgevallenUren.get(0).vak;
                             int count = 1;
                             for (int x = 1; x < uitgevallenUren.size(); x++) {
-                                if(!uurNamen.contains(uitgevallenUren.get(x).vak)) {
+                                if (!uurNamen.contains(uitgevallenUren.get(x).vak)) {
                                     count++;
                                     uurNamen += " & " + uitgevallenUren.get(x).vak;
                                 }
@@ -182,14 +182,18 @@ class RoosterBuilder {
                             if (count > 1) {
                                 uurNamen += "MULTIPLE";
                             }
-                            tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
-                                    uitgevallenUren.get(0).uur,
-                                    uitgevallenUren.get(0).week,
-                                    uitgevallenUren.get(0).klas,
-                                    uitgevallenUren.get(0).leraar,
-                                    uurNamen,
-                                    uitgevallenUren.get(0).lokaal,
-                                    true, false));
+                            // In het persoonlijke rooster wordt uitval niet weergegeven als er tegelijkertijd een
+                            // andere les is die niet uitvalt.
+                            if (type != MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER || tempUurArray.isEmpty()) {
+                                tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
+                                        uitgevallenUren.get(0).uur,
+                                        uitgevallenUren.get(0).week,
+                                        uitgevallenUren.get(0).klas,
+                                        uitgevallenUren.get(0).leraar,
+                                        uurNamen,
+                                        uitgevallenUren.get(0).lokaal,
+                                        true, false));
+                            }
                         }
                         final ArrayList<View> allUren = new ArrayList<View>();
                         uurArray = tempUurArray.toArray(new Lesuur[tempUurArray.size()]);
