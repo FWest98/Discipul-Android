@@ -2,29 +2,29 @@
 
     <Preference android:title="@string/settings_user_title">
         <intent
-            android:action="com.thomasdh.roosterpgplus.RoosterPreferenceActivity$UserFragment"
-            android:targetClass="com.thomasdh.roosterpgplus.RoosterPreferenceActivity"
+            android:action="com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment"
+            android:targetClass="com.thomasdh.roosterpgplus.PreferencesActivity"
             android:targetPackage="com.thomasdh.roosterpgplus" />
     </Preference>
 
     <Preference android:title="@string/settings_background_title">
         <intent
-            android:action="com.thomasdh.roosterpgplus.RoosterPreferenceActivity$AchtergrondFragment"
-            android:targetClass="com.thomasdh.roosterpgplus.RoosterPreferenceActivity"
+            android:action="com.thomasdh.roosterpgplus.PreferencesActivity$AchtergrondFragment"
+            android:targetClass="com.thomasdh.roosterpgplus.PreferencesActivity"
             android:targetPackage="com.thomasdh.roosterpgplus" />
     </Preference>
 
     <Preference android:title="@string/settings_other_title">
         <intent
-            android:action="com.thomasdh.roosterpgplus.RoosterPreferenceActivity$OverigFragment"
-            android:targetClass="com.thomasdh.roosterpgplus.RoosterPreferenceActivity"
+            android:action="com.thomasdh.roosterpgplus.PreferencesActivity$OverigFragment"
+            android:targetClass="com.thomasdh.roosterpgplus.PreferencesActivity"
             android:targetPackage="com.thomasdh.roosterpgplus" />
     </Preference>
 
     <Preference android:title="@string/settings_info_title">
         <intent
-            android:action="com.thomasdh.roosterpgplus.RoosterPreferenceActivity$InfoFragment"
-            android:targetClass="com.thomasdh.roosterpgplus.RoosterPreferenceActivity"
+            android:action="com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment"
+            android:targetClass="com.thomasdh.roosterpgplus.PreferencesActivity"
             android:targetPackage="com.thomasdh.roosterpgplus" />
     </Preference>
 
