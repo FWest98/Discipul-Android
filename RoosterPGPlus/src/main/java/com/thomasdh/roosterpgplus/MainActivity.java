@@ -71,8 +71,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //TODO ANALYTICS DRY RUN, geen gegevens worden naar analytics verzonden in de debug versie
-        GoogleAnalytics.getInstance(this).setDryRun(true);
+        GoogleAnalytics.getInstance(this).setDryRun(false);
 
         setContentView(R.layout.activity_main);
 

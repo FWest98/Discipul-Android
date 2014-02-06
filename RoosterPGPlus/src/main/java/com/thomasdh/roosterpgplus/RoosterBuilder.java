@@ -237,7 +237,7 @@ class RoosterBuilder {
                                         final View newView = allUren.get(k < 1 ? allUren.size() - 1 : k - 1);
                                         //if (Build.VERSION.SDK_INT >= 12) {
                                             if(k < 1) { // opnieuw beginnen
-                                                for(int c = allUren.size() - 1; c >= 0; c--) {
+                                                for(int c = 0; c < allUren.size(); c++) {
                                                     frameLayout.bringChildToFront(allUren.get(c));
                                                     frameLayout.invalidate();
                                                 }
