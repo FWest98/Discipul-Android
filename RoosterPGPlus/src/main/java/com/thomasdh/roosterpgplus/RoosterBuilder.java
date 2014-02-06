@@ -215,10 +215,10 @@ class RoosterBuilder {
                                 lagen.setText("(" + (u+1) + "/" + uurArray.length + ")");
                                 //uurview.findViewById(R.id.filler).setMinimumWidth((int) convertDPToPX(50, context.get()));
                                 ViewGroup.LayoutParams p = uurview.findViewById(R.id.fillerRight).getLayoutParams();
-                                p.width = p.width + a * 20;
+                                p.width = p.width + (int) convertDPToPX(a * 8, context.get());
                                 uurview.findViewById(R.id.fillerRight).setLayoutParams(p);
                                 p = uurview.findViewById(R.id.fillerLeft).getLayoutParams();
-                                p.width = p.width + u * 20;
+                                p.width = p.width + (int) convertDPToPX(u * 8, context.get());
                                 uurview.findViewById(R.id.fillerLeft).setLayoutParams(p);
                             }
 
