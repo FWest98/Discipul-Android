@@ -1,7 +1,5 @@
 package com.thomasdh.roosterpgplus;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
@@ -273,7 +271,7 @@ class RoosterBuilder {
                         ll.addView(frameLayout);
                     } else {
                         View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
-                        vrij.setMinimumHeight((int) convertDPToPX(80, context.get()));
+                        vrij.setMinimumHeight((int) convertDPToPX(79, context.get()));
                         if (y == 6) {
                             vrij.setBackgroundResource(R.drawable.basic_rect);
                             vrij.setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));

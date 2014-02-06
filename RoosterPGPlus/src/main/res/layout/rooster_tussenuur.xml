@@ -2,28 +2,48 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="3dp"
-    android:layout_marginBottom="0dp"
-    android:background="@drawable/basic_rect_nobottom">
+    android:layout_height="wrap_content"
+    android:layout_margin="3dp">
 
-    <TextView
-        android:id="@+id/layers"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_margin="5dp"
-        android:layout_marginRight="2dp"
-        android:visibility="gone" />
+    <View
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:id="@+id/fillerLeft"
+        android:layout_alignParentLeft="true"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:layout_marginLeft="1dp"
-        android:layout_marginRight="1dp"
-        android:layout_marginTop="1dp"
-        android:background="@drawable/diagonal_stripes">
+        android:layout_toLeftOf="@+id/fillerRight"
+        android:layout_toRightOf="@+id/fillerLeft"
+        android:background="@drawable/basic_rect_nobottom"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginLeft="1dp"
+            android:layout_marginRight="1dp"
+            android:layout_marginTop="1dp"
+            android:background="@drawable/diagonal_stripes">
+
+            <TextView
+                android:id="@+id/layers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_margin="5dp"
+                android:layout_marginRight="2dp"
+                android:visibility="gone" />
+
+        </RelativeLayout>
 
     </RelativeLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:id="@+id/fillerRight"
+        android:layout_alignParentRight="true"/>
 
 </RelativeLayout>
