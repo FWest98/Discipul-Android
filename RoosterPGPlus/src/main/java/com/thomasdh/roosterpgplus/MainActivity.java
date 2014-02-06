@@ -71,7 +71,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        GoogleAnalytics.getInstance(this).setDryRun(false);
+        GoogleAnalytics.getInstance(this).setDryRun(true);
 
         setContentView(R.layout.activity_main);
 
