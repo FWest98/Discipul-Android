@@ -16,7 +16,6 @@ import android.widget.Toast;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
-import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import java.util.ArrayList;
@@ -42,62 +41,16 @@ public class PreferencesActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        preferenceListener = new PreferenceListener2();
-        // Voor android versies voor 3.0
+        // Voor android versies vóór 3.0
         String action = getIntent().getAction();
         if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_info);
-        } else if ("com.thomasdh.roosterpgplus.PreferenceActivity$UserFragment".equals(action)) {
-            addPreferencesFromResource(R.xml.preferences_user);
-        } else if ("com.thomasdh.roosterpgplus.PreferenceActivity$OverigFragment".equals(action)) {
-            addPreferencesFromResource(R.xml.preferences_overig);
-        } else if ("com.thomasdh.roosterpgplus.PreferenceActivity$ActergrondFragment".equals(action)) {
-            addPreferencesFromResource(R.xml.preferences_achtergrond);
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            addPreferencesFromResource(R.xml.preference_headers_old);
-        }
-
-        user = new Account(this);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        onBackPressed();
-        return true;
-    }
-
-    @Override
-    protected void onStop() {
-        EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
-        tracker.set(Fields.SCREEN_NAME, null);
-        tracker.send(MapBuilder
-                .createAppView()
-                .build()
-        );
-        super.onStop();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String action = getIntent().getAction();
-        if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
-            findPreference("mijn_account").setSummary(
-                    "Naam: " + user.name + ", " +
-                            "Klas: " + user.klas
-            );
-
-            findPreference("log_in").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    user.showLoginDialog();
-                    return true;
-                }
-            });
-        }
-
-        if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
+            try {
+                findPreference("versie").setTitle("Versie: " + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_user);
             preferenceListener = new PreferenceListener2();
 
@@ -157,15 +110,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
                                     @Override
                                     protected void onProgressUpdate(Exception... e) {
-                                        Toast.makeText(getApplicationContext(), e[0].getMessage(), Toast.LENGTH_SHORT).show();
-                                        Log.e("PreferencesActivity", "SetSubklasfout", e[0]);
-                                        EasyTracker easyTracker = EasyTracker.getInstance(getApplicationContext());
-                                        easyTracker.send(MapBuilder
-                                                .createException(new StandardExceptionParser(getApplicationContext(), null)
-                                                        //True betekent geen fatale exceptie
-                                                        .getDescription(Thread.currentThread().getName(), e[0]), true)
-                                                .build()
-                                        );
+                                        ExceptionHandler.handleException(e[0], getApplicationContext(), "SetSubklasfout", "PreferencesActivity", ExceptionHandler.HandleType.SIMPLE);
                                     }
                                 }.execute();
                                 return true;
@@ -213,14 +158,48 @@ public class PreferencesActivity extends PreferenceActivity {
                     return false;
                 }
             });
+        } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$OverigFragment".equals(action)) {
+            addPreferencesFromResource(R.xml.preferences_overig);
+        } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$AchtergrondFragment".equals(action)) {
+            addPreferencesFromResource(R.xml.preferences_achtergrond);
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            addPreferencesFromResource(R.xml.preference_headers_old);
         }
+
+        user = new Account(this);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        onBackPressed();
+        return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String action = getIntent().getAction();
+        if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
+        tracker.set(Fields.SCREEN_NAME, null);
+        tracker.send(MapBuilder
+                .createAppView()
+                .build()
+        );
+        super.onStop();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         String action = getIntent().getAction();
-        if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
+        if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
             getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(preferenceListener);
         }
     }
@@ -445,5 +424,4 @@ public class PreferencesActivity extends PreferenceActivity {
             }
         }
     }
-
 }
