@@ -239,6 +239,7 @@ class RoosterBuilder {
                                             if(k < 1) { // opnieuw beginnen
                                                 for(int c = allUren.size() - 1; c >= 0; c--) {
                                                     frameLayout.bringChildToFront(allUren.get(c));
+                                                    frameLayout.invalidate();
                                                 }
                                             }
                                             //newView.setAlpha(1f);
