@@ -280,7 +280,9 @@ public class MainActivity extends ActionBarActivity {
                                 vakNaam.add(vak.naam);
                             }
 
-                            docentenVakSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, vakNaam.toArray(new String[vakNaam.size()])));
+                            ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity(), R.layout.spinner_title, vakNaam.toArray(new String[vakNaam.size()]));
+                            adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            docentenVakSpinner.setAdapter(adapter1);
                             docentenVakSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
                                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -291,8 +293,9 @@ public class MainActivity extends ActionBarActivity {
                                     for (RoosterInfoDownloader.Leraar leraar : selectedVak.leraren) {
                                         namenLeraren.add(leraar.naam);
                                     }
-
-                                    docentenNaamSpinner.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, namenLeraren.toArray(new String[namenLeraren.size()])));
+                                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.spinner_title, namenLeraren.toArray(new String[namenLeraren.size()]));
+                                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                    docentenNaamSpinner.setAdapter(adapter);
                                     docentenNaamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                         @Override
                                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -323,7 +326,7 @@ public class MainActivity extends ActionBarActivity {
                 );
 
             } else if (type == Type.KLASROOSTER) {
-                setRootView(inflater.inflate(R.layout.fragment_main_leerling, container, false));
+                setRootView(inflater.inflate(R.layout.fragment_main_klas, container, false));
                 viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_leerling);
                 viewPager.setAdapter(new MyPagerAdapter());
 
@@ -350,7 +353,9 @@ public class MainActivity extends ActionBarActivity {
                     protected void onPostExecute(final ArrayList<String> klassen) {
                         // doe iets met de klassen
                         if (klassen != null) {
-                            klasspinner.setAdapter(new ArrayAdapter<String>(getActivity(), R.layout.spinner_item, klassen.toArray(new String[klassen.size()])));
+                            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.spinner_title, klassen.toArray(new String[klassen.size()]));
+                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            klasspinner.setAdapter(adapter);
 
                             final boolean[] init = {true};
                             klasspinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {

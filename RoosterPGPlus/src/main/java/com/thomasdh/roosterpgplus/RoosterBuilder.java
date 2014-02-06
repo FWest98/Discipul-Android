@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -201,35 +202,54 @@ class RoosterBuilder {
                         boolean multipleViews = uurArray.length > 1;
 
                         final FrameLayout frameLayout = new FrameLayout(context.get());
-                        for (int u = 0; u < uurArray.length; u++) {
-                            final int k = u;
+                        int a = -1;
+                        for (int u = uurArray.length - 1; u > -1; u = u-1) {
+                            a++;
+                            final int k = a;
+                            final int h = u;
                             Lesuur lesuur = uurArray[u];
-                            allUren.add(makeView(lesuur, inflater, y));
+                            RelativeLayout uurview = (RelativeLayout) makeView(lesuur, inflater, y);
                             if (multipleViews) {
-                                TextView lagen = (TextView) allUren.get(u).findViewById(R.id.layers);
+                                TextView lagen = (TextView) uurview.findViewById(R.id.layers);
                                 lagen.setVisibility(View.VISIBLE);
-                                lagen.setText("(" + (u + 1) + "/" + uurArray.length + ")");
+                                lagen.setText("(" + (u+1) + "/" + uurArray.length + ")");
+                                //uurview.findViewById(R.id.filler).setMinimumWidth((int) convertDPToPX(50, context.get()));
+                                ViewGroup.LayoutParams p = uurview.findViewById(R.id.fillerRight).getLayoutParams();
+                                p.width = p.width + a * 20;
+                                uurview.findViewById(R.id.fillerRight).setLayoutParams(p);
+                                p = uurview.findViewById(R.id.fillerLeft).getLayoutParams();
+                                p.width = p.width + u * 20;
+                                uurview.findViewById(R.id.fillerLeft).setLayoutParams(p);
                             }
+
+                            allUren.add(uurview);
 
                             final int shortAnimationTime = context.get().getResources().getInteger(
                                     android.R.integer.config_shortAnimTime);
 
-                            allUren.get(u).setVisibility(View.GONE);
+                            //allUren.get(a).setVisibility(View.GONE);
                             if (uurArray.length > 1) {
-                                allUren.get(u).setOnClickListener(new View.OnClickListener() {
+                                allUren.get(a).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
                                     public void onClick(View v) {
                                         final View oldView = allUren.get(k);
-                                        final View newView = allUren.get((k + 1) % allUren.size());
-                                        if (Build.VERSION.SDK_INT >= 12) {
-                                            newView.setAlpha(1f);
-                                            newView.setVisibility(View.VISIBLE);
-                                            frameLayout.bringChildToFront(oldView);
+                                        final View newView = allUren.get(k < 1 ? allUren.size() - 1 : k - 1);
+                                        //if (Build.VERSION.SDK_INT >= 12) {
+                                            if(k < 1) { // opnieuw beginnen
+                                                for(int c = allUren.size() - 1; c >= 0; c--) {
+                                                    frameLayout.bringChildToFront(allUren.get(c));
+                                                }
+                                            }
+                                            //newView.setAlpha(1f);
+                                            //newView.setVisibility(View.VISIBLE);
+                                            frameLayout.bringChildToFront(newView);
                                             frameLayout.invalidate();
                                             newView.setClickable(false);
                                             oldView.setClickable(false);
-                                            oldView.animate().alpha(0f).setDuration(shortAnimationTime).setListener(new AnimatorListenerAdapter() {
+                                            newView.setClickable(true);
+                                            oldView.setClickable(true);
+                                            /*oldView.animate().alpha(0f).setDuration(shortAnimationTime).setListener(new AnimatorListenerAdapter() {
                                                 @Override
                                                 public void onAnimationEnd(Animator animation) {
                                                     oldView.setVisibility(View.GONE);
@@ -238,16 +258,16 @@ class RoosterBuilder {
                                                     newView.setClickable(true);
                                                     oldView.setClickable(true);
                                                 }
-                                            });
-                                        } else {
-                                            oldView.setVisibility(View.GONE);
-                                            newView.setVisibility(View.VISIBLE);
-                                        }
+                                            });*/
+                                        //} else {
+                                            //oldView.setVisibility(View.GONE);
+                                            //newView.setVisibility(View.VISIBLE);
+                                        //}
                                     }
                                 });
                             }
-                            frameLayout.addView(allUren.get(u));
-                            allUren.get(0).setVisibility(View.VISIBLE);
+                            frameLayout.addView(allUren.get(a));
+                           // allUren.get(a).setVisibility(View.VISIBLE);
                             frameLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
                         ll.addView(frameLayout);
@@ -361,7 +381,7 @@ class RoosterBuilder {
                 //Als het geen algemeen uur is
                 if (klas != null && !lesuur.klas.equals(klas)) {
                     uur = inflater.inflate(R.layout.rooster_uur_optioneel, null);
-                    uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(50);
+                    uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(100);
 
                     paddingRight = true;
                 } else {
@@ -384,14 +404,14 @@ class RoosterBuilder {
             ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
         }
         if (y == 6) {
-            uur.setBackgroundResource(R.drawable.basic_rect);
+            uur.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
             if (!paddingRight) {
-                uur.setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
+                uur.findViewById(R.id.rooster_uur_linearlayout).setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
             } else {
-                uur.setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));
+                uur.findViewById(R.id.rooster_uur_linearlayout).setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));
             }
         }
-        uur.setMinimumHeight((int) convertDPToPX(81, context.get()));
+        uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
         return uur;
     }
 }
