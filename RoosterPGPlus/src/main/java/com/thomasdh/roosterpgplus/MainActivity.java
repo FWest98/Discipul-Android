@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -29,7 +30,6 @@ import android.widget.TextView;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
-import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.google.analytics.tracking.android.Tracker;
@@ -71,8 +71,6 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        GoogleAnalytics.getInstance(this).setDryRun(false);
-
         setContentView(R.layout.activity_main);
 
         actionBar = getSupportActionBar();
@@ -96,19 +94,19 @@ public class MainActivity extends ActionBarActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
                     mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
-                    android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
                             .replace(R.id.container, mainFragment, "Persoonlijk roosterFragment")
                             .commit();
                 } else if (position == 1) {
                     mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.KLASROOSTER);
-                    android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
                             .replace(R.id.container, mainFragment, "LeerlingroosterFragment")
                             .commit();
                 } else if (position == 2) {
                     mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.DOCENTENROOSTER);
-                    android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentManager fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction()
                             .replace(R.id.container, mainFragment, "DocentenroosterFragment")
                             .commit();
