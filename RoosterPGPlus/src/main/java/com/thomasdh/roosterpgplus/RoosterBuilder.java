@@ -234,19 +234,19 @@ class RoosterBuilder {
                                         final View oldView = allUren.get(k);
                                         final View newView = allUren.get(k < 1 ? allUren.size() - 1 : k - 1);
                                         //if (Build.VERSION.SDK_INT >= 12) {
-                                        if (k < 1) { // opnieuw beginnen
-                                            for (int c = 0; c < allUren.size(); c++) {
-                                                frameLayout.bringChildToFront(allUren.get(c));
+                                            if(k < 1) { // opnieuw beginnen
+                                                for(int c = 0; c < allUren.size(); c++) {
+                                                    frameLayout.bringChildToFront(allUren.get(c));
+                                                }
                                             }
-                                        }
-                                        //newView.setAlpha(1f);
-                                        //newView.setVisibility(View.VISIBLE);
-                                        frameLayout.bringChildToFront(newView);
-                                        frameLayout.invalidate();
-                                        newView.setClickable(false);
-                                        oldView.setClickable(false);
-                                        newView.setClickable(true);
-                                        oldView.setClickable(true);
+                                            //newView.setAlpha(1f);
+                                            //newView.setVisibility(View.VISIBLE);
+                                            frameLayout.bringChildToFront(newView);
+                                            frameLayout.invalidate();
+                                            newView.setClickable(false);
+                                            oldView.setClickable(false);
+                                            newView.setClickable(true);
+                                            oldView.setClickable(true);
                                             /*oldView.animate().alpha(0f).setDuration(shortAnimationTime).setListener(new AnimatorListenerAdapter() {
                                                 @Override
                                                 public void onAnimationEnd(Animator animation) {
@@ -258,14 +258,14 @@ class RoosterBuilder {
                                                 }
                                             });*/
                                         //} else {
-                                        //oldView.setVisibility(View.GONE);
-                                        //newView.setVisibility(View.VISIBLE);
+                                            //oldView.setVisibility(View.GONE);
+                                            //newView.setVisibility(View.VISIBLE);
                                         //}
                                     }
                                 });
                             }
                             frameLayout.addView(allUren.get(a));
-                            // allUren.get(a).setVisibility(View.VISIBLE);
+                           // allUren.get(a).setVisibility(View.VISIBLE);
                             frameLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
                         ll.addView(frameLayout);
