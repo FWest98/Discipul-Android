@@ -3,8 +3,8 @@
 
     <string name="app_name">RoosterPG+</string>
     <string name="action_settings">Instellingen</string>
-    <string name="drawer_close">Sluit</string>
-    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Sluit menu</string>
+    <string name="drawer_open">Open menu</string>
 
     <string name="placeholder_text">Dit is een tekst.</string>
 
