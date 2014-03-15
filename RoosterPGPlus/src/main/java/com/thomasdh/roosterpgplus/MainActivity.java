@@ -93,18 +93,19 @@ public class MainActivity extends ActionBarActivity {
         final ExpandableListView drawerList = (ExpandableListView) findViewById(R.id.drawer);
 
         ArrayList<String> groups = new ArrayList<String>() {{
-            add("Rooster");
-            add("PGTV");
+            add(getString(R.string.drawer_group_rooster));
+            add(getString(R.string.drawer_group_pgtv));
         }};
 
         ArrayList<ArrayList<String>> childs = new ArrayList<ArrayList<String>>() {{
             add(new ArrayList<String>() {{
-                add("Persoonlijk Rooster");
-                add("Klassenrooster");
-                add("Lerarenrooster");
+                add(getString(R.string.drawer_item_persoonlijk_rooster));
+                add(getString(R.string.drawer_item_klassenrooster));
+                add(getString(R.string.drawer_item_docentenrooster));
             }});
             add(new ArrayList<String>() {{
-
+                add(getString(R.string.drawer_item_roosterwijzigingen));
+                add(getString(R.string.drawer_algemene_mededelingen));
             }});
         }};
 

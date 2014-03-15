@@ -12,8 +12,8 @@
     <ListPreference
         android:defaultValue="1800000"
         android:enabled="false"
-        android:entries="@array/interval"
-        android:entryValues="@array/intervalEntries"
+        android:entries="@array/settings_notification_check_interval"
+        android:entryValues="@array/settings_notification_check_interval_values"
         android:key="notificatieInterval"
         android:summary="@string/settings_notificationsInterval_summary"
         android:title="@string/settings_notificationInterval_title" />

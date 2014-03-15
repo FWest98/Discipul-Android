@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="3dp"
             android:text="@string/rooster_vak"
-            android:textSize="20sp" />
+            android:textSize="@dimen/rooster_uur_vak_fontSize" />
 
         <TextView
             android:id="@+id/rooster_lokaal"

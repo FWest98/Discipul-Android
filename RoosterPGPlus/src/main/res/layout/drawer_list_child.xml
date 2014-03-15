@@ -8,5 +8,5 @@
     android:paddingLeft="35dp"
     android:text="@string/placeholder_text"
     android:textColor="#515151"
-    android:background="@drawable/darker_drawer_background"
+    android:background="@drawable/drawer_item_background"
     android:textSize="19sp" />

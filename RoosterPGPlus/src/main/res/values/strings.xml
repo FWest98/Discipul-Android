@@ -3,46 +3,27 @@
 
     <string name="app_name">RoosterPG+</string>
     <string name="action_settings">Instellingen</string>
-    <string name="drawer_close">Sluit menu</string>
-    <string name="drawer_open">Open menu</string>
+    <string name="placeholder_text" />
 
-    <string name="placeholder_text">Dit is een tekst.</string>
-
-    <array name="dropdown">
-        <item>Dag</item>
-        <item>Week</item>
-    </array>
-
-    <string-array name="interval">
-        <item>5 minuten</item>
-        <item>10 minuten</item>
-        <item>30 minuten</item>
-        <item>1 uur</item>
-        <item>2 uur</item>
-        <item>6 uur</item>
-    </string-array>
-
-    <string-array name="intervalEntries">
-        <item>300000</item>
-        <item>600000</item>
-        <item>1800000</item>
-        <item>3600000</item>
-        <item>7200000</item>
-        <item>21600000</item>
-    </string-array>
-
-    <string name="menu_refresh">Herlaad</string>
-
+    <!-- Action Bar -->
+    <string name="action_bar_button_refresh">Herlaad</string>
     <string name="action_bar_dropdown_week">Week</string>
     <string name="action_bar_dropdown_persoonlijk_rooster"> - Eigen rooster</string>
     <string name="action_bar_dropdown_klassenrooster"> - Klassenrooster</string>
     <string name="action_bar_dropdown_docentenrooster"> - Docentenrooster</string>
 
-    <!-- Rooster -->
-    <string name="persoonlijk_rooster">Persoonlijk rooster</string>
-    <string name="klassenrooster">Klassenrooster</string>
-    <string name="docentenrooster">Docentenrooster</string>
+    <!-- Drawer -->
+    <string name="drawer_close">Sluit menu</string>
+    <string name="drawer_open">Open menu</string>
+    <string name="drawer_item_persoonlijk_rooster">Persoonlijk rooster</string>
+    <string name="drawer_item_klassenrooster">Klassenrooster</string>
+    <string name="drawer_item_docentenrooster">Docentenrooster</string>
+    <string name="drawer_item_roosterwijzigingen">Roosterwijzigingen</string>
+    <string name="drawer_algemene_mededelingen">Algemene mededelingen</string>
+    <string name="drawer_group_rooster">Roosters</string>
+    <string name="drawer_group_pgtv">PGTV</string>
 
+    <!-- Rooster -->
     <string name="rooster_dubbel_uur">Dubbel uur</string>
     <string name="rooster_weekdag">Weekdag</string>
     <string name="rooster_datum">Datum</string>
@@ -52,7 +33,7 @@
     <string name="rooster_vervallen">Vervallen</string>
     <string name="rooster_tijden">Tijden</string>
 
-    <string name="rooster_docenten_desc">Kies een vak en daarna een leraar: </string>
+    <string name="rooster_docenten_desc">Kies een vak en daarna een docent: </string>
     <string name="rooster_klas_desc">Kies een klas: </string>
 
     <!-- Logindialog -->
@@ -75,7 +56,7 @@
     <!-- Registerdialog -->
     <string name="registerdialog_leerling_text">Registreer je als leerling</string>
     <string name="registerdialog_leerling_tab">Leerling</string>
-    <string name="registerdialog_leraar_text">Registreer je als leraar</string>
+    <string name="registerdialog_leraar_text">Registreer je als docent</string>
     <string name="registerdialog_leraar_tab">Leraar</string>
     <string name="registerdialog_registerbutton">Registreer</string>
     <string name="registerdialog_cancelbutton">Annuleer</string>
@@ -100,6 +81,24 @@
     <string name="settings_user_upgrade_title">Registratie voltooien</string>
     <string name="settings_user_relogin_summary">Log in als een andere gebruiker</string>
     <string name="settings_user_relogin_title">Andere gebruiker</string>
+
+    <string-array name="settings_notification_check_interval">
+        <item>5 minuten</item>
+        <item>10 minuten</item>
+        <item>30 minuten</item>
+        <item>1 uur</item>
+        <item>2 uur</item>
+        <item>6 uur</item>
+    </string-array>
+
+    <string-array name="settings_notification_check_interval_values">
+        <item>300000</item>
+        <item>600000</item>
+        <item>1800000</item>
+        <item>3600000</item>
+        <item>7200000</item>
+        <item>21600000</item>
+    </string-array>
 
 
 </resources>

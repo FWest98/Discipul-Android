@@ -8,6 +8,7 @@
     <dimen name="weekdag_datum_marginTop">7dp</dimen>
     <dimen name="docentenrooster_descSize">16sp</dimen>
     <dimen name="klasrooster_desc_padding">3dp</dimen>
+    <dimen name="rooster_uur_vak_fontSize">20sp</dimen>
 
     <bool name="wide_enough_for_weekview">false</bool>
     <bool name="high_enough_for_weekview">false</bool>

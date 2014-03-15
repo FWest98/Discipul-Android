@@ -9,5 +9,5 @@
     android:text="@string/placeholder_text"
     android:textColor="#313131"
     android:textSize="24sp"
-    android:background="#EEE"/>
+    android:background="@drawable/drawer_group_background"/>
 
