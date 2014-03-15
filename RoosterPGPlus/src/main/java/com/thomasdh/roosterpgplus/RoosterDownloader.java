@@ -92,7 +92,7 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
     @Override
     protected void onProgressUpdate(Exception... e) {
         if (context.get() != null) {
-            ExceptionHandler.handleException(e[0], context.get(), "Fout bij het downloaden van het rooster", "RoosterDownloader", ExceptionHandler.HandleType.SIMPLE);
+            ExceptionHandler.handleException(e[0], context.get(), "Fout bij het downloaden van het rooster", "RoosterDownloader", ExceptionHandler.HandleType.SILENT);
         }
     }
 

@@ -529,7 +529,11 @@ public class MainActivity extends ActionBarActivity {
         }
 
         public void laadRooster(Context context, View rootView, Type type) {
+            if (selectedWeek == -1){
+                selectedWeek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+            }
 
+            Log.d("MainActivity", "Rooster aan het laden van week " + selectedWeek);
             if (type == Type.PERSOONLIJK_ROOSTER) {
                 //Probeer de string uit het geheugen te laden
                 RoosterWeek roosterWeek = RoosterWeek.laadUitGeheugen(selectedWeek, getActivity());

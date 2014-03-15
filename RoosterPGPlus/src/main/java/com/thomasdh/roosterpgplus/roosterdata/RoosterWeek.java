@@ -109,7 +109,6 @@ public class RoosterWeek implements Serializable {
                         if (lesuur2 != null) {
                             for (Lesuur lesuur3 : lesuur2) {
                                 if (lesuur3 != null) {
-                                    Log.d("Lesuur saved", "Jeej");
                                     ld.addLesuur(lesuur3);
                                 }
                             }
@@ -117,9 +116,6 @@ public class RoosterWeek implements Serializable {
                     }
                 }
             }
-        }
-        for (Lesuur lesuur : ld.getAllLesuren()) {
-            Log.e("RoosterWeek", "!" + lesuur.vak);
         }
         ld.deleteOldWeeks();
         ld.close();
