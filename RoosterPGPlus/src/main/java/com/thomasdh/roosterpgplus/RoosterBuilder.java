@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -100,7 +101,8 @@ class RoosterBuilder {
                 viewPager.get().setAdapter(new MyPagerAdapter());
             }
         }
-        boolean weekView = PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("weekview", context.get().getResources().getBoolean(R.bool.big_screen));
+        boolean weekView = context.get().getResources().getBoolean(R.bool.big_screen);
+        boolean scrollView = context.get().getResources().getBoolean(R.bool.average_screen);
 
         if (roosterWeek != null) {
 
@@ -108,7 +110,7 @@ class RoosterBuilder {
             // ((MyPagerAdapter) viewPager.get().getAdapter()).deleteItems();
 
             LinearLayout weekLinearLayout = null;
-            if (weekView) {
+            if (weekView || scrollView) {
                 weekLinearLayout = new LinearLayout(context.get());
                 weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
                 int paddingLeftRight = (int) convertDPToPX(10, context.get());
@@ -204,7 +206,6 @@ class RoosterBuilder {
                         for (int u = uurArray.length - 1; u > -1; u = u - 1) {
                             a++;
                             final int k = a;
-                            final int h = u;
                             Lesuur lesuur = uurArray[u];
                             RelativeLayout uurview = (RelativeLayout) makeView(lesuur, inflater, y);
                             if (multipleViews) {
@@ -234,19 +235,19 @@ class RoosterBuilder {
                                         final View oldView = allUren.get(k);
                                         final View newView = allUren.get(k < 1 ? allUren.size() - 1 : k - 1);
                                         //if (Build.VERSION.SDK_INT >= 12) {
-                                            if(k < 1) { // opnieuw beginnen
-                                                for(int c = 0; c < allUren.size(); c++) {
-                                                    frameLayout.bringChildToFront(allUren.get(c));
-                                                }
+                                        if (k < 1) { // opnieuw beginnen
+                                            for (int c = 0; c < allUren.size(); c++) {
+                                                frameLayout.bringChildToFront(allUren.get(c));
                                             }
-                                            //newView.setAlpha(1f);
-                                            //newView.setVisibility(View.VISIBLE);
-                                            frameLayout.bringChildToFront(newView);
-                                            frameLayout.invalidate();
-                                            newView.setClickable(false);
-                                            oldView.setClickable(false);
-                                            newView.setClickable(true);
-                                            oldView.setClickable(true);
+                                        }
+                                        //newView.setAlpha(1f);
+                                        //newView.setVisibility(View.VISIBLE);
+                                        frameLayout.bringChildToFront(newView);
+                                        frameLayout.invalidate();
+                                        newView.setClickable(false);
+                                        oldView.setClickable(false);
+                                        newView.setClickable(true);
+                                        oldView.setClickable(true);
                                             /*oldView.animate().alpha(0f).setDuration(shortAnimationTime).setListener(new AnimatorListenerAdapter() {
                                                 @Override
                                                 public void onAnimationEnd(Animator animation) {
@@ -258,14 +259,14 @@ class RoosterBuilder {
                                                 }
                                             });*/
                                         //} else {
-                                            //oldView.setVisibility(View.GONE);
-                                            //newView.setVisibility(View.VISIBLE);
+                                        //oldView.setVisibility(View.GONE);
+                                        //newView.setVisibility(View.VISIBLE);
                                         //}
                                     }
                                 });
                             }
                             frameLayout.addView(allUren.get(a));
-                           // allUren.get(a).setVisibility(View.VISIBLE);
+                            // allUren.get(a).setVisibility(View.VISIBLE);
                             frameLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
                         ll.addView(frameLayout);
@@ -281,12 +282,12 @@ class RoosterBuilder {
 
                 }
 
-                if (weekView) {
+                if (weekView || scrollView) {
                     ll.setPadding((int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()));
+                    ll.setMinimumWidth((int) convertDPToPX(250, context.get()));
                     dagView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                     weekLinearLayout.addView(dagView);
                 } else {
-
                     TextView dataTextView = new TextView(context.get());
                     Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -297,7 +298,7 @@ class RoosterBuilder {
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
                 }
             }
-            if (weekView) {
+            if (weekView || scrollView) {
                 LinearLayout completeLinearLayout = new LinearLayout(context.get());
                 completeLinearLayout.setOrientation(LinearLayout.VERTICAL);
                 completeLinearLayout.addView(weekLinearLayout);
@@ -312,12 +313,19 @@ class RoosterBuilder {
 
                 completeLinearLayout.addView(dataTextView);
 
-                ScrollView weekScrollView = new ScrollView(context.get());
-                weekScrollView.addView(completeLinearLayout);
-                ((MyPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
+                if (weekView) {
+                    ScrollView weekScrollView = new ScrollView(context.get());
+                    weekScrollView.addView(completeLinearLayout);
+                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
+                } else if (scrollView) {
+                    HorizontalScrollView completeScrollView = new HorizontalScrollView(context.get());
+                    completeScrollView.addView(completeLinearLayout);
+                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(completeScrollView, 0, context.get());
+                }
+
             }
             viewPager.get().getAdapter().notifyDataSetChanged();
-            if (!weekView)
+            if (!weekView && !scrollView)
                 // Ga naar de gewilde dag
                 if (PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("geselecteerdeweek", -1) == week) {
                     Log.d(getClass().getSimpleName(), "De geselecteerde week is niet veranderd, de dag blijft " + PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("dagvandeweeklaatst", 0));
@@ -377,7 +385,7 @@ class RoosterBuilder {
                 uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
                 if (klas != null && !lesuur.klas.equals(klas)) {
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(100);
-                }else{
+                } else {
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(0);
                 }
             } else {

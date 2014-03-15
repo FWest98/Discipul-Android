@@ -10,5 +10,6 @@
     <dimen name="klasrooster_desc_padding">3dp</dimen>
 
     <bool name="big_screen">false</bool>
+    <bool name="average_screen">false</bool>
 
 </resources>
