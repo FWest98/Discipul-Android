@@ -313,9 +313,9 @@ class RoosterBuilder {
 
                 completeLinearLayout.addView(dataTextView);
 
-                if (wideEnoughForWeekview && highEnoughForWeekview){
+                if (wideEnoughForWeekview && highEnoughForWeekview) {
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(completeLinearLayout, 0, context.get());
-                }else if (wideEnoughForWeekview) {
+                } else if (wideEnoughForWeekview) {
                     ScrollView weekScrollView = new ScrollView(context.get());
                     weekScrollView.addView(completeLinearLayout);
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
@@ -375,12 +375,18 @@ class RoosterBuilder {
         if (lesuur.vervallen) {
             uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
             uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
+            TextView vervallenTextView = ((TextView) uur.findViewById(R.id.vervallen_tekst));
             if (lesuur.vak.endsWith("MULTIPLE")) {
                 String temp = lesuur.vak.replace("MULTIPLE", "");
-                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(temp + " vallen uit");
+                vervallenTextView.setText(temp + " vallen uit");
             } else {
-                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
+                vervallenTextView.setText(lesuur.vak + " valt uit");
             }
+
+            // CAPS LOCK DAY
+            if (Calendar.getInstance().get(Calendar.MONTH) == 9 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 22)
+                vervallenTextView.setAllCaps(true);
+
         } else {
             paddingRight = false;
             if (lesuur.verandering) {
@@ -401,20 +407,34 @@ class RoosterBuilder {
                     uur = inflater.inflate(R.layout.rooster_uur, null);
                 }
             }
-            ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
+            TextView vakTextView = ((TextView) uur.findViewById(R.id.rooster_vak));
+            vakTextView.setText(lesuur.vak);
+
+            TextView leraarTextView = ((TextView) uur.findViewById(R.id.rooster_leraar));
             if (type != MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
                 // Vul de leraar in
                 if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
-                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
+                    leraarTextView.setText(lesuur.leraar);
                 } else {
-                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
+                    leraarTextView.setText(lesuur.leraar + " & " + lesuur.leraar2);
                 }
             } else {
                 //Geef bij een docentenrooster de klas in plaats van de leraar
-                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.klas);
+                leraarTextView.setText(lesuur.klas);
             }
-            ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(lesuur.lokaal);
-            ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
+            TextView lokaalTextView = ((TextView) uur.findViewById(R.id.rooster_lokaal));
+            lokaalTextView.setText(lesuur.lokaal);
+
+            TextView tijdenTextView = ((TextView) uur.findViewById(R.id.rooster_tijden));
+            tijdenTextView.setText(getTijden(y));
+
+            // CAPS LOCK DAY
+            if (Calendar.getInstance().get(Calendar.MONTH) == 9 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 22) {
+                lokaalTextView.setAllCaps(true);
+                tijdenTextView.setAllCaps(true);
+                leraarTextView.setAllCaps(true);
+                vakTextView.setAllCaps(true);
+            }
         }
         if (y == 6) {
             uur.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
