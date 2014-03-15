@@ -138,6 +138,8 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+        drawerList.expandGroup(0);
+
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
