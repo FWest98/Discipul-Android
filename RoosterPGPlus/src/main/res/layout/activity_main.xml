@@ -12,7 +12,7 @@
         android:animateLayoutChanges="true"
         tools:ignore="MergeRootFrame" />
 
-    <ListView
+    <ExpandableListView
         android:id="@+id/drawer"
         android:layout_width="260dp"
         android:layout_height="match_parent"

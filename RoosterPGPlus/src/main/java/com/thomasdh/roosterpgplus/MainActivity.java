@@ -24,17 +24,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.ExpandableListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
+import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.google.analytics.tracking.android.StandardExceptionParser;
 import com.google.analytics.tracking.android.Tracker;
 import com.thomasdh.roosterpgplus.adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
+import com.thomasdh.roosterpgplus.adapters.NavigationDrawerAdapter;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterInfoDownloader;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
@@ -61,8 +63,8 @@ public class MainActivity extends ActionBarActivity {
         Tracker easyTracker = EasyTracker.getInstance(this);
         easyTracker.set(Fields.SCREEN_NAME, null);
         easyTracker.send(MapBuilder
-                .createAppView()
-                .build()
+                        .createAppView()
+                        .build()
         );
         super.onStop();
     }
@@ -85,35 +87,54 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // Maak de navigation drawer
-        String[] keuzes = {"Persoonlijk rooster", "Klassenrooster", "Docentenrooster"};
 
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawerlayout);
 
-        final ListView drawerList = (ListView) findViewById(R.id.drawer);
-        drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, keuzes));
-        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        final ExpandableListView drawerList = (ExpandableListView) findViewById(R.id.drawer);
+
+        ArrayList<String> groups = new ArrayList<String>() {{
+            add("Rooster");
+            add("PGTV");
+        }};
+
+        ArrayList<ArrayList<String>> childs = new ArrayList<ArrayList<String>>() {{
+            add(new ArrayList<String>() {{
+                add("Persoonlijk Rooster");
+                add("Klassenrooster");
+                add("Lerarenrooster");
+            }});
+            add(new ArrayList<String>() {{
+
+            }});
+        }};
+
+        drawerList.setAdapter(new NavigationDrawerAdapter(this, groups, childs));
+        drawerList.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.container, mainFragment, "Persoonlijk roosterFragment")
-                            .commit();
-                } else if (position == 1) {
-                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.KLASROOSTER);
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.container, mainFragment, "LeerlingroosterFragment")
-                            .commit();
-                } else if (position == 2) {
-                    mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.DOCENTENROOSTER);
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.container, mainFragment, "DocentenroosterFragment")
-                            .commit();
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                if (groupPosition == 0) {
+                    if (childPosition == 0) {
+                        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        fragmentManager.beginTransaction()
+                                .replace(R.id.container, mainFragment, "Persoonlijk roosterFragment")
+                                .commit();
+                    } else if (childPosition == 1) {
+                        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.KLASROOSTER);
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        fragmentManager.beginTransaction()
+                                .replace(R.id.container, mainFragment, "LeerlingroosterFragment")
+                                .commit();
+                    } else if (childPosition == 2) {
+                        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.DOCENTENROOSTER);
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        fragmentManager.beginTransaction()
+                                .replace(R.id.container, mainFragment, "DocentenroosterFragment")
+                                .commit();
+                    }
+                    drawerLayout.closeDrawer(drawerList);
                 }
-                drawerLayout.closeDrawer(drawerList);
+                return true;
             }
         });
 
@@ -240,8 +261,8 @@ public class MainActivity extends ActionBarActivity {
                 Tracker easyTracker = EasyTracker.getInstance(getActivity());
                 easyTracker.set(Fields.SCREEN_NAME, "Persoonlijk Rooster");
                 easyTracker.send(MapBuilder
-                        .createAppView()
-                        .build()
+                                .createAppView()
+                                .build()
                 );
 
             } else if (type == Type.DOCENTENROOSTER) {
@@ -320,8 +341,8 @@ public class MainActivity extends ActionBarActivity {
                 Tracker easyTracker = EasyTracker.getInstance(getActivity());
                 easyTracker.set(Fields.SCREEN_NAME, "Docentenrooster");
                 easyTracker.send(MapBuilder
-                        .createAppView()
-                        .build()
+                                .createAppView()
+                                .build()
                 );
 
             } else if (type == Type.KLASROOSTER) {
@@ -398,8 +419,8 @@ public class MainActivity extends ActionBarActivity {
                 Tracker easyTracker = EasyTracker.getInstance(getActivity());
                 easyTracker.set(Fields.SCREEN_NAME, "Klasrooster");
                 easyTracker.send(MapBuilder
-                        .createAppView()
-                        .build()
+                                .createAppView()
+                                .build()
                 );
             }
             laadWeken(getActivity());
