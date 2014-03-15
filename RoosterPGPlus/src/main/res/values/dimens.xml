@@ -9,7 +9,7 @@
     <dimen name="docentenrooster_descSize">16sp</dimen>
     <dimen name="klasrooster_desc_padding">3dp</dimen>
 
-    <bool name="big_screen">false</bool>
-    <bool name="average_screen">false</bool>
+    <bool name="wide_enough_for_weekview">false</bool>
+    <bool name="high_enough_for_weekview">false</bool>
 
 </resources>

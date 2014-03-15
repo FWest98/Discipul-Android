@@ -101,8 +101,8 @@ class RoosterBuilder {
                 viewPager.get().setAdapter(new MyPagerAdapter());
             }
         }
-        boolean weekView = context.get().getResources().getBoolean(R.bool.big_screen);
-        boolean scrollView = context.get().getResources().getBoolean(R.bool.average_screen);
+        boolean wideEnoughForWeekview = context.get().getResources().getBoolean(R.bool.wide_enough_for_weekview);
+        boolean highEnoughForWeekview = context.get().getResources().getBoolean(R.bool.high_enough_for_weekview);
 
         if (roosterWeek != null) {
 
@@ -110,7 +110,7 @@ class RoosterBuilder {
             // ((MyPagerAdapter) viewPager.get().getAdapter()).deleteItems();
 
             LinearLayout weekLinearLayout = null;
-            if (weekView || scrollView) {
+            if (wideEnoughForWeekview || highEnoughForWeekview) {
                 weekLinearLayout = new LinearLayout(context.get());
                 weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
                 int paddingLeftRight = (int) convertDPToPX(10, context.get());
@@ -282,7 +282,7 @@ class RoosterBuilder {
 
                 }
 
-                if (weekView || scrollView) {
+                if (wideEnoughForWeekview || highEnoughForWeekview) {
                     ll.setPadding((int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()));
                     ll.setMinimumWidth((int) convertDPToPX(250, context.get()));
                     dagView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
@@ -298,7 +298,7 @@ class RoosterBuilder {
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
                 }
             }
-            if (weekView || scrollView) {
+            if (wideEnoughForWeekview || highEnoughForWeekview) {
                 LinearLayout completeLinearLayout = new LinearLayout(context.get());
                 completeLinearLayout.setOrientation(LinearLayout.VERTICAL);
                 completeLinearLayout.addView(weekLinearLayout);
@@ -313,11 +313,13 @@ class RoosterBuilder {
 
                 completeLinearLayout.addView(dataTextView);
 
-                if (weekView) {
+                if (wideEnoughForWeekview && highEnoughForWeekview){
+                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(completeLinearLayout, 0, context.get());
+                }else if (wideEnoughForWeekview) {
                     ScrollView weekScrollView = new ScrollView(context.get());
                     weekScrollView.addView(completeLinearLayout);
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
-                } else if (scrollView) {
+                } else if (highEnoughForWeekview) {
                     HorizontalScrollView completeScrollView = new HorizontalScrollView(context.get());
                     completeScrollView.addView(completeLinearLayout);
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(completeScrollView, 0, context.get());
@@ -325,7 +327,7 @@ class RoosterBuilder {
 
             }
             viewPager.get().getAdapter().notifyDataSetChanged();
-            if (!weekView && !scrollView)
+            if (!wideEnoughForWeekview && !highEnoughForWeekview)
                 // Ga naar de gewilde dag
                 if (PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("geselecteerdeweek", -1) == week) {
                     Log.d(getClass().getSimpleName(), "De geselecteerde week is niet veranderd, de dag blijft " + PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("dagvandeweeklaatst", 0));
