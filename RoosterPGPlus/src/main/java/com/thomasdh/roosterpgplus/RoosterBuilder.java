@@ -384,8 +384,9 @@ class RoosterBuilder {
             }
 
             // CAPS LOCK DAY
-            if (Calendar.getInstance().get(Calendar.MONTH) == 9 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 22)
-                vervallenTextView.setAllCaps(true);
+            if (Build.VERSION.SDK_INT >= 14)
+                if (Calendar.getInstance().get(Calendar.MONTH) == 9 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 22)
+                    vervallenTextView.setAllCaps(true);
 
         } else {
             paddingRight = false;
@@ -429,12 +430,13 @@ class RoosterBuilder {
             tijdenTextView.setText(getTijden(y));
 
             // CAPS LOCK DAY
-            if (Calendar.getInstance().get(Calendar.MONTH) == 9 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 22) {
-                lokaalTextView.setAllCaps(true);
-                tijdenTextView.setAllCaps(true);
-                leraarTextView.setAllCaps(true);
-                vakTextView.setAllCaps(true);
-            }
+            if (Build.VERSION.SDK_INT >= 14)
+                if (Calendar.getInstance().get(Calendar.MONTH) == 9 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 22) {
+                    lokaalTextView.setAllCaps(true);
+                    tijdenTextView.setAllCaps(true);
+                    leraarTextView.setAllCaps(true);
+                    vakTextView.setAllCaps(true);
+                }
         }
         if (y == 6) {
             uur.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
