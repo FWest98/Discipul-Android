@@ -304,7 +304,7 @@ public class MainActivity extends ActionBarActivity {
                             }
 
                             ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity(), R.layout.spinner_title, vakNaam.toArray(new String[vakNaam.size()]));
-                            adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            adapter1.setDropDownViewResource(R.layout.spinner_dropdown);
                             docentenVakSpinner.setAdapter(adapter1);
                             docentenVakSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
@@ -317,7 +317,7 @@ public class MainActivity extends ActionBarActivity {
                                         namenLeraren.add(leraar.naam);
                                     }
                                     ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.spinner_title, namenLeraren.toArray(new String[namenLeraren.size()]));
-                                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                    adapter.setDropDownViewResource(R.layout.spinner_dropdown);
                                     docentenNaamSpinner.setAdapter(adapter);
                                     docentenNaamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                         @Override
@@ -377,7 +377,7 @@ public class MainActivity extends ActionBarActivity {
                         // doe iets met de klassen
                         if (klassen != null) {
                             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.spinner_title, klassen.toArray(new String[klassen.size()]));
-                            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            adapter.setDropDownViewResource(R.layout.spinner_dropdown);
                             klasspinner.setAdapter(adapter);
 
                             final boolean[] init = {true};
