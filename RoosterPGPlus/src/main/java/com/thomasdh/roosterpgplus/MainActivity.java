@@ -140,7 +140,7 @@ public class MainActivity extends ActionBarActivity {
         });
 
         // Open alle groepen
-        for (int pos = 0; pos < drawerList.getCount(); pos++){
+        for (int pos = 0; pos < drawerList.getExpandableListAdapter().getGroupCount(); pos++){
             drawerList.expandGroup(pos);
         }
 
@@ -263,7 +263,6 @@ public class MainActivity extends ActionBarActivity {
                 if (!this.user.isSet) {
                     this.user.showLoginDialog(true);
                 }
-
                 Tracker easyTracker = EasyTracker.getInstance(getActivity());
                 easyTracker.set(Fields.SCREEN_NAME, "Persoonlijk Rooster");
                 easyTracker.send(MapBuilder
@@ -283,12 +282,7 @@ public class MainActivity extends ActionBarActivity {
                         try {
                             leraren = RoosterInfoDownloader.getLeraren();
                         } catch (Exception e) {
-                            Log.e("MainActivity", "Er ging iets mis bij het ophalen van de leraren", e);
-                            EasyTracker easyTracker = EasyTracker.getInstance(getActivity());
-                            easyTracker.send(MapBuilder
-                                    .createException(new StandardExceptionParser(getActivity(), null)
-                                            .getDescription(Thread.currentThread().getName(), e), false)
-                                    .build());
+                            ExceptionHandler.handleException(e, getActivity(), "Fout bij het ophalen van leraren", "MainActivity", ExceptionHandler.HandleType.SILENT);
                             return null;
                         }
                         return leraren;
@@ -372,7 +366,7 @@ public class MainActivity extends ActionBarActivity {
 
                     @Override
                     protected void onProgressUpdate(Exception... values) {
-                        ExceptionHandler.handleException(values[0], getActivity(), "Kon de klassen niet ophalen", getClass().getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
+                        ExceptionHandler.handleException(values[0], getActivity(), "Kon de klassen niet ophalen", "MainActivity", ExceptionHandler.HandleType.SILENT);
                     }
 
                     @Override
