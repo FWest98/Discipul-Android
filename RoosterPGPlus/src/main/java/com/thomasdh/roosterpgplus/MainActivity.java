@@ -139,7 +139,10 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        drawerList.expandGroup(0);
+        // Open alle groepen
+        for (int pos = 0; pos < drawerList.getCount(); pos++){
+            drawerList.expandGroup(pos);
+        }
 
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
