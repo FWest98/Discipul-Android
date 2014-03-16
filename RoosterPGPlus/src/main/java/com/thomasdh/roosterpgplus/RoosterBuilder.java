@@ -3,6 +3,8 @@ package com.thomasdh.roosterpgplus;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
@@ -288,12 +290,7 @@ class RoosterBuilder {
                     dagView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                     weekLinearLayout.addView(dagView);
                 } else {
-                    TextView dataTextView = new TextView(context.get());
-                    Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-                    dataTextView.setText("Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate));
-                    ll.addView(dataTextView);
-
+                    ll.addView(getBottomTextView());
                     ll.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
                 }
@@ -304,13 +301,9 @@ class RoosterBuilder {
                 completeLinearLayout.addView(weekLinearLayout);
 
                 // Maak het laatstgeupdate vak
-                TextView dataTextView = new TextView(context.get());
-                Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-                dataTextView.setText("Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate));
+                TextView dataTextView = getBottomTextView();
                 dataTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                 dataTextView.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
-
                 completeLinearLayout.addView(dataTextView);
 
                 if (wideEnoughForWeekview && highEnoughForWeekview) {
@@ -362,6 +355,23 @@ class RoosterBuilder {
                 }
             });
         }
+    }
+
+    TextView getBottomTextView(){
+        TextView dataTextView = new TextView(context.get());
+        Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+        String subText = "Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate) + ".";
+
+        ConnectivityManager cm = (ConnectivityManager) context.get().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo == null || !netInfo.isConnectedOrConnecting()) {
+            subText = "Geen internetverbinding. " + subText;
+        }
+
+        dataTextView.setText(subText);
+        return dataTextView;
     }
 
     float convertDPToPX(float pixel, Context c) {

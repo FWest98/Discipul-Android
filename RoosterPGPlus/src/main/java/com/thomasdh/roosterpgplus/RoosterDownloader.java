@@ -93,6 +93,12 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
     protected void onProgressUpdate(Exception... e) {
         if (context.get() != null) {
             ExceptionHandler.handleException(e[0], context.get(), "Fout bij het downloaden van het rooster", "RoosterDownloader", ExceptionHandler.HandleType.SILENT);
+
+            // Maak een leeg rooster bij een docenten- of klasrooster
+            if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
+                new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), week, type).buildLayout(new RoosterWeek(null, context.get()));
+            if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
+                new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_leerling), week, type, klas).buildLayout(new RoosterWeek(null, context.get()));
         }
     }
 
