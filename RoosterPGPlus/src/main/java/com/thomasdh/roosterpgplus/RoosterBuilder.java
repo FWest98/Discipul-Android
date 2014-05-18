@@ -1,5 +1,7 @@
 package com.thomasdh.roosterpgplus;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
@@ -13,7 +15,8 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -108,9 +111,6 @@ class RoosterBuilder {
 
         if (roosterWeek != null) {
 
-            // Verwijder alle bestaande items
-            // ((MyPagerAdapter) viewPager.get().getAdapter()).deleteItems();
-
             LinearLayout weekLinearLayout = null;
             if (wideEnoughForWeekview || highEnoughForWeekview) {
                 weekLinearLayout = new LinearLayout(context.get());
@@ -203,75 +203,86 @@ class RoosterBuilder {
 
                         boolean multipleViews = uurArray.length > 1;
 
-                        final FrameLayout frameLayout = new FrameLayout(context.get());
+
+                        final RelativeLayout parentLayout = new RelativeLayout(context.get());
+
                         int a = -1;
                         for (int u = uurArray.length - 1; u > -1; u = u - 1) {
                             a++;
                             final int k = a;
                             Lesuur lesuur = uurArray[u];
                             RelativeLayout uurview = (RelativeLayout) makeView(lesuur, inflater, y);
+
+                            allUren.add(uurview);
+
                             if (multipleViews) {
                                 TextView lagen = (TextView) uurview.findViewById(R.id.layers);
                                 lagen.setVisibility(View.VISIBLE);
                                 lagen.setText("(" + (u + 1) + "/" + uurArray.length + ")");
-                                //uurview.findViewById(R.id.filler).setMinimumWidth((int) convertDPToPX(50, context.get()));
-                                ViewGroup.LayoutParams p = uurview.findViewById(R.id.fillerRight).getLayoutParams();
-                                p.width = p.width + (int) convertDPToPX(a * 8, context.get());
-                                uurview.findViewById(R.id.fillerRight).setLayoutParams(p);
-                                p = uurview.findViewById(R.id.fillerLeft).getLayoutParams();
-                                p.width = p.width + (int) convertDPToPX(u * 8, context.get());
-                                uurview.findViewById(R.id.fillerLeft).setLayoutParams(p);
+
+
+                                // Dit geeft de padding door voor uren zodat je achterliggende uren kunt zien
+                                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                params.setMargins(0, 0, (int) convertDPToPX(a * 8, context.get()), 0);
+                                uurview.setLayoutParams(params);
                             }
 
-                            allUren.add(uurview);
 
-                            final int shortAnimationTime = context.get().getResources().getInteger(
-                                    android.R.integer.config_shortAnimTime);
+                            final int shortAnimationTime = context.get().getResources().getInteger(android.R.integer.config_mediumAnimTime);
 
-                            //allUren.get(a).setVisibility(View.GONE);
                             if (uurArray.length > 1) {
                                 allUren.get(a).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
                                     public void onClick(View v) {
-                                        final View oldView = allUren.get(k);
-                                        final View newView = allUren.get(k < 1 ? allUren.size() - 1 : k - 1);
-                                        //if (Build.VERSION.SDK_INT >= 12) {
-                                        if (k < 1) { // opnieuw beginnen
-                                            for (int c = 0; c < allUren.size(); c++) {
-                                                frameLayout.bringChildToFront(allUren.get(c));
-                                            }
-                                        }
-                                        //newView.setAlpha(1f);
-                                        //newView.setVisibility(View.VISIBLE);
-                                        frameLayout.bringChildToFront(newView);
-                                        frameLayout.invalidate();
-                                        newView.setClickable(false);
-                                        oldView.setClickable(false);
-                                        newView.setClickable(true);
-                                        oldView.setClickable(true);
-                                            /*oldView.animate().alpha(0f).setDuration(shortAnimationTime).setListener(new AnimatorListenerAdapter() {
+                                        if (Build.VERSION.SDK_INT >= 12 && PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("animaties", true)) {
+                                            final View oldView = allUren.get(k);
+                                            oldView.animate().alpha(0f).setDuration(shortAnimationTime / 3).setListener(new AnimatorListenerAdapter() {
                                                 @Override
                                                 public void onAnimationEnd(Animator animation) {
-                                                    oldView.setVisibility(View.GONE);
-                                                    newView.setVisibility(View.VISIBLE);
-                                                    newView.setAlpha(1f);
-                                                    newView.setClickable(true);
-                                                    oldView.setClickable(true);
+
+                                                    RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) oldView.getLayoutParams();
+                                                    lp.setMargins(0, 0, 0, 0);
+                                                    oldView.setLayoutParams(lp);
+                                                    oldView.setAlpha(100f);
+
+                                                    for (int ind = k + 1; ind < k + allUren.size(); ind++) {
+                                                        final int uurIndex = ind % allUren.size();
+                                                        parentLayout.bringChildToFront(allUren.get(uurIndex));
+
+                                                        final int currentMargin = ((RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams()).rightMargin;
+                                                        final float newMargin = convertDPToPX(8, context.get());
+
+                                                        Animation a = new Animation() {
+                                                            @Override
+                                                            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                                                                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams();
+                                                                params.rightMargin = (int) (interpolatedTime * newMargin) + currentMargin;
+                                                                allUren.get(uurIndex).setLayoutParams(params);
+                                                            }
+                                                        };
+                                                        a.setDuration(shortAnimationTime / 3 * 2);
+                                                        allUren.get(uurIndex).startAnimation(a);
+                                                    }
                                                 }
-                                            });*/
-                                        //} else {
-                                        //oldView.setVisibility(View.GONE);
-                                        //newView.setVisibility(View.VISIBLE);
-                                        //}
+                                            });
+                                        } else {
+                                            final View newView = allUren.get(k < 1 ? allUren.size() - 1 : k - 1);
+                                            if (k < 1) {
+                                                for (int c = 0; c < allUren.size(); c++) {
+                                                    parentLayout.bringChildToFront(allUren.get(c));
+                                                }
+                                            }
+                                            parentLayout.bringChildToFront(newView);
+                                            parentLayout.invalidate();
+                                        }
                                     }
                                 });
                             }
-                            frameLayout.addView(allUren.get(a));
-                            // allUren.get(a).setVisibility(View.VISIBLE);
-                            frameLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                            parentLayout.addView(allUren.get(a));
+                            parentLayout.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
-                        ll.addView(frameLayout);
+                        ll.addView(parentLayout);
                     } else {
                         View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
                         vrij.setMinimumHeight((int) convertDPToPX(79, context.get()));
@@ -357,7 +368,7 @@ class RoosterBuilder {
         }
     }
 
-    TextView getBottomTextView(){
+    TextView getBottomTextView() {
         TextView dataTextView = new TextView(context.get());
         Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -381,11 +392,10 @@ class RoosterBuilder {
 
     View makeView(Lesuur lesuur, LayoutInflater inflater, int y) {
         View uur;
-        boolean paddingRight = true;
         if (lesuur.vervallen) {
             uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
             uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
-            TextView vervallenTextView = ((TextView) uur.findViewById(R.id.vervallen_tekst));
+            TextView vervallenTextView = (TextView) uur.findViewById(R.id.vervallen_tekst);
             if (lesuur.vak.endsWith("MULTIPLE")) {
                 String temp = lesuur.vak.replace("MULTIPLE", "");
                 vervallenTextView.setText(temp + " vallen uit");
@@ -399,7 +409,6 @@ class RoosterBuilder {
                     vervallenTextView.setAllCaps(true);
 
         } else {
-            paddingRight = false;
             if (lesuur.verandering) {
                 uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
                 if (klas != null && !lesuur.klas.equals(klas)) {
@@ -412,16 +421,14 @@ class RoosterBuilder {
                 if (klas != null && !lesuur.klas.equals(klas)) {
                     uur = inflater.inflate(R.layout.rooster_uur_optioneel, null);
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(100);
-
-                    paddingRight = true;
                 } else {
                     uur = inflater.inflate(R.layout.rooster_uur, null);
                 }
             }
-            TextView vakTextView = ((TextView) uur.findViewById(R.id.rooster_vak));
+            TextView vakTextView = (TextView) uur.findViewById(R.id.rooster_vak);
             vakTextView.setText(lesuur.vak);
 
-            TextView leraarTextView = ((TextView) uur.findViewById(R.id.rooster_leraar));
+            TextView leraarTextView = (TextView) uur.findViewById(R.id.rooster_leraar);
             if (type != MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
                 // Vul de leraar in
                 if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
@@ -433,10 +440,10 @@ class RoosterBuilder {
                 //Geef bij een docentenrooster de klas in plaats van de leraar
                 leraarTextView.setText(lesuur.klas);
             }
-            TextView lokaalTextView = ((TextView) uur.findViewById(R.id.rooster_lokaal));
+            TextView lokaalTextView = (TextView) uur.findViewById(R.id.rooster_lokaal);
             lokaalTextView.setText(lesuur.lokaal);
 
-            TextView tijdenTextView = ((TextView) uur.findViewById(R.id.rooster_tijden));
+            TextView tijdenTextView = (TextView) uur.findViewById(R.id.rooster_tijden);
             tijdenTextView.setText(getTijden(y));
 
             // CAPS LOCK DAY
@@ -450,11 +457,6 @@ class RoosterBuilder {
         }
         if (y == 6) {
             uur.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
-            if (!paddingRight) {
-                uur.findViewById(R.id.rooster_uur_linearlayout).setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
-            } else {
-                uur.findViewById(R.id.rooster_uur_linearlayout).setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));
-            }
         }
         uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
         return uur;

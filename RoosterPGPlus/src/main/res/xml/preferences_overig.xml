@@ -7,4 +7,10 @@
         android:key="opgeslagenWeken"
         android:summary="Het aantal in het geheugen opgeslagen weken"
         android:title="Opgeslagen weken" />
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="animaties"
+        android:title="Animaties"
+        android:summary="Gebruik alle animaties in de app" />
 </PreferenceScreen>
