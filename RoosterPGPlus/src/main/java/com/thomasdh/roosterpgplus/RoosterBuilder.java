@@ -1,22 +1,15 @@
 package com.thomasdh.roosterpgplus;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.Transformation;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -25,6 +18,7 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
 import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+import com.thomasdh.roosterpgplus.util.Converter;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -107,7 +101,7 @@ class RoosterBuilder {
             }
         }
         boolean wideEnoughForWeekview = context.get().getResources().getBoolean(R.bool.wide_enough_for_weekview);
-        boolean highEnoughForWeekview = context.get().getResources().getBoolean(R.bool.high_enough_for_weekview);
+        final boolean highEnoughForWeekview = context.get().getResources().getBoolean(R.bool.high_enough_for_weekview);
 
         if (roosterWeek != null) {
 
@@ -115,7 +109,7 @@ class RoosterBuilder {
             if (wideEnoughForWeekview || highEnoughForWeekview) {
                 weekLinearLayout = new LinearLayout(context.get());
                 weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
-                int paddingLeftRight = (int) convertDPToPX(10, context.get());
+                int paddingLeftRight = (int) Converter.convertDPToPX(10, context.get());
                 weekLinearLayout.setPadding(paddingLeftRight, 0, paddingLeftRight, 0);
             }
 
@@ -207,9 +201,9 @@ class RoosterBuilder {
                         final RelativeLayout parentLayout = new RelativeLayout(context.get());
 
                         int a = -1;
-                        for (int u = uurArray.length - 1; u > -1; u = u - 1) {
+
+                        for (int u = uurArray.length - 1; u >= 0; u--) {
                             a++;
-                            final int k = a;
                             Lesuur lesuur = uurArray[u];
                             RelativeLayout uurview = (RelativeLayout) makeView(lesuur, inflater, y);
 
@@ -223,72 +217,24 @@ class RoosterBuilder {
 
                                 // Dit geeft de padding door voor uren zodat je achterliggende uren kunt zien
                                 RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                                params.setMargins(0, 0, (int) convertDPToPX(a * 8, context.get()), 0);
+                                params.setMargins(0, 0, (int) Converter.convertDPToPX(a * 8, context.get()), 0);
                                 uurview.setLayoutParams(params);
                             }
 
-
-                            final int shortAnimationTime = context.get().getResources().getInteger(android.R.integer.config_mediumAnimTime);
-
-                            if (uurArray.length > 1) {
-                                allUren.get(a).setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-                                    public void onClick(View v) {
-                                        if (Build.VERSION.SDK_INT >= 12 && PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("animaties", true)) {
-                                            final View oldView = allUren.get(k);
-                                            oldView.animate().alpha(0f).setDuration(shortAnimationTime / 3).setListener(new AnimatorListenerAdapter() {
-                                                @Override
-                                                public void onAnimationEnd(Animator animation) {
-
-                                                    RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) oldView.getLayoutParams();
-                                                    lp.setMargins(0, 0, 0, 0);
-                                                    oldView.setLayoutParams(lp);
-                                                    oldView.setAlpha(100f);
-
-                                                    for (int ind = k + 1; ind < k + allUren.size(); ind++) {
-                                                        final int uurIndex = ind % allUren.size();
-                                                        parentLayout.bringChildToFront(allUren.get(uurIndex));
-
-                                                        final int currentMargin = ((RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams()).rightMargin;
-                                                        final float newMargin = convertDPToPX(8, context.get());
-
-                                                        Animation a = new Animation() {
-                                                            @Override
-                                                            protected void applyTransformation(float interpolatedTime, Transformation t) {
-                                                                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams();
-                                                                params.rightMargin = (int) (interpolatedTime * newMargin) + currentMargin;
-                                                                allUren.get(uurIndex).setLayoutParams(params);
-                                                            }
-                                                        };
-                                                        a.setDuration(shortAnimationTime / 3 * 2);
-                                                        allUren.get(uurIndex).startAnimation(a);
-                                                    }
-                                                }
-                                            });
-                                        } else {
-                                            final View newView = allUren.get(k < 1 ? allUren.size() - 1 : k - 1);
-                                            if (k < 1) {
-                                                for (int c = 0; c < allUren.size(); c++) {
-                                                    parentLayout.bringChildToFront(allUren.get(c));
-                                                }
-                                            }
-                                            parentLayout.bringChildToFront(newView);
-                                            parentLayout.invalidate();
-                                        }
-                                    }
-                                });
-                            }
                             parentLayout.addView(allUren.get(a));
                             parentLayout.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
+
+                        if (multipleViews)
+                            parentLayout.setOnClickListener(new MultipleUrenClickListener(allUren, context));
+
                         ll.addView(parentLayout);
                     } else {
                         View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
-                        vrij.setMinimumHeight((int) convertDPToPX(79, context.get()));
+                        vrij.setMinimumHeight((int) Converter.convertDPToPX(79, context.get()));
                         if (y == 6) {
                             vrij.setBackgroundResource(R.drawable.basic_rect);
-                            vrij.setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));
+                            vrij.setPadding(0, 0, 0, (int) Converter.convertDPToPX(1, context.get()));
                         }
                         ll.addView(vrij);
                     }
@@ -296,13 +242,13 @@ class RoosterBuilder {
                 }
 
                 if (wideEnoughForWeekview || highEnoughForWeekview) {
-                    ll.setPadding((int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()));
-                    ll.setMinimumWidth((int) convertDPToPX(250, context.get()));
+                    ll.setPadding((int) Converter.convertDPToPX(3, context.get()), (int) Converter.convertDPToPX(3, context.get()), (int) Converter.convertDPToPX(3, context.get()), (int) Converter.convertDPToPX(3, context.get()));
+                    ll.setMinimumWidth((int) Converter.convertDPToPX(250, context.get()));
                     dagView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                     weekLinearLayout.addView(dagView);
                 } else {
                     ll.addView(getBottomTextView());
-                    ll.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
+                    ll.setPadding((int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()));
                     ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
                 }
             }
@@ -314,7 +260,7 @@ class RoosterBuilder {
                 // Maak het laatstgeupdate vak
                 TextView dataTextView = getBottomTextView();
                 dataTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                dataTextView.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
+                dataTextView.setPadding((int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()));
                 completeLinearLayout.addView(dataTextView);
 
                 if (wideEnoughForWeekview && highEnoughForWeekview) {
@@ -385,16 +331,12 @@ class RoosterBuilder {
         return dataTextView;
     }
 
-    float convertDPToPX(float pixel, Context c) {
-        Resources r = c.getResources();
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, r.getDisplayMetrics());
-    }
 
     View makeView(Lesuur lesuur, LayoutInflater inflater, int y) {
         View uur;
         if (lesuur.vervallen) {
             uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
-            uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
+            uur.setMinimumHeight((int) Converter.convertDPToPX(80, context.get()));
             TextView vervallenTextView = (TextView) uur.findViewById(R.id.vervallen_tekst);
             if (lesuur.vak.endsWith("MULTIPLE")) {
                 String temp = lesuur.vak.replace("MULTIPLE", "");
@@ -458,7 +400,7 @@ class RoosterBuilder {
         if (y == 6) {
             uur.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
         }
-        uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
+        uur.setMinimumHeight((int) Converter.convertDPToPX(80, context.get()));
         return uur;
     }
 }
