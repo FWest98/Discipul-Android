@@ -38,7 +38,6 @@ public class MultipleUrenClickListener implements View.OnClickListener {
     @Override
 
     public void onClick(View v) {
-
         if (animating) {
             // Wait until the current animation is done
             timesToGo++;
