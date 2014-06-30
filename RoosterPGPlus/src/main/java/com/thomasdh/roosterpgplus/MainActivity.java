@@ -79,7 +79,7 @@ public class MainActivity extends ActionBarActivity {
 
         actionBar = getSupportActionBar();
 
-        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
+        mainFragment = PlaceholderFragment.newInstance(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, mainFragment)
@@ -115,19 +115,19 @@ public class MainActivity extends ActionBarActivity {
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 if (groupPosition == 0) {
                     if (childPosition == 0) {
-                        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
+                        mainFragment = PlaceholderFragment.newInstance(PlaceholderFragment.Type.PERSOONLIJK_ROOSTER);
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         fragmentManager.beginTransaction()
                                 .replace(R.id.container, mainFragment, "Persoonlijk roosterFragment")
                                 .commit();
                     } else if (childPosition == 1) {
-                        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.KLASROOSTER);
+                        mainFragment = PlaceholderFragment.newInstance(PlaceholderFragment.Type.KLASROOSTER);
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         fragmentManager.beginTransaction()
                                 .replace(R.id.container, mainFragment, "LeerlingroosterFragment")
                                 .commit();
                     } else if (childPosition == 2) {
-                        mainFragment = new PlaceholderFragment(PlaceholderFragment.Type.DOCENTENROOSTER);
+                        mainFragment = PlaceholderFragment.newInstance(PlaceholderFragment.Type.DOCENTENROOSTER);
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         fragmentManager.beginTransaction()
                                 .replace(R.id.container, mainFragment, "DocentenroosterFragment")
@@ -235,8 +235,14 @@ public class MainActivity extends ActionBarActivity {
 
         }
 
-        public PlaceholderFragment(Type type) {
-            this.type = type;
+        public static PlaceholderFragment newInstance(Type type) {
+            PlaceholderFragment f = new PlaceholderFragment();
+
+            Bundle args = new Bundle();
+            args.putSerializable("fragmentType", type);
+            f.setArguments(args);
+
+            return f;
         }
 
         @Override
@@ -251,6 +257,8 @@ public class MainActivity extends ActionBarActivity {
 
             if (savedInstanceState != null) {
                 type = (Type) savedInstanceState.getSerializable("fragmentType");
+            } else {
+                type = (Type) getArguments().getSerializable("fragmentType");
             }
 
             /** Aanmaken User */
@@ -260,8 +268,8 @@ public class MainActivity extends ActionBarActivity {
                 viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager);
                 viewPager.setAdapter(new MyPagerAdapter());
 
-                if (!this.user.isSet) {
-                    this.user.showLoginDialog(true);
+                if (!user.isSet) {
+                    user.showLoginDialog(true);
                 }
                 Tracker easyTracker = EasyTracker.getInstance(getActivity());
                 easyTracker.set(Fields.SCREEN_NAME, "Persoonlijk Rooster");
