@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus.roosterdata;
+package com.thomasdh.roosterpgplus.Helpers;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 
-import com.thomasdh.roosterpgplus.Lesuur;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,7 +40,7 @@ public class LesuurData {
     }
 
     public static Lesuur cursorToLesuur(Cursor cursor) {
-        return new Lesuur(cursor.getInt(1),
+        /*return new Lesuur(cursor.getInt(1),
                 cursor.getInt(2),
                 cursor.getInt(3),
                 cursor.getString(9),
@@ -48,7 +48,8 @@ public class LesuurData {
                 cursor.getString(10),
                 cursor.getString(11),
                 cursor.getInt(5) > 0,
-                cursor.getInt(4) > 0);
+                cursor.getInt(4) > 0);*/
+        return null;
     }
 
     public void open() {
@@ -64,8 +65,8 @@ public class LesuurData {
         values.put(SQLRooster.COLUMN_DAG, lesuur.dag);
         values.put(SQLRooster.COLUMN_UUR, lesuur.uur);
         values.put(SQLRooster.COLUMN_WEEK, lesuur.week);
-        values.put(SQLRooster.COLUMN_KLAS, lesuur.klas);
-        values.put(SQLRooster.COLUMN_LERAAR, lesuur.leraar);
+        values.put(SQLRooster.COLUMN_KLAS, lesuur.klassen.get(0));
+        values.put(SQLRooster.COLUMN_LERAAR, lesuur.leraren.get(0));
         values.put(SQLRooster.COLUMN_VAK, lesuur.vak);
         values.put(SQLRooster.COLUMN_LOKAAL, lesuur.lokaal);
         values.put(SQLRooster.COLUMN_VERVALLEN, lesuur.vervallen);

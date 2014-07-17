@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus.adapters;
+package com.thomasdh.roosterpgplus.Adapters;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;

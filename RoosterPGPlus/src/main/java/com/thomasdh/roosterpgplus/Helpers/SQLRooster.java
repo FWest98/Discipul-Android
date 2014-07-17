@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus.roosterdata;
+package com.thomasdh.roosterpgplus.Helpers;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,7 +15,7 @@ public class SQLRooster extends SQLiteOpenHelper{
     public static final String COLUMN_UUR = "uur";
     public static final String COLUMN_WEEK = "week";
     public static final String COLUMN_VERANDERING = "verandering";
-   public static final String COLUMN_VERVALLEN = "vervallen";
+    public static final String COLUMN_VERVALLEN = "vervallen";
     public static final String COLUMN_VERPLAATSING = "verplaatsing";
     public static final String COLUMN_BIJZONDERHEID = "bijzonderheid";
     public static final String COLUMN_MASTER = "master";

@@ -85,7 +85,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 protected void onPostExecute(ArrayList<Account.Subklas> subklasArray) {
                     if (subklassen != null && subklasArray != null) {
                         ArrayList<String> strings = new ArrayList<String>();
-                        ArrayList<String> namen = new ArrayList<String>();
+                        ArrayList<String> namen = new ArrayList<>();
                         for (Account.Subklas subklas : subklasArray) {
                             strings.add(subklas.subklas + ": " + subklas.vak + " van " + subklas.leraar);
                             namen.add(subklas.subklas);
@@ -94,27 +94,24 @@ public class PreferencesActivity extends PreferenceActivity {
                         subklassen.setEntries(strings.toArray(new String[strings.size()]));
                         subklassen.setEntryValues(namen.toArray(new String[namen.size()]));
 
-                        subklassen.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                            @Override
-                            public boolean onPreferenceChange(Preference preference, final Object newValue) {
-                                new AsyncTask<Void, Exception, Void>() {
-                                    @Override
-                                    protected Void doInBackground(Void... params) {
-                                        try {
-                                            user.setSubklassen(((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
-                                        } catch (Exception e) {
-                                            publishProgress(e);
-                                        }
-                                        return null;
+                        subklassen.setOnPreferenceChangeListener((preference, newValue) -> {
+                            new AsyncTask<Void, Exception, Void>() {
+                                @Override
+                                protected Void doInBackground(Void... params) {
+                                    try {
+                                        user.setSubklassen(((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
+                                    } catch (Exception e) {
+                                        publishProgress(e);
                                     }
+                                    return null;
+                                }
 
-                                    @Override
-                                    protected void onProgressUpdate(Exception... e) {
-                                        ExceptionHandler.handleException(e[0], getApplicationContext(), "SetSubklasfout", "PreferencesActivity", ExceptionHandler.HandleType.SIMPLE);
-                                    }
-                                }.execute();
-                                return true;
-                            }
+                                @Override
+                                protected void onProgressUpdate(Exception... e) {
+                                    ExceptionHandler.handleException(e[0], getApplicationContext(), "SetSubklasfout", "PreferencesActivity", ExceptionHandler.HandleType.SIMPLE);
+                                }
+                            }.execute();
+                            return true;
                         });
                     } else {
                         Log.d("PreferenceActivity", "Ze zijn null");
@@ -131,12 +128,9 @@ public class PreferencesActivity extends PreferenceActivity {
             );
 
             // Configure login button
-            findPreference("log_in").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    user.showLoginDialog();
-                    return true;
-                }
+            findPreference("log_in").setOnPreferenceClickListener(preference -> {
+                user.showLoginDialog();
+                return true;
             });
 
             final Context context = this;
@@ -147,16 +141,13 @@ public class PreferencesActivity extends PreferenceActivity {
             } else {
                 findPreference("account_upgraden").setEnabled(true);
             }
-            findPreference("account_upgraden").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    try {
-                        user.extend();
-                    } catch (Exception e) {
-                        Toast.makeText(context, context.getString(R.string.extenddialog_isExtended), Toast.LENGTH_SHORT).show();
-                    }
-                    return false;
+            findPreference("account_upgraden").setOnPreferenceClickListener(preference -> {
+                try {
+                    user.extend();
+                } catch (Exception e) {
+                    Toast.makeText(context, context.getString(R.string.extenddialog_isExtended), Toast.LENGTH_SHORT).show();
                 }
+                return false;
             });
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$OverigFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_overig);

@@ -104,14 +104,13 @@ public class ListPreferenceMultiSelect extends ListPreference {
 
         restoreCheckedEntries();
         builder.setMultiChoiceItems(entries, mClickedDialogEntryIndices,
-                new DialogInterface.OnMultiChoiceClickListener() {
-                    public void onClick(DialogInterface dialog, int which, boolean val) {
-                        if (isCheckAllValue(which)) {
-                            checkAll(dialog, val);
-                        }
-                        mClickedDialogEntryIndices[which] = val;
+                (dialog, which, val) -> {
+                    if (isCheckAllValue(which)) {
+                        checkAll(dialog, val);
                     }
-                });
+                    mClickedDialogEntryIndices[which] = val;
+                }
+        );
     }
 
     private boolean isCheckAllValue(int which) {

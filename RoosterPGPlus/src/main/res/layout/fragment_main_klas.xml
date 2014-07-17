@@ -20,12 +20,13 @@
             android:text="@string/rooster_klas_desc"
             android:textSize="@dimen/docentenrooster_descSize"/>
 
-        <Spinner
+        <com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner
             android:id="@+id/main_fragment_spinner_klas"
             android:layout_width="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="5dp"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:prompt="@string/rooster_klas_prompt"/>
 
     </LinearLayout>
 
@@ -35,7 +36,7 @@
         android:background="#CCC" />
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/viewPager_leerling"
+        android:id="@+id/viewPager_klas"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

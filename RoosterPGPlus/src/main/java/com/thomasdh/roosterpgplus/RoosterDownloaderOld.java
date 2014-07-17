@@ -8,12 +8,12 @@ import android.preference.PreferenceManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
+import com.thomasdh.roosterpgplus.Helpers.RoosterWeek;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
@@ -26,38 +26,40 @@ import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Scanner;
 
+import static com.thomasdh.roosterpgplus.R.integer.min_refresh_wait_time;
+
 /**
  * Created by Thomas on 27-11-13.
  */
-class RoosterDownloader extends AsyncTask<String, Exception, String> {
+@Deprecated
+public class RoosterDownloaderOld extends AsyncTask<String, Exception, String> {
 
     private final WeakReference<Context> context;
     private final boolean forceReload;
     private final WeakReference<View> rootView;
     private final MenuItem menuItem;
-    private MainActivity.PlaceholderFragment.Type type;
+    private RoosterViewFragment.Type type;
     private int week;
     private String klas;
 
 
     //Voor docenten
-    public RoosterDownloader(Context context, View rooView, boolean forceReload, MenuItem menuItem, int week, String klas, MainActivity.PlaceholderFragment.Type type) {
+    public RoosterDownloaderOld(Context context, View rooView, boolean forceReload, MenuItem menuItem, int week, String klas, RoosterViewFragment.Type type) {
         this(context, rooView, forceReload, menuItem, week);
         this.type = type;
         this.klas = klas;
     }
 
-    public RoosterDownloader(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
+    public RoosterDownloaderOld(Context context, View rootView, boolean forceReload, MenuItem menuItem, int week) {
         this.context = new WeakReference<Context>(context);
         this.rootView = new WeakReference<View>(rootView);
         this.forceReload = forceReload;
         this.menuItem = menuItem;
         this.week = week;
-        type = MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER;
+        type = RoosterViewFragment.Type.PERSOONLIJK_ROOSTER;
 
         if (this.menuItem != null) {
-            LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            MenuItemCompat.setActionView(this.menuItem, layoutInflater.inflate(R.layout.actionbar_refresh_progress, null));
+            MenuItemCompat.expandActionView(menuItem);
         } else {
             Log.w(getClass().getSimpleName(), "The MenuItem is null.");
         }
@@ -92,19 +94,20 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
     @Override
     protected void onProgressUpdate(Exception... e) {
         if (context.get() != null) {
+            MenuItemCompat.setActionView(menuItem, null);
             ExceptionHandler.handleException(e[0], context.get(), "Fout bij het downloaden van het rooster", "RoosterDownloader", ExceptionHandler.HandleType.SILENT);
 
             // Maak een leeg rooster bij een docenten- of klasrooster
-            if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
+            if (type == RoosterViewFragment.Type.DOCENTENROOSTER)
                 new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), week, type).buildLayout(new RoosterWeek(null, context.get()));
-            if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
-                new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_leerling), week, type, klas).buildLayout(new RoosterWeek(null, context.get()));
+            if (type == RoosterViewFragment.Type.KLASROOSTER)
+                new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_klas), week, type, klas).buildLayout(new RoosterWeek(null, context.get()));
         }
     }
 
     boolean itIsTimeToReload() {
         return PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0) +
-                context.get().getResources().getInteger(R.integer.min_refresh_wait_time) < System.currentTimeMillis();
+                context.get().getResources().getInteger(min_refresh_wait_time) < System.currentTimeMillis();
     }
 
     @Override
@@ -125,16 +128,16 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
                     string = null;
                 }
                 RoosterWeek roosterWeek = new RoosterWeek(string, context.get());
-                if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
+                if (type == RoosterViewFragment.Type.PERSOONLIJK_ROOSTER) {
                     roosterWeek.slaOp(context.get(), week);
                 }
                 if (context != null && rootView.get() != null) {
-                    if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER)
+                    if (type == RoosterViewFragment.Type.PERSOONLIJK_ROOSTER)
                         new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager), week, type).buildLayout(new RoosterWeek(string, context.get()));
-                    if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER)
+                    if (type == RoosterViewFragment.Type.DOCENTENROOSTER)
                         new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), week, type).buildLayout(new RoosterWeek(string, context.get()));
-                    if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_leerling), week, type, klas).buildLayout(new RoosterWeek(string, context.get()));
+                    if (type == RoosterViewFragment.Type.KLASROOSTER)
+                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_klas), week, type, klas).buildLayout(new RoosterWeek(string, context.get()));
                 }
             }
         }
@@ -148,11 +151,11 @@ class RoosterDownloader extends AsyncTask<String, Exception, String> {
             week = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         }
         HttpGet httpGet = null;
-        if (type == MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER) {
+        if (type == RoosterViewFragment.Type.PERSOONLIJK_ROOSTER) {
             httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?key=" + apikey + "&week=" + week);
-        } else if (type == MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
+        } else if (type == RoosterViewFragment.Type.DOCENTENROOSTER) {
             httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?leraar=" + klas + "&week=" + week);
-        } else if (type == MainActivity.PlaceholderFragment.Type.KLASROOSTER) {
+        } else if (type == RoosterViewFragment.Type.KLASROOSTER) {
             httpGet = new HttpGet(Settings.API_Base_URL + "rooster/?klas=" + klas + "&week=" + week);
         }
 

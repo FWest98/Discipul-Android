@@ -1,10 +1,10 @@
-package com.thomasdh.roosterpgplus.roosterdata;
+package com.thomasdh.roosterpgplus.Helpers;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
-import com.thomasdh.roosterpgplus.Lesuur;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.json.JSONArray;

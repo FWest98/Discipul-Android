@@ -20,21 +20,23 @@
         android:orientation="horizontal"
         android:paddingBottom="3dp">
 
-        <Spinner
+        <com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner
             android:id="@+id/main_fragment_spinner_docent_vak"
             android:layout_width="0dp"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_height="wrap_content"
-            android:layout_weight=".6"/>
+            android:layout_weight=".6"
+            android:prompt="@string/rooster_docenten_vakspinner_placeholder"/>
 
-        <Spinner
+        <com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner
             android:id="@+id/main_fragment_spinner_docent_naam"
             android:layout_width="0dp"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_height="wrap_content"
-            android:layout_weight=".4"/>
+            android:layout_weight=".4"
+            android:prompt="@string/rooster_docenten_docentspinner_placeholder"/>
 
     </LinearLayout>
 

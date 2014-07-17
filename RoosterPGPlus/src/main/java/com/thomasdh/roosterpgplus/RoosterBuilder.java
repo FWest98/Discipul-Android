@@ -16,8 +16,10 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
-import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
+import com.thomasdh.roosterpgplus.Adapters.MyPagerAdapter;
+import com.thomasdh.roosterpgplus.Helpers.RoosterWeek;
 import com.thomasdh.roosterpgplus.util.Converter;
 
 import java.lang.ref.WeakReference;
@@ -31,16 +33,16 @@ import java.util.Iterator;
 /**
  * Created by Thomas on 2-12-13.
  */
-class RoosterBuilder {
+public class RoosterBuilder {
 
     private final WeakReference<Context> context;
     private final WeakReference<ViewPager> viewPager;
     private final int week;
-    private final MainActivity.PlaceholderFragment.Type type;
+    private final RoosterViewFragment.Type type;
     private String klas;
 
 
-    public RoosterBuilder(Context context, ViewPager viewPager, int week, MainActivity.PlaceholderFragment.Type type) {
+    public RoosterBuilder(Context context, ViewPager viewPager, int week, RoosterViewFragment.Type type) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
         this.week = week;
@@ -48,7 +50,7 @@ class RoosterBuilder {
         klas = null;
     }
 
-    public RoosterBuilder(Context context, ViewPager viewPager, int week, MainActivity.PlaceholderFragment.Type type, String klas) {
+    public RoosterBuilder(Context context, ViewPager viewPager, int week, RoosterViewFragment.Type type, String klas) {
         this(context, viewPager, week, type);
         this.klas = klas;
     }
@@ -180,15 +182,16 @@ class RoosterBuilder {
                             }
                             // In het persoonlijke rooster wordt uitval niet weergegeven als er tegelijkertijd een
                             // andere les is die niet uitvalt.
-                            if (type != MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER || tempUurArray.isEmpty()) {
+                            if (type != RoosterViewFragment.Type.PERSOONLIJK_ROOSTER || tempUurArray.isEmpty()) {
                                 tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
                                         uitgevallenUren.get(0).uur,
+                                        null, null,
                                         uitgevallenUren.get(0).week,
-                                        uitgevallenUren.get(0).klas,
-                                        uitgevallenUren.get(0).leraar,
-                                        uurNamen,
+                                        uitgevallenUren.get(0).klassen,
+                                        uitgevallenUren.get(0).leraren,
+                                        null,
                                         uitgevallenUren.get(0).lokaal,
-                                        true, false));
+                                        false, true, false, false, null, false, 0));
                             }
                         }
                         final ArrayList<View> allUren = new ArrayList<View>();
@@ -353,14 +356,14 @@ class RoosterBuilder {
         } else {
             if (lesuur.verandering) {
                 uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
-                if (klas != null && !lesuur.klas.equals(klas)) {
+                if (klas != null && !lesuur.klassen.get(0).equals(klas)) {
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(100);
                 } else {
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(0);
                 }
             } else {
                 //Als het geen algemeen uur is
-                if (klas != null && !lesuur.klas.equals(klas)) {
+                if (klas != null && !lesuur.klassen.get(0).equals(klas)) {
                     uur = inflater.inflate(R.layout.rooster_uur_optioneel, null);
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(100);
                 } else {
@@ -371,16 +374,16 @@ class RoosterBuilder {
             vakTextView.setText(lesuur.vak);
 
             TextView leraarTextView = (TextView) uur.findViewById(R.id.rooster_leraar);
-            if (type != MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
+            if (type != RoosterViewFragment.Type.DOCENTENROOSTER) {
                 // Vul de leraar in
-                if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
-                    leraarTextView.setText(lesuur.leraar);
+                if (lesuur.leraren.size() == 1) {
+                    leraarTextView.setText(lesuur.leraren.get(0));
                 } else {
-                    leraarTextView.setText(lesuur.leraar + " & " + lesuur.leraar2);
+                    leraarTextView.setText(lesuur.leraren.toString());
                 }
             } else {
                 //Geef bij een docentenrooster de klas in plaats van de leraar
-                leraarTextView.setText(lesuur.klas);
+                leraarTextView.setText(lesuur.klassen.get(0));
             }
             TextView lokaalTextView = (TextView) uur.findViewById(R.id.rooster_lokaal);
             lokaalTextView.setText(lesuur.lokaal);

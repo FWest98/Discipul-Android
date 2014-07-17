@@ -15,8 +15,9 @@ import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.Toast;
 
-import com.thomasdh.roosterpgplus.roosterdata.LesuurData;
-import com.thomasdh.roosterpgplus.roosterdata.SQLRooster;
+import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
+import com.thomasdh.roosterpgplus.Helpers.LesuurData;
+import com.thomasdh.roosterpgplus.Helpers.SQLRooster;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
@@ -37,24 +38,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Created by rdiger on   publi.
- */
-public class Account {
+import lombok.Getter;
 
+public class Account {
     public final Boolean isSet;
     public String name;
-    private String apikey;
+    @Getter private String apikey;
     public String klas;
-    private Boolean vertegenwoordiger;
+    private Boolean isVertegenwoordiger;
     public Boolean isAppAccount;
     private UserTypes userType;
     private String code;
+
+    // TODO: Remove
     private final Context context;
+
     private AlertDialog LoginDialog;
     private AlertDialog RegisterDialog;
     private AlertDialog ExtendDialog;
-    private MainActivity.PlaceholderFragment mainFragment;
+
+    // TODO: Remove
+    private RoosterViewFragment mainFragment;
 
 
     public Account(Context context) {
@@ -73,7 +77,7 @@ public class Account {
             if (preferences.getString("code", null) == null) {
                 userType = UserTypes.LEERLING;
                 klas = preferences.getString("klas", null);
-                vertegenwoordiger = preferences.getBoolean("vertegenwoordiger", false);
+                isVertegenwoordiger = preferences.getBoolean("isVertegenwoordiger", false);
             } else {
                 userType = UserTypes.LERAAR;
                 code = preferences.getString("code", null);
@@ -83,7 +87,7 @@ public class Account {
         }
     }
 
-    public Account(Context context, MainActivity.PlaceholderFragment mainFragment) {
+    public Account(Context context, RoosterViewFragment mainFragment) {
         this(context);
         this.mainFragment = mainFragment;
     }
@@ -103,8 +107,8 @@ public class Account {
             userType = UserTypes.LEERLING;
             e.putString("klas", object.getString("klas"));
             klas = object.getString("klas");
-            e.putBoolean("vertegenwoordiger", object.getBoolean("vertegenwoordiger"));
-            vertegenwoordiger = object.getBoolean("vertegenwoordiger");
+            e.putBoolean("isVertegenwoordiger", object.getBoolean("isVertegenwoordiger"));
+            isVertegenwoordiger = object.getBoolean("isVertegenwoordiger");
         } else {
             userType = UserTypes.LERAAR;
             e.putString("code", object.getString("code"));
@@ -238,7 +242,7 @@ public class Account {
 
                             //Laad het rooster
                             if (laadRooster && mainFragment != null) {
-                                mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
+                                mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.getType());
                             }
 
                         } catch (JSONException e) {
@@ -324,7 +328,7 @@ public class Account {
 
                         //Laad het rooster
                         if (laadRooster && mainFragment != null) {
-                            mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
+                            mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.getType());
                         }
 
                     } catch (JSONException e) {
@@ -484,7 +488,7 @@ public class Account {
                         Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
                         //Laad het rooster als de boolean true is
                         if (laadRooster && mainFragment != null) {
-                            mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.type);
+                            mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.getType());
                         }
                     } catch (JSONException e) {
                         ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
@@ -529,19 +533,9 @@ public class Account {
 
 
         builder.setView(dialogView)
-                .setPositiveButton(R.string.logindialog_loginbutton, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int id) {
-                    }
-                })
-                .setNeutralButton("Registreer", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int id) {
-                    }
-                })
-                .setNegativeButton(R.string.logindialog_cancelbutton, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInterface, int id) {
-                    }
-                });
+                .setPositiveButton(R.string.logindialog_loginbutton, (dialogInterface, id) -> {})
+                .setNeutralButton("Registreer", (dialogInterface, id) -> {})
+                .setNegativeButton(R.string.logindialog_cancelbutton, (dialogInterface, id) -> {});
 
         LoginDialog = builder.create();
         LoginDialog.show();
