@@ -99,9 +99,9 @@ public class RoosterDownloaderOld extends AsyncTask<String, Exception, String> {
 
             // Maak een leeg rooster bij een docenten- of klasrooster
             if (type == RoosterViewFragment.Type.DOCENTENROOSTER)
-                new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), week, type).buildLayout(new RoosterWeek(null, context.get()));
+                new RoosterBuilderOld(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), week, type).buildLayout(new RoosterWeek(null, context.get()));
             if (type == RoosterViewFragment.Type.KLASROOSTER)
-                new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_klas), week, type, klas).buildLayout(new RoosterWeek(null, context.get()));
+                new RoosterBuilderOld(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_klas), week, type, klas).buildLayout(new RoosterWeek(null, context.get()));
         }
     }
 
@@ -133,11 +133,11 @@ public class RoosterDownloaderOld extends AsyncTask<String, Exception, String> {
                 }
                 if (context != null && rootView.get() != null) {
                     if (type == RoosterViewFragment.Type.PERSOONLIJK_ROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager), week, type).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilderOld(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager), week, type).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == RoosterViewFragment.Type.DOCENTENROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), week, type).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilderOld(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_docent), week, type).buildLayout(new RoosterWeek(string, context.get()));
                     if (type == RoosterViewFragment.Type.KLASROOSTER)
-                        new RoosterBuilder(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_klas), week, type, klas).buildLayout(new RoosterWeek(string, context.get()));
+                        new RoosterBuilderOld(context.get(), (ViewPager) rootView.get().findViewById(R.id.viewPager_klas), week, type, klas).buildLayout(new RoosterWeek(string, context.get()));
                 }
             }
         }

@@ -18,6 +18,7 @@ import java.util.Collections;
 /**
  * Created by Thomas on 13-12-13.
  */
+@Deprecated
 public class RoosterWeek implements Serializable {
 
     private static final long serialVersionUID = 1029472134713472957L;
@@ -58,7 +59,7 @@ public class RoosterWeek implements Serializable {
                             JSONArray uurArray = dagArray.getJSONArray(String.valueOf(hour + 1));
                             uren[day][hour] = new Lesuur[uurArray.length()];
                             for (int p = 0; p < uurArray.length(); p++) {
-                                uren[day][hour][p] = new Lesuur(uurArray.getJSONObject(p), context);
+                                uren[day][hour][p] = new Lesuur(uurArray.getJSONObject(p), context, null);
                             }
                         }
                     }

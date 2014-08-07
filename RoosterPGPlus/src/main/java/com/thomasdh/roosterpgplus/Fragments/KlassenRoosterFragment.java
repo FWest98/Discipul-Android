@@ -10,24 +10,27 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.thomasdh.roosterpgplus.Adapters.MyPagerAdapter;
+import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner;
-import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.util.ArrayList;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
-import roboguice.inject.InjectView;
 
 @FragmentTitle(title = R.string.action_bar_dropdown_klassenrooster)
 public class KlassenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
     private static final String CHOSEN_KLAS_KEY = "lastChosenKlas";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
 
-    @InjectView(R.id.main_fragment_spinner_klas) private DefaultSpinner klasSpinner;
+    private DefaultSpinner klasSpinner;
 
     @Getter @Setter private String klas;
 
@@ -40,7 +43,13 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     public boolean canLoadRooster() { return getKlas() != null; }
 
     @Override
-    public String getURLQuery() { return "&klas="+getKlas(); }
+    public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
+        query.add(new BasicNameValuePair("klas", getKlas()));
+        return query;
+    }
+
+    @Override
+    public void setLoad() { RoosterInfo.setLoad("klas"+getKlas(), System.currentTimeMillis(), getActivity()); }
 
     @Override
     public LoadType getLoadType() {
@@ -60,7 +69,9 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
         setRootView(inflater.inflate(R.layout.fragment_main_klas, container, false));
         viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_klas);
-        viewPager.setAdapter(new MyPagerAdapter());
+        viewPager.setAdapter(new AnimatedPagerAdapter());
+
+        klasSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_klas);
 
         RoosterInfo.getKlassen(getActivity(), s -> onKlassenLoaded((ArrayList<String>) s));
 

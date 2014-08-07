@@ -8,19 +8,22 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
-import com.thomasdh.roosterpgplus.Adapters.MyPagerAdapter;
+import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner;
-import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Leraar;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.R;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.util.ArrayList;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
-import roboguice.inject.InjectView;
 
 @FragmentTitle(title = R.string.action_bar_dropdown_docentenrooster)
 public class DocentenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
@@ -30,8 +33,8 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     @Getter @Setter private String leraar;
     @Getter @Setter private ArrayList<Vak> vakken;
 
-    @InjectView(R.id.main_fragment_spinner_docent_naam) private DefaultSpinner leraarSpinner;
-    @InjectView(R.id.main_fragment_spinner_docent_vak) private DefaultSpinner vakSpinner;
+    private DefaultSpinner leraarSpinner;
+    private DefaultSpinner vakSpinner;
 
 
     @Override
@@ -43,7 +46,13 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     public boolean canLoadRooster() { return getLeraar() != null; }
 
     @Override
-    public String getURLQuery() { return "&docent="+getLeraar(); }
+    public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
+        query.add(new BasicNameValuePair("docent", getLeraar()));
+        return query;
+    }
+
+    @Override
+    public void setLoad() { RoosterInfo.setLoad("docent"+getLeraar(), System.currentTimeMillis(), getActivity()); }
 
     @Override
     public LoadType getLoadType() {
@@ -63,7 +72,10 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
 
         setRootView(inflater.inflate(R.layout.fragment_main_docenten, container, false));
         viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_docent);
-        viewPager.setAdapter(new MyPagerAdapter());
+        viewPager.setAdapter(new AnimatedPagerAdapter());
+
+        leraarSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_naam);
+        vakSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_vak);
 
         RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s));
 

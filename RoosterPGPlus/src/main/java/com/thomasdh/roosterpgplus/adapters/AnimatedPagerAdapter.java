@@ -12,11 +12,8 @@ import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 
-/**
- * Created by Thomas on 27-11-13.
- */
-public class MyPagerAdapter extends PagerAdapter {
-    private final ArrayList<View> views = new ArrayList<View>();
+public class AnimatedPagerAdapter extends PagerAdapter {
+    private final ArrayList<View> views = new ArrayList<>();
 
     @Override
     public int getCount() {

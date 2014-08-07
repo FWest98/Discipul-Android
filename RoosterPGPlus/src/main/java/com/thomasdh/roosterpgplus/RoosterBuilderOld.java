@@ -16,9 +16,9 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
-import com.thomasdh.roosterpgplus.Adapters.MyPagerAdapter;
 import com.thomasdh.roosterpgplus.Helpers.RoosterWeek;
 import com.thomasdh.roosterpgplus.util.Converter;
 
@@ -33,7 +33,8 @@ import java.util.Iterator;
 /**
  * Created by Thomas on 2-12-13.
  */
-public class RoosterBuilder {
+@Deprecated
+public class RoosterBuilderOld {
 
     private final WeakReference<Context> context;
     private final WeakReference<ViewPager> viewPager;
@@ -42,7 +43,7 @@ public class RoosterBuilder {
     private String klas;
 
 
-    public RoosterBuilder(Context context, ViewPager viewPager, int week, RoosterViewFragment.Type type) {
+    public RoosterBuilderOld(Context context, ViewPager viewPager, int week, RoosterViewFragment.Type type) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
         this.week = week;
@@ -50,7 +51,7 @@ public class RoosterBuilder {
         klas = null;
     }
 
-    public RoosterBuilder(Context context, ViewPager viewPager, int week, RoosterViewFragment.Type type, String klas) {
+    public RoosterBuilderOld(Context context, ViewPager viewPager, int week, RoosterViewFragment.Type type, String klas) {
         this(context, viewPager, week, type);
         this.klas = klas;
     }
@@ -99,11 +100,11 @@ public class RoosterBuilder {
     public void buildLayout(RoosterWeek roosterWeek) {
         if (viewPager.get() != null) {
             if (viewPager.get().getAdapter() == null) {
-                viewPager.get().setAdapter(new MyPagerAdapter());
+                viewPager.get().setAdapter(new AnimatedPagerAdapter());
             }
         }
-        boolean wideEnoughForWeekview = context.get().getResources().getBoolean(R.bool.wide_enough_for_weekview);
-        final boolean highEnoughForWeekview = context.get().getResources().getBoolean(R.bool.high_enough_for_weekview);
+        boolean wideEnoughForWeekview = context.get().getResources().getBoolean(R.bool.isWideWeekview);
+        final boolean highEnoughForWeekview = context.get().getResources().getBoolean(R.bool.isHighWeekview);
 
         if (roosterWeek != null) {
 
@@ -191,7 +192,7 @@ public class RoosterBuilder {
                                         uitgevallenUren.get(0).leraren,
                                         null,
                                         uitgevallenUren.get(0).lokaal,
-                                        false, true, false, false, null, false, 0));
+                                        false, true, false, false, null, false, 0, null));
                             }
                         }
                         final ArrayList<View> allUren = new ArrayList<View>();
@@ -252,7 +253,7 @@ public class RoosterBuilder {
                 } else {
                     ll.addView(getBottomTextView());
                     ll.setPadding((int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()));
-                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
+                    ((AnimatedPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
                 }
             }
             if (wideEnoughForWeekview || highEnoughForWeekview) {
@@ -267,15 +268,15 @@ public class RoosterBuilder {
                 completeLinearLayout.addView(dataTextView);
 
                 if (wideEnoughForWeekview && highEnoughForWeekview) {
-                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(completeLinearLayout, 0, context.get());
+                    ((AnimatedPagerAdapter) viewPager.get().getAdapter()).setView(completeLinearLayout, 0, context.get());
                 } else if (wideEnoughForWeekview) {
                     ScrollView weekScrollView = new ScrollView(context.get());
                     weekScrollView.addView(completeLinearLayout);
-                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
+                    ((AnimatedPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
                 } else if (highEnoughForWeekview) {
                     HorizontalScrollView completeScrollView = new HorizontalScrollView(context.get());
                     completeScrollView.addView(completeLinearLayout);
-                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(completeScrollView, 0, context.get());
+                    ((AnimatedPagerAdapter) viewPager.get().getAdapter()).setView(completeScrollView, 0, context.get());
                 }
 
             }

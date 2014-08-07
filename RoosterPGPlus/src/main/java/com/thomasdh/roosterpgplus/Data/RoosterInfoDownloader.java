@@ -24,8 +24,17 @@ import java.util.Scanner;
 
 public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<String, Object>> {
     private static final String DATA_KEY = "data";
-    private static final String INTERFACE_KEY = "interface";
     private static final String ERROR_KEY = "exception";
+
+    private AsyncCallback asyncAction;
+    private AsyncActionCallback successCallback;
+    private AsyncActionCallback errorCallback;
+
+    private RoosterInfoDownloader(AsyncCallback asyncAction, AsyncActionCallback successCallback, AsyncActionCallback errorCallback) {
+        this.asyncAction = asyncAction;
+        this.successCallback = successCallback;
+        this.errorCallback = errorCallback;
+    }
 
     @Override
     protected Hashtable<String, Object> doInBackground(Object... info) {
@@ -34,29 +43,30 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             HttpGet get = new HttpGet(Settings.API_Base_URL + info[0]);
             HttpResponse response = httpClient.execute(get);
 
-            Object data = ((AsyncCallback) info[1]).onBackground(response);
+            //Object data = ((AsyncCallback) info[1]).onBackground(response);
+            Object data = asyncAction.onBackground(response);
 
             Hashtable<String, Object> hashtable = new Hashtable<>();
             hashtable.put(DATA_KEY, data);
-            hashtable.put(INTERFACE_KEY, info[2]);
 
             return hashtable;
         } catch (Exception e) {
             Hashtable<String, Object> hashtable = new Hashtable<>();
             hashtable.put(ERROR_KEY, e);
-            hashtable.put(INTERFACE_KEY, info[3]);
             return hashtable;
         }
     }
 
     @Override
     protected void onPostExecute(Hashtable<String, Object> hashtable) {
+        AsyncActionCallback callback;
         String getter = DATA_KEY;
+        callback = successCallback;
         if(hashtable.containsKey(ERROR_KEY)) {
+            callback = errorCallback;
             getter = ERROR_KEY;
         }
 
-        AsyncActionCallback callback = (AsyncActionCallback) hashtable.get(INTERFACE_KEY);
         try {
             callback.onAsyncActionComplete(hashtable.get(getter));
         } catch (Exception e) {
@@ -129,7 +139,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             return vakken;
         };
 
-        new RoosterInfoDownloader().execute(url, AsyncCallback, callback, errorCallback);
+        new RoosterInfoDownloader(AsyncCallback, callback, errorCallback).execute(url);
     }
 
     /* Klassen downloader */
@@ -168,7 +178,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             return klassen;
         };
 
-        new RoosterInfoDownloader().execute(url, AsyncCallback, callback, errorCallback);
+        new RoosterInfoDownloader(AsyncCallback, callback, errorCallback).execute(url);
     }
 
     /* Weken downloader */
@@ -214,7 +224,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             return weken;
         };
 
-        new RoosterInfoDownloader().execute(url, AsyncCallback, parentCallback, errorCallback);
+        new RoosterInfoDownloader(AsyncCallback, parentCallback, errorCallback).execute(url);
     }
 
     /* Rooster downloader */
@@ -238,7 +248,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             return content; // TODO roosterformat
         };
 
-        new RoosterInfoDownloader().execute(url, AsyncCallback, callback, errorCallback);
+        new RoosterInfoDownloader(AsyncCallback, callback, errorCallback).execute(url);
     }
 
     private interface AsyncCallback {

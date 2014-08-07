@@ -11,13 +11,21 @@ import android.view.ViewGroup;
 
 import com.thomasdh.roosterpgplus.Account;
 import com.thomasdh.roosterpgplus.Data.Rooster;
+import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Helpers.RoosterWeek;
 import com.thomasdh.roosterpgplus.MainActivity;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
-import com.thomasdh.roosterpgplus.RoosterBuilder;
+import com.thomasdh.roosterpgplus.RoosterBuilderOld;
 import com.thomasdh.roosterpgplus.RoosterDownloaderOld;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -27,7 +35,7 @@ import roboguice.fragment.RoboFragment;
 /**
  * Created by Floris on 7-7-2014.
  */
-public abstract class RoosterViewFragment extends RoboFragment {
+public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener {
     private static final String STATE_FRAGMENT = "fragmentType";
 
     @Deprecated public static String leraarLeerlingselected;
@@ -38,6 +46,7 @@ public abstract class RoosterViewFragment extends RoboFragment {
 
     @Setter public Account user;
     @Getter(value = AccessLevel.PRIVATE) private int week;
+    @Getter @Setter private int dag = 0;
 
     //region Types
     public static Class<? extends RoosterViewFragment>[] types = new Class[]{
@@ -87,25 +96,49 @@ public abstract class RoosterViewFragment extends RoboFragment {
     // Pas een rooster laden als er een week bekend is (of herladen als je wil)
     public void setWeek(int week) {
         this.week = week;
+        if(week == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
+            setDag(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+        } else {
+            setDag(0);
+        }
         loadRooster();
     }
+
+    @Override
+    public void onPageScrolled(int i, float v, int i2) {}
+
+    @Override
+    public void onPageScrollStateChanged(int i) {}
+
+    @Override
+    public void onPageSelected(int i) { setDag(i); }
 
     //endregion
     //region Roosters
 
     protected abstract boolean canLoadRooster();
-    public abstract String getURLQuery();
+    public abstract List<NameValuePair> getURLQuery(List<NameValuePair> query);
     public abstract LoadType getLoadType();
+    public abstract void setLoad();
+    // TODO add dingen
+
 
     public void loadRooster() {
         if(!canLoadRooster()) return;
 
-        String query = "?week="+getWeek()+getURLQuery();
+        List<NameValuePair> query = new ArrayList<>();
+        query.add(new BasicNameValuePair("week", Integer.toString(getWeek())));
+        query = getURLQuery(query);
+
         LoadType loadType = getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), result -> {
+            if(loadType == LoadType.ONLINE || loadType == LoadType.NEWONLINE) {
+                setLoad();
+            }
+            RoosterBuilder.build((List<Lesuur>) result, getDag(), getViewPager(), getActivity());
             // Rooster buildsels
-            new RoosterBuilder(getActivity(), getViewPager(), getWeek(), getType()).buildLayout(new RoosterWeek((String) result, getActivity()));
+            //new RoosterBuilderOld(getActivity(), getViewPager(), getWeek(), getType()).buildLayout(new RoosterWeek((String) result, getActivity()));
         });
     }
 
@@ -126,7 +159,7 @@ public abstract class RoosterViewFragment extends RoboFragment {
 
             //Als het de goede week is, gebruik hem
             if (roosterWeek != null && roosterWeek.getWeek() == selectedWeek) {
-                new RoosterBuilder(context, (ViewPager) rootView.findViewById(R.id.viewPager), selectedWeek, type).buildLayout(roosterWeek);
+                new RoosterBuilderOld(context, (ViewPager) rootView.findViewById(R.id.viewPager), selectedWeek, type).buildLayout(roosterWeek);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
                 new RoosterDownloaderOld(context, rootView, false, refreshItem.get(), selectedWeek).execute();
             } else {

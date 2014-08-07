@@ -23,6 +23,7 @@ public class RoosterInfo {
     private static final String KLASSEN_FILENAME = "klassenarray";
     private static final String LERAREN_FILENAME = "lerarenarray";
     private static final String LOADS_FILENAME = "loadshashtable";
+    private static final String WEKEN_UREN_FILENAME = "wekenhashtable";
 
     //region Weken
 
@@ -39,6 +40,21 @@ public class RoosterInfo {
         } else {
             RoosterInfo.<ArrayList<Week>>getOnError(WEKEN_FILENAME, context, callback);
         }
+    }
+
+    public static int getWeekUrenCount(Context context, int week) throws IllegalArgumentException {
+        Hashtable<Integer, Integer> weken = getFromStorage(WEKEN_UREN_FILENAME, context);
+        if(weken == null) {
+            throw new IllegalArgumentException("Week niet opgeslagen");
+        }
+        return weken.get(week);
+    }
+
+    public static void setWeekUrenCount(Context context, int week, int urenCount) {
+        Hashtable<Integer, Integer> weken = getFromStorage(WEKEN_UREN_FILENAME, context);
+        if(weken == null) weken = new Hashtable<>();
+        weken.put(week, urenCount);
+        saveInStorage(WEKEN_UREN_FILENAME, context, weken);
     }
 
     //endregion
@@ -83,7 +99,7 @@ public class RoosterInfo {
 
     public static Long getLoad(String itemName, Context context) {
         Hashtable<String, Long> loads = getLoads(context);
-        if(loads == null) return (long) 0;
+        if(loads == null) return null;
         return loads.get(itemName);
     }
 

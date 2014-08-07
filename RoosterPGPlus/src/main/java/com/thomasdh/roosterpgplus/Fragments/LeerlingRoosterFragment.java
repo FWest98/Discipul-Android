@@ -3,6 +3,10 @@ package com.thomasdh.roosterpgplus.Fragments;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
 
+import org.apache.http.NameValuePair;
+
+import java.util.List;
+
 /**
  * Created by Floris on 14-7-2014.
  */
@@ -17,7 +21,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment {
     public boolean canLoadRooster() { return false; }
 
     @Override
-    public String getURLQuery() {
+    public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
         throw new UnsupportedOperationException("Nog niet af"); // TODO implement
     }
 
@@ -25,5 +29,10 @@ public class LeerlingRoosterFragment extends RoosterViewFragment {
     public LoadType getLoadType() {
         throw new UnsupportedOperationException("Nog niet af");
         // TODO implement
+    }
+
+    @Override
+    public void setLoad() {
+        throw new UnsupportedOperationException("Nog niet af");
     }
 }

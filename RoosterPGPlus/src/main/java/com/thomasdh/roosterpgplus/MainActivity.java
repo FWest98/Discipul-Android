@@ -14,11 +14,10 @@ import android.widget.ExpandableListView;
 
 import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
-import com.thomasdh.roosterpgplus.Database.DatabaseHelper;
+import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Fragments.PersoonlijkRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
-import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Models.Week;
 
 import java.lang.ref.WeakReference;
@@ -43,8 +42,6 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
 
     @InjectView(R.id.drawerlayout) private DrawerLayout drawerLayout;
     @InjectView(R.id.drawer) private ExpandableListView drawerList;
-
-    @Getter private static DatabaseHelper databaseHelper = null;
 
     private RoosterViewFragment mainFragment;
     private Class<? extends RoosterViewFragment> roosterType;
@@ -138,7 +135,8 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
 
         /* Dropdown Navigation */
         getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-        RoosterInfo.getWeken(this, result -> addWekenToActionBar((ArrayList<Week>) result)); // hier gebeurt de rest
+
+        RoosterInfo.getWeken(this, this::addWekenToActionBar); // hier gebeurt de rest
     }
 
     @Override
@@ -213,7 +211,8 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         return true;
     }
 
-    private void addWekenToActionBar(ArrayList<Week> wekenArray) {
+    private void addWekenToActionBar(Object weken) {
+        ArrayList<Week> wekenArray = (ArrayList<Week>) weken;
         ArrayList<String> strings = new ArrayList<>();
         if (wekenArray == null || wekenArray.isEmpty()) {
             strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));

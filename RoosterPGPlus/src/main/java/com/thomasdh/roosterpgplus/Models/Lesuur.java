@@ -1,9 +1,11 @@
 package com.thomasdh.roosterpgplus.Models;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.misc.BaseDaoEnabled;
 import com.j256.ormlite.table.DatabaseTable;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
@@ -12,7 +14,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import lombok.EqualsAndHashCode;
@@ -22,10 +27,11 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode
 @DatabaseTable(tableName = "Lessen")
-public class Lesuur implements Serializable {
+public class Lesuur extends BaseDaoEnabled implements Serializable {
     private static final long serialVersionUID = 7526472295622776147L;
 
     @DatabaseField(generatedId = true) public int id;
+    @DatabaseField public String query;
 
     @DatabaseField public int dag;
     @DatabaseField public int uur;
@@ -49,12 +55,22 @@ public class Lesuur implements Serializable {
 
     Lesuur() {}
 
-    public Lesuur(JSONObject JSON, Context context) {
+    public Lesuur(JSONObject JSON, Context context, String query) {
         try {
             dag = JSON.getInt("dag");
             uur = JSON.getInt("uur");
-            lesStart = new Date(JSON.getString("lesStart"));
-            lesEind = new Date(JSON.getString("lesEind"));
+
+            SimpleDateFormat webFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            try {
+                lesStart = webFormat.parse(JSON.getString("lesStart"));
+                lesEind = webFormat.parse(JSON.getString("lesEind"));
+            } catch (ParseException e) {
+                Log.e("Datumparsefout", e.getMessage(), e);
+                Calendar cal = Calendar.getInstance();
+                cal.set(1980, Calendar.JANUARY, 1, 0, 0, 0);
+                lesStart = cal.getTime();
+                lesEind = cal.getTime();
+            }
             week = JSON.getInt("week");
 
 
@@ -63,6 +79,7 @@ public class Lesuur implements Serializable {
             for(int i = 0; i < klassenArray.length(); i++) {
                 klassen.add(klassenArray.getString(i));
             }
+
             JSONArray lerarenArray = JSON.getJSONArray("leraren");
             leraren = new ArrayList<>();
             for(int i = 0; i < lerarenArray.length(); i++) {
@@ -81,12 +98,14 @@ public class Lesuur implements Serializable {
             huiswerk = JSON.getString("huiswerk");
             master = JSON.getBoolean("master");
             bijzonderheid = JSON.getInt("bijzonderheid");
+
+            this.query =  query;
         } catch (JSONException e) {
             ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", Lesuur.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
 
-    public Lesuur(int dag, int uur, Date lesStart, Date lesEind, int week, ArrayList<String> klassen, ArrayList<String> leraren, String vak, String lokaal, boolean verandering, boolean vervallen, boolean isNew, boolean verplaatsing, String huiswerk, boolean master, int bijzonderheid) {
+    public Lesuur(int dag, int uur, Date lesStart, Date lesEind, int week, ArrayList<String> klassen, ArrayList<String> leraren, String vak, String lokaal, boolean verandering, boolean vervallen, boolean isNew, boolean verplaatsing, String huiswerk, boolean master, int bijzonderheid, String query) {
         this.dag = dag;
         this.uur = uur;
         this.lesStart = lesStart;
@@ -103,5 +122,6 @@ public class Lesuur implements Serializable {
         this.huiswerk = huiswerk;
         this.master = master;
         this.bijzonderheid = bijzonderheid;
+        this.query = query;
     }
 }
