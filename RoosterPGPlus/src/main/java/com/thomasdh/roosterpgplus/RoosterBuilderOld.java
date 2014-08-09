@@ -20,7 +20,7 @@ import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.Helpers.RoosterWeek;
-import com.thomasdh.roosterpgplus.util.Converter;
+import com.thomasdh.roosterpgplus.Helpers.Converter;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -195,7 +195,7 @@ public class RoosterBuilderOld {
                                         false, true, false, false, null, false, 0, null));
                             }
                         }
-                        final ArrayList<View> allUren = new ArrayList<View>();
+                        final ArrayList<RelativeLayout> allUren = new ArrayList<>();
                         uurArray = tempUurArray.toArray(new Lesuur[tempUurArray.size()]);
 
 
@@ -214,7 +214,7 @@ public class RoosterBuilderOld {
                             allUren.add(uurview);
 
                             if (multipleViews) {
-                                TextView lagen = (TextView) uurview.findViewById(R.id.layers);
+                                TextView lagen = (TextView) uurview.findViewById(R.id.layerCounter);
                                 lagen.setVisibility(View.VISIBLE);
                                 lagen.setText("(" + (u + 1) + "/" + uurArray.length + ")");
 
@@ -230,7 +230,7 @@ public class RoosterBuilderOld {
                         }
 
                         if (multipleViews)
-                            parentLayout.setOnClickListener(new MultipleUrenClickListener(allUren, context));
+                            parentLayout.setOnClickListener(new MultipleUrenClickListener(allUren, context.get()));
 
                         ll.addView(parentLayout);
                     } else {

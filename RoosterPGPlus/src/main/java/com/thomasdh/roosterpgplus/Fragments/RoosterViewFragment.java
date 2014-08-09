@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import com.thomasdh.roosterpgplus.Account;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
+import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.RoosterWeek;
 import com.thomasdh.roosterpgplus.MainActivity;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
@@ -35,7 +36,7 @@ import roboguice.fragment.RoboFragment;
 /**
  * Created by Floris on 7-7-2014.
  */
-public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener {
+public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener, RoosterBuilder.lesViewBuilder {
     private static final String STATE_FRAGMENT = "fragmentType";
 
     @Deprecated public static String leraarLeerlingselected;
@@ -119,8 +120,12 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     protected abstract boolean canLoadRooster();
     public abstract List<NameValuePair> getURLQuery(List<NameValuePair> query);
     public abstract LoadType getLoadType();
+    public abstract long getLoad();
     public abstract void setLoad();
-    // TODO add dingen
+    public boolean getShowVervangenUren() { return true; }
+
+    // LesViewBuilder
+    public abstract View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
 
 
     public void loadRooster() {
@@ -133,12 +138,10 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         LoadType loadType = getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), result -> {
-            if(loadType == LoadType.ONLINE || loadType == LoadType.NEWONLINE) {
+            if(loadType == LoadType.ONLINE || (loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity()))) {
                 setLoad();
             }
-            RoosterBuilder.build((List<Lesuur>) result, getDag(), getViewPager(), getActivity());
-            // Rooster buildsels
-            //new RoosterBuilderOld(getActivity(), getViewPager(), getWeek(), getType()).buildLayout(new RoosterWeek((String) result, getActivity()));
+            RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), getViewPager(), getActivity(), this, this);
         });
     }
 

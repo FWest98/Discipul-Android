@@ -7,18 +7,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Leraar;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.R;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +54,9 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         query.add(new BasicNameValuePair("docent", getLeraar()));
         return query;
     }
+
+    @Override
+    public long getLoad() { return RoosterInfo.getLoad("docent"+getLeraar(), getActivity()); }
 
     @Override
     public void setLoad() { RoosterInfo.setLoad("docent"+getLeraar(), System.currentTimeMillis(), getActivity()); }
@@ -123,4 +130,22 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     }
 
     @Override public void onNothingSelected(AdapterView<?> parent) {}
+
+    @Override
+    public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
+        lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // Background doorzichtig, geen speciale uren
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+
+        TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
+        TextView leraarTextView = (TextView) lesView.findViewById(R.id.rooster_leraar);
+        TextView lokaalTextView = (TextView) lesView.findViewById(R.id.rooster_lokaal);
+        TextView tijdenTextView = (TextView) lesView.findViewById(R.id.rooster_tijden);
+
+        vakTextView.setText(lesuur.vak);
+        leraarTextView.setText(StringUtils.join(lesuur.klassen, " & "));
+        lokaalTextView.setText(lesuur.lokaal);
+        tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
+
+        return lesView;
+    }
 }

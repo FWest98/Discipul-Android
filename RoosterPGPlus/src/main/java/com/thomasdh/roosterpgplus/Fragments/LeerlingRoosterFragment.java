@@ -1,6 +1,10 @@
 package com.thomasdh.roosterpgplus.Fragments;
 
+import android.view.LayoutInflater;
+import android.view.View;
+
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
 
 import org.apache.http.NameValuePair;
@@ -32,7 +36,15 @@ public class LeerlingRoosterFragment extends RoosterViewFragment {
     }
 
     @Override
+    public long getLoad() { throw new UnsupportedOperationException("Nog niet af"); }
+
+    @Override
     public void setLoad() {
+        throw new UnsupportedOperationException("Nog niet af");
+    }
+
+    @Override
+    public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
         throw new UnsupportedOperationException("Nog niet af");
     }
 }

@@ -41,10 +41,12 @@ dependencies {
     compile 'org.robobinding:robobinding:0.8.1'
     compile 'com.j256.ormlite:ormlite-core:4.48'
     compile 'com.j256.ormlite:ormlite-android:4.48'
+    compile 'org.functionaljava:functionaljava:4.1'
     compile fileTree(dir: 'libs', include: '*.jar')
 }
 
 retrolambda {
+    jdk System.getenv("JAVA_HOME")
     oldJdk System.getenv("JAVA7_HOME")
     javaVersion JavaVersion.VERSION_1_7
 }

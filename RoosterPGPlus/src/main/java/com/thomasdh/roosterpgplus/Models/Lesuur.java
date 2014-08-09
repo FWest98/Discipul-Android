@@ -53,7 +53,7 @@ public class Lesuur extends BaseDaoEnabled implements Serializable {
     @DatabaseField private boolean master;
     @DatabaseField private int bijzonderheid;
 
-    Lesuur() {}
+    public Lesuur() {}
 
     public Lesuur(JSONObject JSON, Context context, String query) {
         try {

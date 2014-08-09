@@ -14,11 +14,14 @@ import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +50,9 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
         query.add(new BasicNameValuePair("klas", getKlas()));
         return query;
     }
+
+    @Override
+    public long getLoad() { return RoosterInfo.getLoad("klas"+getKlas(), getActivity()); }
 
     @Override
     public void setLoad() { RoosterInfo.setLoad("klas"+getKlas(), System.currentTimeMillis(), getActivity()); }
@@ -103,4 +109,28 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) { }
+
+    @Override
+    public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
+        if(lesuur.klassen.contains(getKlas())) { // niet optioneel
+            lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0);
+        }
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+
+        TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
+        TextView leraarTextView = (TextView) lesView.findViewById(R.id.rooster_leraar);
+        TextView lokaalTextView = (TextView) lesView.findViewById(R.id.rooster_lokaal);
+        TextView tijdenTextView = (TextView) lesView.findViewById(R.id.rooster_tijden);
+
+        vakTextView.setText(lesuur.vak);
+        leraarTextView.setText(StringUtils.join(lesuur.leraren, " & "));
+        lokaalTextView.setText(lesuur.lokaal);
+        String times = format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind);
+        if(!lesuur.klassen.contains(getKlas())) { // optioneel, klassen erbij voor de duidelijkheid
+            times = times + ", " + StringUtils.join(lesuur.klassen, " & ");
+        }
+        tijdenTextView.setText(times);
+
+        return lesView;
+    }
 }

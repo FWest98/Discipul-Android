@@ -43,7 +43,7 @@ public class Rooster {
     private static void getRoosterFromInternet(List<NameValuePair> query, boolean isOffline, Context context, AsyncActionCallback callback) {
         String url = "rooster?"+ URLEncodedUtils.format(query, "utf-8");
 
-        RoosterInfoDownloader.getRooster(url, result -> parseRooster(((String) result), query, context, callback), exception -> {
+        RoosterInfoDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback), exception -> {
             Log.e("RoosterDownloader", "Er ging iets mis met het ophalen van het rooster", (Exception) exception);
             if(isOffline) {
                 ExceptionHandler.handleException(new Exception("Geen internetverbinding, oude versie van het rooster!"), context, ExceptionHandler.HandleType.SIMPLE);
@@ -57,7 +57,7 @@ public class Rooster {
     private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, AsyncActionCallback callback) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
-            Dao<Lesuur, Integer> dao = helper.getDao(Lesuur.class);
+            Dao<Lesuur, ?> dao = helper.getDao(Lesuur.class);
 
             String searchQuery = URLEncodedUtils.format(query, "utf-8");
             List<Lesuur> lessen = dao.queryForEq("query", searchQuery);
@@ -74,10 +74,10 @@ public class Rooster {
     private static void saveRoosterInDatabase(List<Lesuur> lessen, String query, Context context) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
-            Dao<Lesuur, Integer> dao = helper.getDao(Lesuur.class);
+            Dao<Lesuur, ?> dao = helper.getDao(Lesuur.class);
 
             // Huidige lessen verwijderen
-            DeleteBuilder<Lesuur, Integer> deleteBuilder = dao.deleteBuilder();
+            DeleteBuilder<Lesuur, ?> deleteBuilder = dao.deleteBuilder();
             deleteBuilder.where().eq("query", query);
             deleteBuilder.delete();
 

@@ -11,9 +11,8 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.RelativeLayout;
 
-import com.thomasdh.roosterpgplus.util.Converter;
+import com.thomasdh.roosterpgplus.Helpers.Converter;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -24,15 +23,15 @@ public class MultipleUrenClickListener implements View.OnClickListener {
     boolean animating = false;
     int timesToGo = 0;
     int highestView;
-    ArrayList<View> allUren;
+    ArrayList<RelativeLayout> allUren;
     final int shortAnimationTime;
-    WeakReference<Context> context;
+    Context context;
 
-    public MultipleUrenClickListener(ArrayList<View> allUren, WeakReference<Context> context) {
+    public MultipleUrenClickListener(ArrayList<RelativeLayout> allUren, Context context) {
         this.highestView = 0;
         this.allUren = allUren;
         this.context = context;
-        shortAnimationTime = context.get().getResources().getInteger(android.R.integer.config_shortAnimTime);
+        shortAnimationTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
     }
 
     @Override
@@ -48,7 +47,7 @@ public class MultipleUrenClickListener implements View.OnClickListener {
             if (highestView < 0)
                 highestView += allUren.size();
 
-            if (Build.VERSION.SDK_INT >= 12 && PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("animaties", true)) {
+            if (Build.VERSION.SDK_INT >= 12 && PreferenceManager.getDefaultSharedPreferences(context).getBoolean("animaties", true)) {
                 // Use fancy animations
                 animateToNextView(parentLayout);
             } else {
@@ -83,7 +82,7 @@ public class MultipleUrenClickListener implements View.OnClickListener {
                     parentLayout.bringChildToFront(allUren.get(uurIndex));
 
                     final int currentMargin = ((RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams()).rightMargin;
-                    final float newMargin = Converter.convertDPToPX(8, context.get());
+                    final float newMargin = Converter.convertDPToPX(8, context);
 
                     Animation a = new Animation() {
                         @Override
