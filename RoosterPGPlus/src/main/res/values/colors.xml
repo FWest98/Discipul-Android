@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="drawer_group_item">#EAEAEA</color>
+    <color name="no_internet_warning_bg">#FFE3A0</color>
+    <color name="no_internet_warning_border">#FFC641</color>
 </resources>

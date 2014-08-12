@@ -167,7 +167,7 @@ public class RoosterDownloaderOld extends AsyncTask<String, Exception, String> {
             if (status == 400) {
                 return "error:Missende parameters";
             } else if (status == 401) {
-                return "error:Account bestaat niet";
+                return "error:AccountOld bestaat niet";
             } else if (status == 500) {
                 return "error:Serverfout";
             } else if (status == 200) {

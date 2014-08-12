@@ -18,30 +18,35 @@ import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Fragments.PersoonlijkRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
+import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
+import com.thomasdh.roosterpgplus.Models.AccountOld;
 import com.thomasdh.roosterpgplus.Models.Week;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import roboguice.activity.RoboActionBarActivity;
 import roboguice.inject.InjectView;
 
-public class MainActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener {
+public class MainActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadedListener {
     private static final String ROOSTER_TYPE = "roosterType";
 
-    @Getter private static int selectedWeek = -1;
-    private Account user;
+    @Getter
+    private static int selectedWeek = -1;
+    private AccountOld user;
 
     private static ActionBar actionBar;
     private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
     private ActionBarDrawerToggle actionBarDrawerToggle;
-    @Getter @Deprecated private static WeakReference<MenuItem> refreshItem;
+    @Getter(value = AccessLevel.PRIVATE) private static MenuItem refreshItem;
 
-    @InjectView(R.id.drawerlayout) private DrawerLayout drawerLayout;
-    @InjectView(R.id.drawer) private ExpandableListView drawerList;
+    @InjectView(R.id.drawerlayout)
+    private DrawerLayout drawerLayout;
+    @InjectView(R.id.drawer)
+    private ExpandableListView drawerList;
 
     private RoosterViewFragment mainFragment;
     private Class<? extends RoosterViewFragment> roosterType;
@@ -66,7 +71,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         //GoogleAnalytics.getInstance(this).setDryRun(true);
         setContentView(R.layout.activity_main);
         actionBar = getSupportActionBar();
-        user = new Account(this);
+        user = new AccountOld(this);
 
         if (savedInstanceState == null) {
             // Defaults
@@ -108,7 +113,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         });
 
         // Open alle groepen
-        for (int pos = 0; pos < drawerList.getExpandableListAdapter().getGroupCount(); pos++){
+        for (int pos = 0; pos < drawerList.getExpandableListAdapter().getGroupCount(); pos++) {
             drawerList.expandGroup(pos);
         }
 
@@ -149,7 +154,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
     @Override
     protected void onRestart() {
         super.onRestart();
-        if(HelperFunctions.hasInternetConnection(this)) {
+        if (HelperFunctions.hasInternetConnection(this)) {
             mainFragment.loadRooster(); // TODO from internet!!!
         }
     }
@@ -179,10 +184,9 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         // Menu maken
         getMenuInflater().inflate(R.menu.main, menu);
         MenuItem refresh = menu.findItem(R.id.menu_item_refresh);
-        MenuItemCompat.setActionView(refresh, R.layout.actionbar_refresh_progress);
 
         // TODO blijft dit werken?
-        refreshItem = new WeakReference<>(refresh);
+        refreshItem = refresh;
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -196,10 +200,31 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
                 startActivity(preferencesIntent);
                 return true;
             case R.id.menu_item_refresh:
-                mainFragment.loadRooster();
+                mainFragment.loadRooster(true);
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRoosterLoaded() {
+        setRefreshButtonState(false);
+    }
+
+    @Override
+    public void onRoosterLoadStart() {
+        setRefreshButtonState(true);
+    }
+
+    public void setRefreshButtonState(boolean loading) {
+        MenuItem refreshItem = getRefreshItem();
+        if(refreshItem != null) {
+            if(loading) {
+                MenuItemCompat.setActionView(refreshItem, R.layout.actionbar_refresh_progress);
+            } else {
+                MenuItemCompat.setActionView(refreshItem, null);
+            }
+        }
     }
 
     @Override
@@ -246,5 +271,20 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
     public void setSelectedWeek(int week) {
         selectedWeek = week;
         mainFragment.setWeek(week);
+    }
+
+    @Override
+    public void internetConnectionChanged(boolean hasInternetConnection) {
+        mainFragment.setInternetConnectionState(hasInternetConnection);
+    }
+
+    public void onResume() {
+        super.onResume();
+        InternetConnectionManager.registerListener("main", this);
+    }
+
+    public void onPause() {
+        super.onPause();
+        InternetConnectionManager.unregisterListener("main");
     }
 }

@@ -1,6 +1,7 @@
 package com.thomasdh.roosterpgplus.Data;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,14 +29,35 @@ import java.util.List;
 
 import fj.data.Array;
 
-public class RoosterBuilder {
+public class RoosterBuilder extends AsyncTask<Void, View, Void> {
+    private Context context;
+    private LayoutInflater inflater;
+    private ViewPager viewPager;
+
+    private RoosterBuilder(LayoutInflater inflater, Context context) {
+        this.context = context;
+        this.inflater = inflater;
+    }
+
+    @Override
+    protected Void doInBackground(Void... no) {
+        // TODO: RoosterBuild in aparte threads voor snelheid
+
+        return null;
+    }
+
+    @Override
+    protected void onProgressUpdate(View... values) {
+
+    }
+
     public static void build(List<Lesuur> lessenList, int showDag, boolean showVervangenUren, long lastLoad, ViewPager viewPager, Context context, ViewPager.OnPageChangeListener listener, lesViewBuilder builder) {
         if(viewPager == null) throw new IllegalArgumentException("Geen viewPager");
         if(viewPager.getAdapter() == null) viewPager.setAdapter(new AnimatedPagerAdapter());
         RelativeLayout.LayoutParams lesLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT); // Voor meerdere uren
         AnimatedPagerAdapter pagerAdapter = (AnimatedPagerAdapter) viewPager.getAdapter();
 
-        if(lessenList == null) {
+        if(lessenList == null || lessenList.size() == 0) {
             lessenList = new ArrayList<>();
             lessenList.add(new Lesuur(0, 0, null, null, 1, null, null, null, null, false, false, false, false, null, false, 0, null));
         }
@@ -193,6 +215,8 @@ public class RoosterBuilder {
         }
 
         viewPager.setOnPageChangeListener(listener);
+
+
     }
 
     private static String getDayOfWeek(int dag) {

@@ -29,11 +29,11 @@ public class RoosterInfo {
 
     public static void getWeken(Context context, AsyncActionCallback callback) {
         if(HelperFunctions.hasInternetConnection(context)) {
-            RoosterInfoDownloader.getWeken(result -> {
+            WebDownloader.getWeken(result -> {
                 callback.onAsyncActionComplete(result);
                 saveInStorage(WEKEN_FILENAME, context, result);
             }, exception -> {
-                Log.e("RoosterInfoDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
+                Log.e("WebDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 RoosterInfo.<ArrayList<Week>>getOnError(WEKEN_FILENAME, context, callback);
             });
@@ -63,11 +63,11 @@ public class RoosterInfo {
 
     public static void getKlassen(Context context, AsyncActionCallback callback) {
         if(HelperFunctions.hasInternetConnection(context)) {
-            RoosterInfoDownloader.getKlassen(klassen -> {
+            WebDownloader.getKlassen(klassen -> {
                 callback.onAsyncActionComplete(klassen);
                 saveInStorage(KLASSEN_FILENAME, context, klassen);
             }, exception -> {
-                Log.e("RoosterInfoDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
+                Log.e("WebDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 RoosterInfo.<ArrayList<String>>getOnError(KLASSEN_FILENAME, context, callback);
             });
@@ -81,11 +81,11 @@ public class RoosterInfo {
 
     public static void getLeraren(Context context, AsyncActionCallback callback) {
         if(HelperFunctions.hasInternetConnection(context)) {
-            RoosterInfoDownloader.getLeraren(leraren -> {
+            WebDownloader.getLeraren(leraren -> {
                 callback.onAsyncActionComplete(leraren);
                 saveInStorage(LERAREN_FILENAME, context, leraren);
             }, exception -> {
-                Log.e("RoosterInfoDownloader", "Er ging iets mis met het ophalen van de leraren", (Exception) exception);
+                Log.e("WebDownloader", "Er ging iets mis met het ophalen van de leraren", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 RoosterInfo.<ArrayList<Vak>>getOnError(LERAREN_FILENAME, context, callback);
             });

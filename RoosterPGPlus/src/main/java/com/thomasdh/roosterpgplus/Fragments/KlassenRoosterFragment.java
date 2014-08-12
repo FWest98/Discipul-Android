@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
-import com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner;
+import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
@@ -113,8 +113,9 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
         if(lesuur.klassen.contains(getKlas())) { // niet optioneel
-            lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0);
+            lesView.findViewById(R.id.optioneel_container).setBackgroundResource(0);
         }
+
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
         TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);

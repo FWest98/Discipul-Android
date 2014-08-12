@@ -14,4 +14,12 @@
         android:layout_weight="2"
         android:animateLayoutChanges="true"/>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/internet_connection_warning"
+        android:id="@+id/internet_connection_warning"
+        android:padding="10dp"
+        android:text="@string/internet_connection_warning" />
+
 </LinearLayout>

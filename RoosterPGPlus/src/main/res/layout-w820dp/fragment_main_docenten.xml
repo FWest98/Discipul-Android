@@ -22,7 +22,7 @@
             android:paddingTop="7dp"
             android:textSize="@dimen/docentenrooster_descSize"/>
 
-        <com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner
+        <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
             android:id="@+id/main_fragment_spinner_docent_vak"
             android:layout_width="wrap_content"
             android:layout_marginLeft="5dp"
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:prompt="@string/rooster_docenten_vakspinner_placeholder"/>
 
-        <com.thomasdh.roosterpgplus.CustomViews.DefaultSpinner
+        <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
             android:id="@+id/main_fragment_spinner_docent_naam"
             android:layout_width="wrap_content"
             android:layout_marginLeft="5dp"

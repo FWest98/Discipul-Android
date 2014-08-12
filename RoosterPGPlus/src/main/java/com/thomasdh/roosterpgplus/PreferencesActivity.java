@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
+import com.thomasdh.roosterpgplus.Models.AccountOld;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.List;
 public class PreferencesActivity extends PreferenceActivity {
 
     private static PreferenceListener2 preferenceListener;
-    private Account user;
+    private AccountOld user;
 
     @Override
     protected boolean isValidFragment(String fragmentName) {
@@ -57,7 +58,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
             // Initialize subklassen
             final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
-            user = new Account(this);
+            user = new AccountOld(this);
             if (user.isAppAccount) {
                 subklassen.setEnabled(false);
             } else {
@@ -65,9 +66,9 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             subklassen.setEntries(new String[]{"Subklassen"});
             subklassen.setEntryValues(new String[]{"Subklassen"});
-            new AsyncTask<Void, Exception, ArrayList<Account.Subklas>>() {
+            new AsyncTask<Void, Exception, ArrayList<AccountOld.Subklas>>() {
                 @Override
-                protected ArrayList<Account.Subklas> doInBackground(Void... params) {
+                protected ArrayList<AccountOld.Subklas> doInBackground(Void... params) {
                     try {
                         return user.getSubklassen();
                     } catch (Exception e) {
@@ -82,11 +83,11 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
 
                 @Override
-                protected void onPostExecute(ArrayList<Account.Subklas> subklasArray) {
+                protected void onPostExecute(ArrayList<AccountOld.Subklas> subklasArray) {
                     if (subklassen != null && subklasArray != null) {
                         ArrayList<String> strings = new ArrayList<String>();
                         ArrayList<String> namen = new ArrayList<>();
-                        for (Account.Subklas subklas : subklasArray) {
+                        for (AccountOld.Subklas subklas : subklasArray) {
                             strings.add(subklas.subklas + ": " + subklas.vak + " van " + subklas.leraar);
                             namen.add(subklas.subklas);
                         }
@@ -120,7 +121,7 @@ public class PreferencesActivity extends PreferenceActivity {
             }.execute();
 
             // Create user and fill in account information
-            user = new Account(this);
+            user = new AccountOld(this);
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
             findPreference("mijn_account").setSummary(
                     "Naam: " + user.name + ", " +
@@ -136,7 +137,7 @@ public class PreferencesActivity extends PreferenceActivity {
             final Context context = this;
 
             /* account upgraden */
-            if (!new Account(context).isAppAccount) {
+            if (!new AccountOld(context).isAppAccount) {
                 findPreference("account_upgraden").setEnabled(false);
             } else {
                 findPreference("account_upgraden").setEnabled(true);
@@ -157,7 +158,7 @@ public class PreferencesActivity extends PreferenceActivity {
             addPreferencesFromResource(R.xml.preference_headers_old);
         }
 
-        user = new Account(this);
+        user = new AccountOld(this);
     }
 
     @Override
@@ -253,7 +254,7 @@ public class PreferencesActivity extends PreferenceActivity {
     public static class UserFragment extends PreferenceFragment {
 
         public PreferenceListener preferenceListener;
-        private Account user;
+        private AccountOld user;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -264,7 +265,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
             // Initialize subklassen
             final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
-            user = new Account(getActivity());
+            user = new AccountOld(getActivity());
             if (user.isAppAccount) {
                 subklassen.setEnabled(false);
             } else {
@@ -272,9 +273,9 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             subklassen.setEntries(new String[]{"Subklassen"});
             subklassen.setEntryValues(new String[]{"Subklassen"});
-            new AsyncTask<Void, Exception, ArrayList<Account.Subklas>>() {
+            new AsyncTask<Void, Exception, ArrayList<AccountOld.Subklas>>() {
                 @Override
-                protected ArrayList<Account.Subklas> doInBackground(Void... params) {
+                protected ArrayList<AccountOld.Subklas> doInBackground(Void... params) {
                     try {
                         return user.getSubklassen();
                     } catch (Exception e) {
@@ -289,11 +290,11 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
 
                 @Override
-                protected void onPostExecute(ArrayList<Account.Subklas> subklasArray) {
+                protected void onPostExecute(ArrayList<AccountOld.Subklas> subklasArray) {
                     if (subklassen != null && subklasArray != null) {
                         ArrayList<String> strings = new ArrayList<String>();
                         ArrayList<String> namen = new ArrayList<String>();
-                        for (Account.Subklas subklas : subklasArray) {
+                        for (AccountOld.Subklas subklas : subklasArray) {
                             strings.add(subklas.subklas + ": " + subklas.vak + " van " + subklas.leraar);
                             namen.add(subklas.subklas);
                         }
@@ -330,7 +331,7 @@ public class PreferencesActivity extends PreferenceActivity {
             }.execute();
 
             // Create user and fill in account information
-            user = new Account(getActivity());
+            user = new AccountOld(getActivity());
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
             findPreference("mijn_account").setSummary(
                     "Naam: " + user.name + ", " +
@@ -349,7 +350,7 @@ public class PreferencesActivity extends PreferenceActivity {
             final Context context = getActivity();
 
             /* account upgraden */
-            if (!new Account(context).isAppAccount) {
+            if (!new AccountOld(context).isAppAccount) {
                 findPreference("account_upgraden").setEnabled(false);
             } else {
                 findPreference("account_upgraden").setEnabled(true);
@@ -382,12 +383,12 @@ public class PreferencesActivity extends PreferenceActivity {
         public class PreferenceListener implements SharedPreferences.OnSharedPreferenceChangeListener {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                user = new Account(getActivity());
+                user = new AccountOld(getActivity());
                 findPreference("mijn_account").setSummary(
                         "Naam: " + user.name + ", " +
                                 "Klas: " + user.klas
                 );
-                if (!new Account(getActivity()).isAppAccount) {
+                if (!new AccountOld(getActivity()).isAppAccount) {
                     findPreference("account_upgraden").setEnabled(false);
                     findPreference("subklassen").setEnabled(true);
                 } else {
@@ -401,12 +402,12 @@ public class PreferencesActivity extends PreferenceActivity {
     private class PreferenceListener2 implements SharedPreferences.OnSharedPreferenceChangeListener {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            user = new Account(getApplicationContext());
+            user = new AccountOld(getApplicationContext());
             findPreference("mijn_account").setSummary(
                     "Naam: " + user.name + ", " +
                             "Klas: " + user.klas
             );
-            if (!new Account(getApplicationContext()).isAppAccount) {
+            if (!new AccountOld(getApplicationContext()).isAppAccount) {
                 findPreference("account_upgraden").setEnabled(false);
                 findPreference("subklassen").setEnabled(true);
             } else {

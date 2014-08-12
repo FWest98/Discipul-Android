@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus;
+package com.thomasdh.roosterpgplus.Models;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -18,6 +18,8 @@ import android.widget.Toast;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.LesuurData;
 import com.thomasdh.roosterpgplus.Helpers.SQLRooster;
+import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
@@ -40,7 +42,8 @@ import java.util.Scanner;
 
 import lombok.Getter;
 
-public class Account {
+@Deprecated
+public class AccountOld {
     public final Boolean isSet;
     public String name;
     @Getter private String apikey;
@@ -61,7 +64,7 @@ public class Account {
     private RoosterViewFragment mainFragment;
 
 
-    public Account(Context context) {
+    public AccountOld(Context context) {
         this.context = context;
         mainFragment = null;
 
@@ -87,7 +90,7 @@ public class Account {
         }
     }
 
-    public Account(Context context, RoosterViewFragment mainFragment) {
+    public AccountOld(Context context, RoosterViewFragment mainFragment) {
         this(context);
         this.mainFragment = mainFragment;
     }
@@ -95,7 +98,7 @@ public class Account {
 
     //region JSON-verwerking
 
-    final Account JSON_InitializeAccount(String s) throws JSONException {
+    final AccountOld JSON_InitializeAccount(String s) throws JSONException {
         JSONObject object = new JSONObject(s);
         SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
         e.putString("key", object.getString("key"));
@@ -127,7 +130,6 @@ public class Account {
     }
 
     //endregion
-
     //region Login
 
     /**
@@ -196,7 +198,7 @@ public class Account {
 
             @Override
             protected void onProgressUpdate(Exception... values) {
-                ExceptionHandler.handleException(values[0], context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
+                ExceptionHandler.handleException(values[0], context, "Fout bij het inloggen", "AccountOld", ExceptionHandler.HandleType.EXTENSIVE);
             }
 
             @Override
@@ -204,7 +206,7 @@ public class Account {
                 if (s != null) {
                     Log.e(getClass().getName(), "The string is: " + s);
                     if (s.equals("duplicate")) {
-                        // Maak een mooie notifybox en blablabla *sich*
+                        // Maak een mooie notifybox en blablabla *sigh*
                         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
                         dialog.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
                         dialog.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
@@ -229,7 +231,7 @@ public class Account {
                             s = s.substring(4);
                         }
                         try {
-                            Account account = JSON_InitializeAccount(s);
+                            AccountOld account = JSON_InitializeAccount(s);
                             Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
 
                             LoginDialog.dismiss();
@@ -246,7 +248,7 @@ public class Account {
                             }
 
                         } catch (JSONException e) {
-                            ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
+                            ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "AccountOld", ExceptionHandler.HandleType.EXTENSIVE);
                         }
                     }
                 }
@@ -307,7 +309,7 @@ public class Account {
 
             @Override
             protected void onProgressUpdate(Exception... e) {
-                ExceptionHandler.handleException(e[0], context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
+                ExceptionHandler.handleException(e[0], context, "Fout bij het inloggen", "AccountOld", ExceptionHandler.HandleType.EXTENSIVE);
             }
 
             @Override
@@ -315,7 +317,7 @@ public class Account {
                 if (s != null) {
                     Log.e(getClass().getName(), "The string is: " + s);
                     try {
-                        Account account = JSON_InitializeAccount(s);
+                        AccountOld account = JSON_InitializeAccount(s);
                         Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
 
                         LoginDialog.dismiss();
@@ -332,7 +334,7 @@ public class Account {
                         }
 
                     } catch (JSONException e) {
-                        ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
+                        ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "AccountOld", ExceptionHandler.HandleType.EXTENSIVE);
                     }
 
                 }
@@ -484,14 +486,14 @@ public class Account {
                     hideRegisterDialog();
                     hideLoginDialog();
                     try {
-                        Account account = JSON_InitializeAccount(s);
+                        AccountOld account = JSON_InitializeAccount(s);
                         Toast.makeText(context, "Welkom, " + account.name + "!", Toast.LENGTH_SHORT).show();
                         //Laad het rooster als de boolean true is
                         if (laadRooster && mainFragment != null) {
                             mainFragment.laadRooster(context, mainFragment.getRootView(), mainFragment.getType());
                         }
                     } catch (JSONException e) {
-                        ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "Account", ExceptionHandler.HandleType.EXTENSIVE);
+                        ExceptionHandler.handleException(e, context, "Fout bij het inloggen", "AccountOld", ExceptionHandler.HandleType.EXTENSIVE);
                     }
                     super.onPostExecute(s);
                 }
@@ -714,6 +716,7 @@ public class Account {
 
     //endregion
     //region Subklassen
+
     public ArrayList<Subklas> getSubklassen() throws IOException, JSONException {
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet get = new HttpGet(Settings.API_Base_URL + "account/manage/subklassen?key=" + apikey);
@@ -725,20 +728,20 @@ public class Account {
             while (scanner.hasNext()) {
                 s += scanner.nextLine();
             }
-            Log.d("RoosterInfoDownloader", "Subklassen: " + s);
+            Log.d("WebDownloader", "Subklassen: " + s);
             ArrayList<Subklas> subklassen = new ArrayList<Subklas>();
             JSONArray jsonArray = new JSONArray(s);
             for (int o = 0; o < jsonArray.length(); o++) {
                 JSONObject subklas = jsonArray.getJSONObject(o);
                 subklassen.add(new Subklas(subklas));
             }
-            Log.d("RoosterInfoDownloader", "The size is " + jsonArray.length());
+            Log.d("WebDownloader", "The size is " + jsonArray.length());
             return subklassen;
 
         } else if (status == 400) {
             throw new IOException("Er mist een parameter");
         } else if (status == 401) {
-            throw new IOException("Account bestaat niet");
+            throw new IOException("AccountOld bestaat niet");
         } else if (status == 500) {
             throw new IOException("Serverfout");
         } else {
@@ -754,7 +757,7 @@ public class Account {
         List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
 
         for (int index = 0; index < subklassen.length; index++) {
-            Log.d("RoosterInfoDownloader", subklassen[index]);
+            Log.d("WebDownloader", subklassen[index]);
             postParameters.add(new BasicNameValuePair("subklassen[" + index + "]", subklassen[index]));
         }
 

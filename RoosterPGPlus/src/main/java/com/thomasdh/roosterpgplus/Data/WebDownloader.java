@@ -22,7 +22,7 @@ import java.util.Hashtable;
 import java.util.Scanner;
 
 
-public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<String, Object>> {
+public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Object>> {
     private static final String DATA_KEY = "data";
     private static final String ERROR_KEY = "exception";
 
@@ -30,7 +30,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
     private AsyncActionCallback successCallback;
     private AsyncActionCallback errorCallback;
 
-    private RoosterInfoDownloader(AsyncCallback asyncAction, AsyncActionCallback successCallback, AsyncActionCallback errorCallback) {
+    private WebDownloader(AsyncCallback asyncAction, AsyncActionCallback successCallback, AsyncActionCallback errorCallback) {
         this.asyncAction = asyncAction;
         this.successCallback = successCallback;
         this.errorCallback = errorCallback;
@@ -70,7 +70,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
         try {
             callback.onAsyncActionComplete(hashtable.get(getter));
         } catch (Exception e) {
-            Log.e("RoosterInfoDownloader", "Fout in de succesCallback", e);
+            Log.e("WebDownloader", "Fout in de succesCallback", e);
         }
     }
 
@@ -139,7 +139,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             return vakken;
         };
 
-        new RoosterInfoDownloader(AsyncCallback, callback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
     }
 
     /* Klassen downloader */
@@ -178,7 +178,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             return klassen;
         };
 
-        new RoosterInfoDownloader(AsyncCallback, callback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
     }
 
     /* Weken downloader */
@@ -224,7 +224,7 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             return weken;
         };
 
-        new RoosterInfoDownloader(AsyncCallback, parentCallback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, parentCallback, errorCallback).execute(url);
     }
 
     /* Rooster downloader */
@@ -248,8 +248,10 @@ public class RoosterInfoDownloader extends AsyncTask<Object, Void, Hashtable<Str
             return content; // TODO roosterformat
         };
 
-        new RoosterInfoDownloader(AsyncCallback, callback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
     }
+
+
 
     private interface AsyncCallback {
         public Object onBackground(Object result) throws Exception;

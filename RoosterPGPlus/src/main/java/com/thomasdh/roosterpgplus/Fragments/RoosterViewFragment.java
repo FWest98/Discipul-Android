@@ -1,5 +1,6 @@
 package com.thomasdh.roosterpgplus.Fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -8,8 +9,10 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-import com.thomasdh.roosterpgplus.Account;
+import com.thomasdh.roosterpgplus.Models.AccountOld;
+import com.thomasdh.roosterpgplus.CustomUI.Animations;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
@@ -45,9 +48,15 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     @Getter @Setter private View rootView;
     public enum LoadType { OFFLINE, ONLINE, NEWONLINE; }
 
-    @Setter public Account user;
+    @Setter public AccountOld user;
     @Getter(value = AccessLevel.PRIVATE) private int week;
     @Getter @Setter private int dag = 0;
+
+    public interface onRoosterLoadedListener {
+        public void onRoosterLoaded();
+        public void onRoosterLoadStart();
+    }
+    private onRoosterLoadedListener roosterLoadedListener;
 
     //region Types
     public static Class<? extends RoosterViewFragment>[] types = new Class[]{
@@ -65,7 +74,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     //region Creating
 
     // Nieuwe instantie van het opgegeven type
-    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, Account user, int week) {
+    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, AccountOld user, int week) {
         T fragment = null;
         try {
             fragment = type.newInstance();
@@ -86,9 +95,26 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     //endregion
     //region LifeCycle
 
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            roosterLoadedListener = (onRoosterLoadedListener) activity;
+        } catch (ClassCastException e) {
+            Log.e("FRAGMENT", "Activity heeft geen roosterloaded!");
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return null;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setInternetConnectionState(HelperFunctions.hasInternetConnection(getActivity()));
     }
 
     //endregion
@@ -127,22 +153,38 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     // LesViewBuilder
     public abstract View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
 
-
     public void loadRooster() {
+        loadRooster(false);
+    }
+
+    public void loadRooster(boolean reload) {
         if(!canLoadRooster()) return;
+        roosterLoadedListener.onRoosterLoadStart();
 
         List<NameValuePair> query = new ArrayList<>();
         query.add(new BasicNameValuePair("week", Integer.toString(getWeek())));
         query = getURLQuery(query);
 
-        LoadType loadType = getLoadType();
+        LoadType loadType = reload ? LoadType.ONLINE : getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), result -> {
             if(loadType == LoadType.ONLINE || (loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity()))) {
                 setLoad();
             }
+            roosterLoadedListener.onRoosterLoaded();
             RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), getViewPager(), getActivity(), this, this);
         });
+    }
+
+    public void setInternetConnectionState(boolean hasInternetConnection) {
+        TextView warning = (TextView) getRootView().findViewById(R.id.internet_connection_warning);
+        if(hasInternetConnection) {
+            Animations.collapse(warning);
+            //warning.setVisibility(View.GONE);
+        } else {
+            Animations.expand(warning);
+            //warning.setVisibility(View.VISIBLE);
+        }
     }
 
     //endregion
@@ -153,7 +195,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
             return;
         }
         int selectedWeek = MainActivity.getSelectedWeek();
-        WeakReference<MenuItem> refreshItem = MainActivity.getRefreshItem();
+        WeakReference<MenuItem> refreshItem = null;
 
         Log.d("MainActivity", "Rooster aan het laden van week " + selectedWeek);
         if (type == Type.PERSOONLIJK_ROOSTER) {

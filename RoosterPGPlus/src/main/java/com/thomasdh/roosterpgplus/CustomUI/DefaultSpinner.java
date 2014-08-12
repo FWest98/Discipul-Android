@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus.CustomViews;
+package com.thomasdh.roosterpgplus.CustomUI;
 
 import android.content.Context;
 import android.util.AttributeSet;

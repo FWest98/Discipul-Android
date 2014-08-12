@@ -43,9 +43,9 @@ public class Rooster {
     private static void getRoosterFromInternet(List<NameValuePair> query, boolean isOffline, Context context, AsyncActionCallback callback) {
         String url = "rooster?"+ URLEncodedUtils.format(query, "utf-8");
 
-        RoosterInfoDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback), exception -> {
+        WebDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback), exception -> {
             Log.e("RoosterDownloader", "Er ging iets mis met het ophalen van het rooster", (Exception) exception);
-            if(isOffline) {
+            if (isOffline) {
                 ExceptionHandler.handleException(new Exception("Geen internetverbinding, oude versie van het rooster!"), context, ExceptionHandler.HandleType.SIMPLE);
                 getRoosterFromDatabase(query, context, callback);
             } else {
