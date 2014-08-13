@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
+import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
@@ -32,11 +33,11 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
     }
 
     @Override
-    public boolean canLoadRooster() { return user != null && user.isSet; }
+    public boolean canLoadRooster() { return Account.isSet(); }
 
     @Override
     public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
-        query.add(new BasicNameValuePair("key", user.getApikey()));
+        query.add(new BasicNameValuePair("key", Account.getApiKey()));
         return query;
     }
 
@@ -66,8 +67,8 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
         viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
-        if(!user.isSet) {
-            user.showLoginDialog(true);
+        if(!Account.isSet()) {
+            Account.getInstance(getActivity()).login(result -> loadRooster());
         }
 
         return getRootView();

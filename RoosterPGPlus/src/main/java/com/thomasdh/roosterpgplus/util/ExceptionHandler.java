@@ -1,6 +1,7 @@
 package com.thomasdh.roosterpgplus.util;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -24,6 +25,7 @@ public class ExceptionHandler {
                 break;
             // Alleen de description wordt getoast
             case SIMPLE:
+                Log.e("FOUT", exception.getMessage(), exception);
                 Toast.makeText(context, exception.getMessage(), Toast.LENGTH_LONG).show();
                 break;
             // Zowel de description als de stacktrace wordt getoond

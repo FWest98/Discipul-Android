@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.thomasdh.roosterpgplus.Models.AccountOld;
 import com.thomasdh.roosterpgplus.CustomUI.Animations;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
@@ -48,7 +47,6 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     @Getter @Setter private View rootView;
     public enum LoadType { OFFLINE, ONLINE, NEWONLINE; }
 
-    @Setter public AccountOld user;
     @Getter(value = AccessLevel.PRIVATE) private int week;
     @Getter @Setter private int dag = 0;
 
@@ -74,7 +72,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     //region Creating
 
     // Nieuwe instantie van het opgegeven type
-    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, AccountOld user, int week) {
+    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week) {
         T fragment = null;
         try {
             fragment = type.newInstance();
@@ -87,7 +85,6 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         fragment.setArguments(args);
 
         fragment.setWeek(week);
-        fragment.setUser(user);
 
         return fragment;
     }

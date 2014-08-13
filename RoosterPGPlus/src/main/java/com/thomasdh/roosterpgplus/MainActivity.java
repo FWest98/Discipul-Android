@@ -14,12 +14,12 @@ import android.widget.ExpandableListView;
 
 import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
+import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Fragments.PersoonlijkRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
-import com.thomasdh.roosterpgplus.Models.AccountOld;
 import com.thomasdh.roosterpgplus.Models.Week;
 
 import java.util.ArrayList;
@@ -36,7 +36,6 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
 
     @Getter
     private static int selectedWeek = -1;
-    private AccountOld user;
 
     private static ActionBar actionBar;
     private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
@@ -71,12 +70,12 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         //GoogleAnalytics.getInstance(this).setDryRun(true);
         setContentView(R.layout.activity_main);
         actionBar = getSupportActionBar();
-        user = new AccountOld(this);
+        Account.initialize(this);
 
         if (savedInstanceState == null) {
             // Defaults
             roosterType = PersoonlijkRoosterFragment.class;
-            mainFragment = RoosterViewFragment.newInstance(roosterType, user, getSelectedWeek());
+            mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, mainFragment)
@@ -99,7 +98,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
                 Class<? extends RoosterViewFragment> newType = RoosterViewFragment.types[childPosition];
 
                 // Nieuwe dingen
-                mainFragment = RoosterViewFragment.newInstance(newType, user, selectedWeek);
+                mainFragment = RoosterViewFragment.newInstance(newType, selectedWeek);
                 roosterType = newType;
                 actionBarSpinnerAdapter.setType(newType);
 

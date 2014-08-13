@@ -12,12 +12,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TabHost;
 
-import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
-import com.thomasdh.roosterpgplus.Models.LeerlingAccount;
-import com.thomasdh.roosterpgplus.Models.LeraarAccount;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
@@ -38,22 +35,20 @@ import java.util.Scanner;
 
 import lombok.Getter;
 
-public class Account extends AsyncTask<Account.WebRequestCallbacks, Exception, Object> {
+public class Account {
     @Getter private static boolean isSet;
     @Getter private static String name;
     @Getter private static String apiKey;
     @Getter private static boolean isAppAccount;
+    @Getter private static UserType userType;
+
+    @Getter private static boolean isVertegenwoordiger;
+    @Getter private static String leerlingKlas;
+
+    @Getter private static String leraarCode;
 
     private Context context;
-    private RoosterViewFragment mainFragment;
-    @Getter private static AccountAdditions additions;
     private WebRequestCallbacks callbacks;
-
-    public static Class<? extends AccountAdditions>[] types = new Class[]{
-            LeerlingAccount.class,
-            LeraarAccount.class,
-            NoAccount.class
-    };
 
     private static Account instance;
 
@@ -67,20 +62,24 @@ public class Account extends AsyncTask<Account.WebRequestCallbacks, Exception, O
         String key;
         if((key = pref.getString("key", null)) == null) {
             isSet = false;
+            userType = UserType.NO_ACCOUNT;
         } else {
             isSet = true;
             name = pref.getString("naam", null);
             apiKey = key;
             isAppAccount = pref.getBoolean("appaccount", false);
 
-            int accountType = pref.getInt("accountType", 2);
-            Class<? extends AccountAdditions> type = types[accountType];
-            try {
-                additions = type.newInstance();
-            } catch(Exception e) {
-                e.printStackTrace();
+            String klas;
+            if((klas = pref.getString("klas", null)) != null) {
+                // Leerling
+                leerlingKlas = klas;
+                userType = UserType.LEERLING;
+                isVertegenwoordiger = pref.getBoolean("isVertegenwoordiger", false);
+            } else {
+                // Leraar
+                userType = UserType.LERAAR;
+                leraarCode = pref.getString("code", null);
             }
-            additions.initialize(context);
         }
     }
 
@@ -94,24 +93,42 @@ public class Account extends AsyncTask<Account.WebRequestCallbacks, Exception, O
         name = base.getString("naam");
         pref.putString("naam", name);
 
-        additions.processJSON(JSON);
-
         this.isAppAccount = isAppAccount;
-        isSet = true;
+        pref.putBoolean("appaccount", isAppAccount);
+
+        if(base.has("code")) {
+            // LERAAR
+            userType = UserType.LERAAR;
+
+            leraarCode = base.getString("code");
+            pref.putString("code", leraarCode);
+        } else {
+            // LEERLING
+            userType = UserType.LEERLING;
+
+            leerlingKlas = base.getString("klas");
+            pref.putString("klas", leerlingKlas);
+
+            isVertegenwoordiger = base.getBoolean("vertegenwoordiger");
+            pref.putBoolean("isVertegenwoordiger", isVertegenwoordiger);
+        }
+
+        pref.commit();
+
+        ExceptionHandler.handleException(new Exception("Welkom, "+getName()), context, ExceptionHandler.HandleType.SIMPLE);
     }
 
     //endregion
     //region Constructors
 
-    private Account(RoosterViewFragment fragment, Context context) {
+    private Account(Context context) {
         initialize(context);
         this.context = context;
-        mainFragment = fragment;
     }
 
-    public static Account getInstance(RoosterViewFragment fragment, Context context) {
+    public static Account getInstance(Context context) {
         if(instance == null) {
-            instance = new Account(fragment, context);
+            instance = new Account(context);
         }
         return instance;
     }
@@ -245,7 +262,7 @@ public class Account extends AsyncTask<Account.WebRequestCallbacks, Exception, O
             }
         };
 
-        execute(webRequestCallbacks);
+        new WebActions().execute(webRequestCallbacks);
     }
 
     private void login(String llnr, boolean force, AsyncActionCallback callback) {
@@ -308,13 +325,15 @@ public class Account extends AsyncTask<Account.WebRequestCallbacks, Exception, O
                         login(llnr, true, callback);
                     });
                     builder.setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), (dialog, which) -> {});
+
+                    builder.show();
                 } catch(Exception e) {
-                    ExceptionHandler.handleException(new Exception("Fout bij het inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
+                    ExceptionHandler.handleException(new Exception("Fout bij het inloggen:" + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
                 }
             }
         };
 
-        execute(webRequestCallbacks);
+        new WebActions().execute(webRequestCallbacks);
     }
 
     //endregion
@@ -331,55 +350,45 @@ public class Account extends AsyncTask<Account.WebRequestCallbacks, Exception, O
     //endregion
     //region WebActions
 
-    @Override
-    protected Object doInBackground(WebRequestCallbacks... params) {
-        if(!HelperFunctions.hasInternetConnection(context)) {
-            publishProgress(new Exception("Geen internetverbinding"));
+    private class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, Object> {
+        @Override
+        protected Object doInBackground(WebRequestCallbacks... params) {
+            if (!HelperFunctions.hasInternetConnection(context)) {
+                publishProgress(new Exception("Geen internetverbinding"));
+                return null;
+            }
+            callbacks = params[0];
+            try {
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpResponse response = callbacks.onRequestCreate(httpClient);
+
+                String content = "";
+                Scanner scanner = new Scanner(response.getEntity().getContent());
+                while (scanner.hasNext()) {
+                    content += scanner.nextLine();
+                }
+
+                Object data = callbacks.onRequestComplete(content, response.getStatusLine().getStatusCode());
+                return data;
+            } catch (Exception e) {
+                publishProgress(e);
+            }
             return null;
         }
-        callbacks = params[0];
-        try {
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpResponse response = callbacks.onRequestCreate(httpClient);
 
-            String content = "";
-            Scanner scanner = new Scanner(response.getEntity().getContent());
-            while(scanner.hasNext()) { content += scanner.nextLine(); }
-
-            Object data = callbacks.onRequestComplete(content, response.getStatusLine().getStatusCode());
-            return data;
-        } catch(Exception e) {
-            publishProgress(e);
+        @Override
+        protected void onPostExecute(Object o) {
+            callbacks.onDataHandle(o);
         }
-        return null;
+
+        @Override
+        protected void onProgressUpdate(Exception... values) {
+            Exception exception = values[0];
+            callbacks.onError(exception);
+            cancel(true);
+        }
     }
 
-    @Override
-    protected void onPostExecute(Object o) {
-        callbacks.onDataHandle(o);
-    }
-
-    @Override
-    protected void onProgressUpdate(Exception... values) {
-        Exception exception = values[0];
-        callbacks.onError(exception);
-    }
-
-    //endregion
-    //region Extra Functions
-
-    public static abstract class AccountAdditions {
-        public abstract void processJSON(String JSON);
-        public abstract void initialize(Context context);
-    }
-
-    //region Implementation
-
-    public static class NoAccount extends AccountAdditions {
-
-    }
-
-    //endregion
     //endregion
     //region Interfaces
 
@@ -391,4 +400,8 @@ public class Account extends AsyncTask<Account.WebRequestCallbacks, Exception, O
     }
 
     //endregion
+
+    public enum UserType {
+        LEERLING, LERAAR, NO_ACCOUNT
+    }
 }
