@@ -167,7 +167,7 @@ public class Account {
 
         AlertDialog loginDialog = builder.create();
         loginDialog.show();
-        loginDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(v -> register(result -> {loginDialog.dismiss(); callback.onAsyncActionComplete(result); }));
+        loginDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(v -> register(result -> { loginDialog.dismiss(); callback.onAsyncActionComplete(result); }));
         loginDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v -> loginDialog.dismiss());
         loginDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
             String username = ((EditText) dialogView.findViewById(R.id.logindialogusername)).getText().toString();
@@ -344,7 +344,111 @@ public class Account {
     }
 
     public void register(AsyncActionCallback callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.registerdialog, null);
 
+        builder.setTitle(context.getString(R.string.registerdialog_title));
+
+        builder.setView(dialogView)
+                .setPositiveButton(R.string.registerdialog_registerbutton, (dialog, which) -> {})
+                .setNegativeButton(R.string.registerdialog_cancelbutton, (dialog, which) -> dialog.dismiss());
+
+        AlertDialog registerDialog = builder.create();
+        registerDialog.show();
+        registerDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String username = ((EditText) dialogView.findViewById(R.id.registerdialog_username)).getText().toString();
+            String password = ((EditText) dialogView.findViewById(R.id.registerdialog_password)).getText().toString();
+            String repass = ((EditText) dialogView.findViewById(R.id.registerdialog_passwordcheck)).getText().toString();
+            String llnr = ((EditText) dialogView.findViewById(R.id.registerdialog_llnr)).getText().toString();
+            String email = ((EditText) dialogView.findViewById(R.id.registerdialog_email)).getText().toString();
+
+            try {
+                if ("".equals(username)) throw new Exception("Gebruikersnaam is verplicht!");
+                if ("".equals(password)) throw new Exception("Wachtwoord is verplicht!");
+                if ("".equals(repass) || !repass.equals(password)) throw new Exception("Wachtwoorden moeten gelijk zijn!");
+                if ("".equals(llnr)) throw new Exception("Leerlingnummer is verplicht!");
+
+                register(username, password, llnr, email, false, result -> {
+                    registerDialog.dismiss();
+                    callback.onAsyncActionComplete(result);
+                });
+            } catch (Exception e) {
+                ExceptionHandler.handleException(e, context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        });
+
+        /* Internetdingen */
+        InternetConnectionManager.registerListener(registerInternetListenerName, hasInternetConnection -> registerDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(hasInternetConnection));
+        registerDialog.setOnDismissListener(dialog -> InternetConnectionManager.unregisterListener(registerInternetListenerName));
+    }
+
+    private void register(String username, String password, String llnr, String email, boolean force, AsyncActionCallback callback) {
+        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+            @Override
+            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
+                String url = Settings.API_Base_URL + "account/register";
+                if(force) {
+                    url += "?force";
+                }
+                HttpPost httpPost = new HttpPost(url);
+
+                List<NameValuePair> postParameters = new ArrayList<>();
+                postParameters.add(new BasicNameValuePair("username", username));
+                postParameters.add(new BasicNameValuePair("password", password));
+                postParameters.add(new BasicNameValuePair("llnr", llnr));
+                postParameters.add(new BasicNameValuePair("email", email));
+
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters); // TODO Alles UTF8
+                httpPost.setEntity(entity);
+
+                return client.execute(httpPost);
+            }
+
+            @Override
+            public Object onRequestComplete(String data, int status) throws Exception {
+                switch(status) {
+                    case 204:
+                        throw new IllegalArgumentException("Deze gebruiker bestaat al");
+                    case 400:
+                        throw new Exception("Missende gegevens");
+                    case 500:
+                        Log.e("AccountWebReuest", data);
+                        throw new Exception("Serverfout");
+                    case 409:
+                        throw new Exception("Deze gebruikersnaam is al in gebruik!");
+                    case 200:
+                        if("".equals(data)) throw new Exception("Onbekende fout");
+                        return data;
+                    default:
+                        throw new Exception("Onbekende fout");
+                }
+            }
+
+            @Override
+            public void onDataHandle(Object data) {
+                try {
+                    String JSON = (String) data;
+                    processJSON(JSON, true);
+                    callback.onAsyncActionComplete(data);
+                } catch (Exception e) {
+                    ExceptionHandler.handleException(new Exception("Fout bij inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
+                }
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                try {
+                    throw exception;
+                } catch(IllegalArgumentException e) {
+
+                } catch(Exception e) {
+                    ExceptionHandler.handleException(new Exception("Fout bij inloggen:" + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+                }
+            }
+        };
+
+        new WebActions().execute(webRequestCallbacks);
     }
 
     //endregion

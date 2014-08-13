@@ -91,6 +91,7 @@
     <string name="settings_user_relogin_title">Andere gebruiker</string>
     <string name="internet_connection_warning">Geen internetverbinding</string>
     <string name="logindialog_registerbutton">Registreer</string>
+    <string name="registerdialog_title">Registreer</string>
 
     <string-array name="settings_notification_check_interval">
         <item>5 minuten</item>
