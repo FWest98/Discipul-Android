@@ -1,6 +1,5 @@
 package com.thomasdh.roosterpgplus.Fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -47,14 +46,16 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     @Getter @Setter private View rootView;
     public enum LoadType { OFFLINE, ONLINE, NEWONLINE; }
 
-    @Getter(value = AccessLevel.PRIVATE) private int week;
+    @Getter(value = AccessLevel.PACKAGE) private int week;
     @Getter @Setter private int dag = 0;
 
     public interface onRoosterLoadedListener {
         public void onRoosterLoaded();
         public void onRoosterLoadStart();
     }
-    private onRoosterLoadedListener roosterLoadedListener;
+    @Setter private onRoosterLoadedListener roosterLoadedListener;
+
+    public boolean loadWaiting = false;
 
     //region Types
     public static Class<? extends RoosterViewFragment>[] types = new Class[]{
@@ -72,7 +73,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     //region Creating
 
     // Nieuwe instantie van het opgegeven type
-    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week) {
+    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week, onRoosterLoadedListener listener) {
         T fragment = null;
         try {
             fragment = type.newInstance();
@@ -84,24 +85,15 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         args.putSerializable(STATE_FRAGMENT, fragment.getType());
         fragment.setArguments(args);
 
-        fragment.setWeek(week);
+        fragment.setRoosterLoadedListener(listener);
+        fragment.setWeek(week, false);
+        fragment.loadWaiting = true;
 
         return fragment;
     }
 
     //endregion
     //region LifeCycle
-
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            roosterLoadedListener = (onRoosterLoadedListener) activity;
-        } catch (ClassCastException e) {
-            Log.e("FRAGMENT", "Activity heeft geen roosterloaded!");
-        }
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -112,6 +104,10 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     public void onResume() {
         super.onResume();
         setInternetConnectionState(HelperFunctions.hasInternetConnection(getActivity()));
+        if(loadWaiting) {
+            loadWaiting = false;
+            loadRooster();
+        }
     }
 
     //endregion
@@ -119,13 +115,18 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
 
     // Pas een rooster laden als er een week bekend is (of herladen als je wil)
     public void setWeek(int week) {
+        setWeek(week, true);
+    }
+    public void setWeek(int week, boolean loadRooster) {
         this.week = week;
         if(week == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
             setDag(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
         } else {
             setDag(0);
         }
-        loadRooster();
+        if(loadRooster) {
+            loadRooster();
+        }
     }
 
     @Override
@@ -164,12 +165,12 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
 
         LoadType loadType = reload ? LoadType.ONLINE : getLoadType();
 
-        Rooster.getRooster(query, loadType, getActivity(), result -> {
+        Rooster.getRooster(query, loadType, getActivity(), (result, urenCount) -> {
             if(loadType == LoadType.ONLINE || (loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity()))) {
                 setLoad();
             }
             roosterLoadedListener.onRoosterLoaded();
-            RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), getViewPager(), getActivity(), this, this);
+            RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), urenCount, getViewPager(), getActivity(), this, this);
         });
     }
 

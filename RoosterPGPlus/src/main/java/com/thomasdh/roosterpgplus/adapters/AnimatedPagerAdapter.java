@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +55,7 @@ public class AnimatedPagerAdapter extends PagerAdapter {
         }
 
         final FrameLayout parent = (FrameLayout) views.get(position);
-        boolean animationsBeschikbaar = Build.VERSION.SDK_INT >= 12;
+        boolean animationsBeschikbaar = false;
 
         if (animationsBeschikbaar) {
             int shortAnimationDuration = context.getResources().getInteger(

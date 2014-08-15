@@ -27,11 +27,12 @@
             android:label="@string/action_settings"
             android:theme="@style/PreferenceTheme" />
 
-        <receiver android:name=".Helpers.InternetConnectionManager$InternetConnectionReceiver">
+        <receiver android:name=".Helpers.InternetConnectionManager$InternetConnectionReceiver" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>

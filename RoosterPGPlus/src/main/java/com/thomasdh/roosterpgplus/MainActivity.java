@@ -70,12 +70,12 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         //GoogleAnalytics.getInstance(this).setDryRun(true);
         setContentView(R.layout.activity_main);
         actionBar = getSupportActionBar();
-        Account.initialize(this);
+        Account.getInstance(this);
 
         if (savedInstanceState == null) {
             // Defaults
             roosterType = PersoonlijkRoosterFragment.class;
-            mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
+            mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, mainFragment)
@@ -98,7 +98,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
                 Class<? extends RoosterViewFragment> newType = RoosterViewFragment.types[childPosition];
 
                 // Nieuwe dingen
-                mainFragment = RoosterViewFragment.newInstance(newType, selectedWeek);
+                mainFragment = RoosterViewFragment.newInstance(newType, selectedWeek, this);
                 roosterType = newType;
                 actionBarSpinnerAdapter.setType(newType);
 
@@ -263,7 +263,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
                 strings.add("Week " + wekenArray.get(indexCurrentWeek + c).week);
             }
         }
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, PersoonlijkRoosterFragment.class);
+        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, mainFragment.getClass());
         actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, this);
     }
 

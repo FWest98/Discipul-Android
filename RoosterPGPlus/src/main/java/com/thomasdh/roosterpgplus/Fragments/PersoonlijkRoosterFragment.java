@@ -42,14 +42,14 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
     }
 
     @Override
-    public void setLoad() { RoosterInfo.setLoad(LOADS_NAME, System.currentTimeMillis(), getActivity()); }
+    public void setLoad() { RoosterInfo.setLoad(LOADS_NAME+getWeek(), System.currentTimeMillis(), getActivity()); }
 
     @Override
-    public long getLoad() { return RoosterInfo.getLoad(LOADS_NAME, getActivity()); }
+    public long getLoad() { return RoosterInfo.getLoad(LOADS_NAME+getWeek(), getActivity()); }
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad(LOADS_NAME, getActivity());
+        Long lastLoad = RoosterInfo.getLoad(LOADS_NAME+getWeek(), getActivity());
         if(lastLoad == null) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {

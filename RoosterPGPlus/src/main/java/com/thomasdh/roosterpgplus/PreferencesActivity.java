@@ -1,23 +1,17 @@
 package com.thomasdh.roosterpgplus;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
-import com.thomasdh.roosterpgplus.Models.AccountOld;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Data.Account;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +19,7 @@ import java.util.List;
 /**
  * Created by Thomas on 6-12-13.
  */
-public class PreferencesActivity extends PreferenceActivity {
-
-    private static PreferenceListener2 preferenceListener;
-    private AccountOld user;
+public class PreferencesActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
     protected boolean isValidFragment(String fragmentName) {
@@ -39,8 +30,23 @@ public class PreferencesActivity extends PreferenceActivity {
     }
 
     @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        String summary;
+        if(Account.getUserType() == Account.UserType.LEERLING) {
+            summary = "Naam: " + Account.getName() + ", " + "Klas: " + Account.getLeerlingKlas();
+        } else {
+            summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
+        }
+        //findPreference("mijn_account").setSummary(summary);
+
+        //findPreference("account_upgraden").setEnabled(Account.isAppAccount());
+        //findPreference("subklassen").setEnabled(!Account.isAppAccount());
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Account.initialize(this);
 
         // Voor android versies vóór 3.0
         String action = getIntent().getAction();
@@ -53,102 +59,60 @@ public class PreferencesActivity extends PreferenceActivity {
             }
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_user);
-            preferenceListener = new PreferenceListener2();
-
 
             // Initialize subklassen
-            final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
-            user = new AccountOld(this);
-            if (user.isAppAccount) {
-                subklassen.setEnabled(false);
-            } else {
-                subklassen.setEnabled(true);
-            }
-            subklassen.setEntries(new String[]{"Subklassen"});
-            subklassen.setEntryValues(new String[]{"Subklassen"});
-            new AsyncTask<Void, Exception, ArrayList<AccountOld.Subklas>>() {
-                @Override
-                protected ArrayList<AccountOld.Subklas> doInBackground(Void... params) {
-                    try {
-                        return user.getSubklassen();
-                    } catch (Exception e) {
-                        publishProgress(e);
-                        return null;
-                    }
-                }
+            ListPreferenceMultiSelect subklassenPref = (ListPreferenceMultiSelect) findPreference("subklassen");
+            subklassenPref.setEnabled(!Account.isAppAccount());
+            subklassenPref.setEntries(new String[]{"Subklassen"});
+            subklassenPref.setEntryValues(new String[]{"Subklassen"});
 
-                @Override
-                protected void onProgressUpdate(Exception... values) {
-                    ExceptionHandler.handleException(values[0], getApplicationContext(), "Fout bij het ophalen van de subklassen", "PreferencesActivity", ExceptionHandler.HandleType.EXTENSIVE);
-                }
+            subklassenPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                ArrayList<String> newSubklassen = (ArrayList<String>) newValue;
+                Account.getInstance(this).setSubklassen(false, newSubklassen, result -> {});
 
-                @Override
-                protected void onPostExecute(ArrayList<AccountOld.Subklas> subklasArray) {
-                    if (subklassen != null && subklasArray != null) {
-                        ArrayList<String> strings = new ArrayList<String>();
-                        ArrayList<String> namen = new ArrayList<>();
-                        for (AccountOld.Subklas subklas : subklasArray) {
-                            strings.add(subklas.subklas + ": " + subklas.vak + " van " + subklas.leraar);
-                            namen.add(subklas.subklas);
-                        }
-
-                        subklassen.setEntries(strings.toArray(new String[strings.size()]));
-                        subklassen.setEntryValues(namen.toArray(new String[namen.size()]));
-
-                        subklassen.setOnPreferenceChangeListener((preference, newValue) -> {
-                            new AsyncTask<Void, Exception, Void>() {
-                                @Override
-                                protected Void doInBackground(Void... params) {
-                                    try {
-                                        user.setSubklassen(((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
-                                    } catch (Exception e) {
-                                        publishProgress(e);
-                                    }
-                                    return null;
-                                }
-
-                                @Override
-                                protected void onProgressUpdate(Exception... e) {
-                                    ExceptionHandler.handleException(e[0], getApplicationContext(), "SetSubklasfout", "PreferencesActivity", ExceptionHandler.HandleType.SIMPLE);
-                                }
-                            }.execute();
-                            return true;
-                        });
-                    } else {
-                        Log.d("PreferenceActivity", "Ze zijn null");
-                    }
-                }
-            }.execute();
-
-            // Create user and fill in account information
-            user = new AccountOld(this);
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
-            findPreference("mijn_account").setSummary(
-                    "Naam: " + user.name + ", " +
-                            "Klas: " + user.klas
-            );
-
-            // Configure login button
-            findPreference("log_in").setOnPreferenceClickListener(preference -> {
-                user.showLoginDialog();
                 return true;
             });
 
-            final Context context = this;
+            Account.getInstance(this).getSubklassen(true, result -> {
+                ArrayList<Account.Subklas> subklasArray = (ArrayList<Account.Subklas>) result;
+
+                if (subklassenPref != null && subklasArray != null) {
+                    ArrayList<String> strings = new ArrayList<>();
+                    ArrayList<String> namen = new ArrayList<>();
+
+                    for (Account.Subklas subklas : subklasArray) {
+                        strings.add(subklas.naam + ": " + subklas.vak + " van " + subklas.leraar);
+                        namen.add(subklas.naam);
+                    }
+
+                    subklassenPref.setEntries(strings.toArray(new String[strings.size()]));
+                    subklassenPref.setEntryValues(namen.toArray(new String[namen.size()]));
+                }
+            });
+
+            // Create user and fill in account information
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+            String summary;
+            if(Account.getUserType() == Account.UserType.LEERLING) {
+                summary = "Naam: " + Account.getName() + ", " + "Klas: " + Account.getLeerlingKlas();
+            } else {
+                summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
+            }
+            findPreference("mijn_account").setSummary(summary);
+
+            // Configure login button
+            findPreference("log_in").setOnPreferenceClickListener(preference -> {
+                Account.getInstance(this).login();
+
+                return true;
+            });
 
             /* account upgraden */
-            if (!new AccountOld(context).isAppAccount) {
-                findPreference("account_upgraden").setEnabled(false);
-            } else {
-                findPreference("account_upgraden").setEnabled(true);
-            }
+            findPreference("account_upgraden").setEnabled(Account.isAppAccount());
             findPreference("account_upgraden").setOnPreferenceClickListener(preference -> {
-                try {
-                    user.extend();
-                } catch (Exception e) {
-                    Toast.makeText(context, context.getString(R.string.extenddialog_isExtended), Toast.LENGTH_SHORT).show();
-                }
-                return false;
+                Account.getInstance(this).extend();
+
+                return true;
             });
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$OverigFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_overig);
@@ -157,8 +121,6 @@ public class PreferencesActivity extends PreferenceActivity {
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
         }
-
-        user = new AccountOld(this);
     }
 
     @Override
@@ -172,7 +134,7 @@ public class PreferencesActivity extends PreferenceActivity {
         super.onResume();
         String action = getIntent().getAction();
         if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         }
     }
 
@@ -192,18 +154,18 @@ public class PreferencesActivity extends PreferenceActivity {
         super.onPause();
         String action = getIntent().getAction();
         if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
-            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(preferenceListener);
+            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         }
     }
 
     @Override
     protected void onStart() {
-        EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
+        /*EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
         tracker.set(Fields.SCREEN_NAME, "Instellingen");
         tracker.send(MapBuilder
                 .createAppView()
                 .build()
-        );
+        );*/
         super.onStart();
     }
 
@@ -253,167 +215,81 @@ public class PreferencesActivity extends PreferenceActivity {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class UserFragment extends PreferenceFragment {
 
-        public PreferenceListener preferenceListener;
-        private AccountOld user;
+        private SharedPreferences.OnSharedPreferenceChangeListener listener;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_user);
-            preferenceListener = new PreferenceListener();
 
+            listener = (SharedPreferences.OnSharedPreferenceChangeListener) getActivity();
 
             // Initialize subklassen
-            final ListPreferenceMultiSelect subklassen = (ListPreferenceMultiSelect) findPreference("subklassen");
-            user = new AccountOld(getActivity());
-            if (user.isAppAccount) {
-                subklassen.setEnabled(false);
-            } else {
-                subklassen.setEnabled(true);
-            }
-            subklassen.setEntries(new String[]{"Subklassen"});
-            subklassen.setEntryValues(new String[]{"Subklassen"});
-            new AsyncTask<Void, Exception, ArrayList<AccountOld.Subklas>>() {
-                @Override
-                protected ArrayList<AccountOld.Subklas> doInBackground(Void... params) {
-                    try {
-                        return user.getSubklassen();
-                    } catch (Exception e) {
-                        publishProgress(e);
-                        return null;
+            ListPreferenceMultiSelect subklassenPref = (ListPreferenceMultiSelect) findPreference("subklassen");
+            subklassenPref.setEnabled(!Account.isAppAccount());
+            subklassenPref.setEntries(new String[]{"Subklassen"});
+            subklassenPref.setEntryValues(new String[]{"Subklassen"});
+
+            subklassenPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                ArrayList<String> newSubklassen = (ArrayList<String>) newValue;
+                Account.getInstance(getActivity()).setSubklassen(false, newSubklassen, result -> {});
+
+                return true;
+            });
+
+            Account.getInstance(getActivity()).getSubklassen(true, result -> {
+                ArrayList<Account.Subklas> subklasArray = (ArrayList<Account.Subklas>) result;
+
+                if (subklassenPref != null && subklasArray != null) {
+                    ArrayList<String> strings = new ArrayList<>();
+                    ArrayList<String> namen = new ArrayList<>();
+
+                    for (Account.Subklas subklas : subklasArray) {
+                        strings.add(subklas.naam + ": " + subklas.vak + " van " + subklas.leraar);
+                        namen.add(subklas.naam);
                     }
-                }
 
-                @Override
-                protected void onProgressUpdate(Exception... values) {
-                    ExceptionHandler.handleException(values[0], getActivity(), "Fout bij het ophalen van de subklassen", "PreferencesActivity", ExceptionHandler.HandleType.EXTENSIVE);
-                }
-
-                @Override
-                protected void onPostExecute(ArrayList<AccountOld.Subklas> subklasArray) {
-                    if (subklassen != null && subklasArray != null) {
-                        ArrayList<String> strings = new ArrayList<String>();
-                        ArrayList<String> namen = new ArrayList<String>();
-                        for (AccountOld.Subklas subklas : subklasArray) {
-                            strings.add(subklas.subklas + ": " + subklas.vak + " van " + subklas.leraar);
-                            namen.add(subklas.subklas);
-                        }
-
-                        subklassen.setEntries(strings.toArray(new String[strings.size()]));
-                        subklassen.setEntryValues(namen.toArray(new String[namen.size()]));
-
-                        subklassen.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                            @Override
-                            public boolean onPreferenceChange(Preference preference, final Object newValue) {
-                                new AsyncTask<Void, Exception, Void>() {
-                                    @Override
-                                    protected Void doInBackground(Void... params) {
-                                        try {
-                                            user.setSubklassen(((ArrayList<String>) newValue).toArray(new String[((ArrayList<String>) newValue).size()]));
-                                        } catch (Exception e) {
-                                            publishProgress(e);
-                                        }
-                                        return null;
-                                    }
-
-                                    @Override
-                                    protected void onProgressUpdate(Exception... e) {
-                                        ExceptionHandler.handleException(e[0], getActivity(), "SetSubklasfout", "PreferencesActivity", ExceptionHandler.HandleType.SIMPLE);
-                                    }
-                                }.execute();
-                                return true;
-                            }
-                        });
-                    } else {
-                        Log.d("PreferenceActivity", "Ze zijn null");
-                    }
-                }
-            }.execute();
-
-            // Create user and fill in account information
-            user = new AccountOld(getActivity());
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
-            findPreference("mijn_account").setSummary(
-                    "Naam: " + user.name + ", " +
-                            "Klas: " + user.klas
-            );
-
-            // Configure login button
-            findPreference("log_in").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    user.showLoginDialog();
-                    return true;
+                    subklassenPref.setEntries(strings.toArray(new String[strings.size()]));
+                    subklassenPref.setEntryValues(namen.toArray(new String[namen.size()]));
                 }
             });
 
-            final Context context = getActivity();
+            // Create user and fill in account information
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
+            String summary;
+            if(Account.getUserType() == Account.UserType.LEERLING) {
+                summary = "Naam: " + Account.getName() + ", " + "Klas: " + Account.getLeerlingKlas();
+            } else {
+                summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
+            }
+            findPreference("mijn_account").setSummary(summary);
+
+            // Configure login button
+            findPreference("log_in").setOnPreferenceClickListener(preference -> {
+                Account.getInstance(getActivity()).login();
+
+                return true;
+            });
 
             /* account upgraden */
-            if (!new AccountOld(context).isAppAccount) {
-                findPreference("account_upgraden").setEnabled(false);
-            } else {
-                findPreference("account_upgraden").setEnabled(true);
-            }
-            findPreference("account_upgraden").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    try {
-                        user.extend();
-                    } catch (Exception e) {
-                        Toast.makeText(context, context.getString(R.string.extenddialog_isExtended), Toast.LENGTH_SHORT).show();
-                    }
-                    return false;
-                }
+            findPreference("account_upgraden").setEnabled(Account.isAppAccount());
+            findPreference("account_upgraden").setOnPreferenceClickListener(preference -> {
+                Account.getInstance(getActivity()).extend();
+
+                return true;
             });
         }
 
         @Override
         public void onResume() {
             super.onResume();
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(preferenceListener);
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
         }
 
         @Override
         public void onPause() {
             super.onPause();
-            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(preferenceListener);
-        }
-
-        public class PreferenceListener implements SharedPreferences.OnSharedPreferenceChangeListener {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                user = new AccountOld(getActivity());
-                findPreference("mijn_account").setSummary(
-                        "Naam: " + user.name + ", " +
-                                "Klas: " + user.klas
-                );
-                if (!new AccountOld(getActivity()).isAppAccount) {
-                    findPreference("account_upgraden").setEnabled(false);
-                    findPreference("subklassen").setEnabled(true);
-                } else {
-                    findPreference("account_upgraden").setEnabled(true);
-                    findPreference("subklassen").setEnabled(false);
-                }
-            }
-        }
-    }
-
-    private class PreferenceListener2 implements SharedPreferences.OnSharedPreferenceChangeListener {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            user = new AccountOld(getApplicationContext());
-            findPreference("mijn_account").setSummary(
-                    "Naam: " + user.name + ", " +
-                            "Klas: " + user.klas
-            );
-            if (!new AccountOld(getApplicationContext()).isAppAccount) {
-                findPreference("account_upgraden").setEnabled(false);
-                findPreference("subklassen").setEnabled(true);
-            } else {
-                findPreference("account_upgraden").setEnabled(true);
-                findPreference("subklassen").setEnabled(false);
-            }
+            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
         }
     }
 }

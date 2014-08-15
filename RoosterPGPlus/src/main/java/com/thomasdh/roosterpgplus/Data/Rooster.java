@@ -8,7 +8,6 @@ import com.j256.ormlite.stmt.DeleteBuilder;
 import com.thomasdh.roosterpgplus.Database.DatabaseHelper;
 import com.thomasdh.roosterpgplus.Database.DatabaseManager;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
-import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
@@ -24,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rooster {
-    public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, AsyncActionCallback callback) {
+    public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback) {
         if(HelperFunctions.hasInternetConnection(context)) {
             if (type == RoosterViewFragment.LoadType.ONLINE) {
                 getRoosterFromInternet(query, false, context, callback);
@@ -40,7 +39,7 @@ public class Rooster {
         }
     }
 
-    private static void getRoosterFromInternet(List<NameValuePair> query, boolean isOffline, Context context, AsyncActionCallback callback) {
+    private static void getRoosterFromInternet(List<NameValuePair> query, boolean isOffline, Context context, RoosterCallback callback) {
         String url = "rooster?"+ URLEncodedUtils.format(query, "utf-8");
 
         WebDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback), exception -> {
@@ -49,20 +48,21 @@ public class Rooster {
                 ExceptionHandler.handleException(new Exception("Geen internetverbinding, oude versie van het rooster!"), context, ExceptionHandler.HandleType.SIMPLE);
                 getRoosterFromDatabase(query, context, callback);
             } else {
-                ExceptionHandler.handleException(new Exception("Kon rooster niet laden, er is geen internetverbinding"), context, ExceptionHandler.HandleType.SIMPLE);
+                ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
             }
         });
     }
 
-    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, AsyncActionCallback callback) {
+    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
             Dao<Lesuur, ?> dao = helper.getDao(Lesuur.class);
 
             String searchQuery = URLEncodedUtils.format(query, "utf-8");
             List<Lesuur> lessen = dao.queryForEq("query", searchQuery);
+            int week = lessen.size() > 0 ? lessen.get(0).week : 0;
 
-            callback.onAsyncActionComplete(lessen);
+            callback.onCallback(lessen, RoosterInfo.getWeekUrenCount(context, week));
         } catch (SQLException e) {
             Log.e("SQL ERROR", e.getMessage(), e);
             ExceptionHandler.handleException(new Exception("Opslagfout, er is geen rooster geladen"), context, ExceptionHandler.HandleType.SIMPLE);
@@ -93,7 +93,7 @@ public class Rooster {
         }
     }
 
-    private static void parseRooster(String JSON, List<NameValuePair> query, Context context, AsyncActionCallback callback) {
+    private static void parseRooster(String JSON, List<NameValuePair> query, Context context, RoosterCallback callback) {
         try {
             String queryString = URLEncodedUtils.format(query, "utf-8");
             List<Lesuur> lessen = new ArrayList<>();
@@ -112,7 +112,7 @@ public class Rooster {
             int urenCount = rooster.getInt("urenCount");
 
             RoosterInfo.setWeekUrenCount(context, week, urenCount);
-            callback.onAsyncActionComplete(lessen);
+            callback.onCallback(lessen, urenCount);
             saveRoosterInDatabase(lessen, queryString, context);
         } catch (JSONException e) {
             Log.e("JSON ERROR", e.getMessage(), e);
@@ -120,5 +120,9 @@ public class Rooster {
         } catch (Exception e) {
             Log.e("Callback error", e.getMessage(), e);
         }
+    }
+
+    public interface RoosterCallback {
+        void onCallback(Object data, int urenCount);
     }
 }

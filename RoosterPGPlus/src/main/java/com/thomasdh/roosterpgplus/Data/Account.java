@@ -23,9 +23,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,6 +56,7 @@ public class Account {
 
     private static final String loginInternetListenerName = "loginDialog";
     private static final String registerInternetListenerName = "registerDialog";
+    private static final String extendInternetListenerName = "extendDialog";
 
     //region Initialize
 
@@ -96,6 +99,8 @@ public class Account {
         this.isAppAccount = isAppAccount;
         pref.putBoolean("appaccount", isAppAccount);
 
+        isSet = true;
+
         if(base.has("code")) {
             // LERAAR
             userType = UserType.LERAAR;
@@ -106,7 +111,7 @@ public class Account {
             // LEERLING
             userType = UserType.LEERLING;
 
-            leerlingKlas = base.getString("klas");
+            leerlingKlas = base.getJSONObject("klas").getString("klasnaam");
             pref.putString("klas", leerlingKlas);
 
             isVertegenwoordiger = base.getBoolean("vertegenwoordiger");
@@ -127,13 +132,14 @@ public class Account {
     }
 
     public static Account getInstance(Context context) {
-        if(instance == null) {
+        if(instance == null || !context.equals(instance.context)) {
             instance = new Account(context);
         }
         return instance;
     }
 
     //endregion
+
     //region Login
 
     public void login() {
@@ -249,7 +255,7 @@ public class Account {
             public void onDataHandle(Object data) {
                 try {
                     String JSON = (String) data;
-                    processJSON(JSON, true);
+                    processJSON(JSON, false);
                     callback.onAsyncActionComplete(data);
                 } catch(Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij het inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
@@ -289,7 +295,7 @@ public class Account {
                     case 400:
                         throw new Exception("Missende gegevens");
                     case 204:
-                        throw new IllegalArgumentException("Deze gebruiker bestaat al"); // TODO doe er wat mee
+                        throw new IllegalArgumentException("Deze gebruiker bestaat al");
                     case 500:
                         Log.e("AccountWebRequest", data);
                         throw new Exception("Serverfout");
@@ -305,7 +311,7 @@ public class Account {
             public void onDataHandle(Object data) {
                 try {
                     String JSON = (String) data;
-                    processJSON(JSON, false);
+                    processJSON(JSON, true);
                     callback.onAsyncActionComplete(data);
                 } catch(Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij het inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
@@ -319,12 +325,10 @@ public class Account {
                 } catch(IllegalArgumentException e) {
                     // Dubbele gebruiker
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setTitle(context.getResources().getString(R.string.logindialog_warning_title));
-                    builder.setMessage(context.getResources().getString(R.string.logindialog_warning_text));
-                    builder.setPositiveButton(context.getResources().getString(R.string.logindialog_warning_submitButton), (dialog, which) -> {
-                        login(llnr, true, callback);
-                    });
-                    builder.setNegativeButton(context.getResources().getString(R.string.logindialog_warning_cancelButton), (dialog, which) -> {});
+                    builder.setTitle(R.string.logindialog_warning_title);
+                    builder.setMessage(R.string.logindialog_warning_text);
+                    builder.setPositiveButton(R.string.logindialog_warning_submitButton, (dialog, which) -> login(llnr, true, callback));
+                    builder.setNegativeButton(R.string.logindialog_warning_cancelButton, (dialog, which) -> {});
 
                     builder.show();
                 } catch(Exception e) {
@@ -366,7 +370,7 @@ public class Account {
             try {
                 if ("".equals(username)) throw new Exception("Gebruikersnaam is verplicht!");
                 if ("".equals(password)) throw new Exception("Wachtwoord is verplicht!");
-                if ("".equals(repass) || !repass.equals(password)) throw new Exception("Wachtwoorden moeten gelijk zijn!");
+                if(!password.equals(repass)) throw new Exception("Wachtwoorden moeten gelijk zijn!");
                 if ("".equals(llnr)) throw new Exception("Leerlingnummer is verplicht!");
 
                 register(username, password, llnr, email, false, result -> {
@@ -432,7 +436,7 @@ public class Account {
                     processJSON(JSON, true);
                     callback.onAsyncActionComplete(data);
                 } catch (Exception e) {
-                    ExceptionHandler.handleException(new Exception("Fout bij inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
+                    ExceptionHandler.handleException(new Exception("Fout bij registreren", e), context, ExceptionHandler.HandleType.SIMPLE);
                 }
             }
 
@@ -441,9 +445,14 @@ public class Account {
                 try {
                     throw exception;
                 } catch(IllegalArgumentException e) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setTitle(R.string.logindialog_warning_title);
+                    builder.setMessage(R.string.logindialog_warning_text);
 
+                    builder.setPositiveButton(R.string.logindialog_warning_submitButton, (dialog, which) -> register(username, password, llnr, email, true, callback));
+                    builder.setNegativeButton(R.string.logindialog_cancelbutton, (dialog, which) -> {});
                 } catch(Exception e) {
-                    ExceptionHandler.handleException(new Exception("Fout bij inloggen:" + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+                    ExceptionHandler.handleException(new Exception("Fout bij registreren:" + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
                 }
             }
         };
@@ -452,6 +461,244 @@ public class Account {
     }
 
     //endregion
+    //region Extend
+
+    public void extend() {
+        extend(result -> {});
+    }
+
+    public void extend(AsyncActionCallback callback) {
+        if(!isAppAccount) {
+            ExceptionHandler.handleException(new Exception("Je bent al geüpgraded!"), context, ExceptionHandler.HandleType.SIMPLE);
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.extenddialog, null);
+
+        builder.setTitle(R.string.extenddialog_title);
+        builder.setView(dialogView)
+                .setPositiveButton(R.string.extenddialog_extendbutton, (dialog, which) -> {})
+                .setNegativeButton(R.string.registerdialog_cancelbutton, (dialog, which) -> dialog.dismiss());
+
+        AlertDialog extendDialog = builder.create();
+        extendDialog.show();
+        extendDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String username = ((EditText) dialogView.findViewById(R.id.extenddialog_username)).getText().toString();
+            String password = ((EditText) dialogView.findViewById(R.id.extenddialog_password)).getText().toString();
+            String repass = ((EditText) dialogView.findViewById(R.id.extenddialog_passwordcheck)).getText().toString();
+            String email = ((EditText) dialogView.findViewById(R.id.extenddialog_email)).getText().toString();
+
+            try {
+                if("".equals(username)) throw new Exception("Gebruikersnaam is verplicht!");
+                if("".equals(password)) throw new Exception("Wachtwoord is verplicht!");
+                if(!password.equals(repass)) throw new Exception("Wachtwoorden moeten gelijk zijn!");
+
+                extend(username, password, email, result -> {
+                    extendDialog.dismiss();
+                    callback.onAsyncActionComplete(result);
+                });
+            } catch (Exception e) {
+                ExceptionHandler.handleException(e, context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        });
+
+        /* Internetdingen */
+        InternetConnectionManager.registerListener(extendInternetListenerName, hasInternetConnection -> extendDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(hasInternetConnection));
+        extendDialog.setOnDismissListener(dialog -> InternetConnectionManager.unregisterListener(extendInternetListenerName));
+    }
+
+    private void extend(String username, String password, String email, AsyncActionCallback callback) {
+        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+            @Override
+            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
+                HttpPost httpPost = new HttpPost(Settings.API_Base_URL + "account/extend");
+
+                List<NameValuePair> postParameters = new ArrayList<>();
+                postParameters.add(new BasicNameValuePair("username", username));
+                postParameters.add(new BasicNameValuePair("password", password));
+                postParameters.add(new BasicNameValuePair("email", email));
+                postParameters.add(new BasicNameValuePair("key", apiKey));
+
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
+                httpPost.setEntity(entity);
+
+                return client.execute(httpPost);
+            }
+
+            @Override
+            public Object onRequestComplete(String data, int status) throws Exception {
+                switch(status) {
+                    case 401:
+                        throw new Exception("Fout bij upgraden. Log opnieuw in en probeer het opnieuw");
+                    case 400:
+                        throw new Exception("Missende gegevens. Log opnieuw in en probeer het opnieuw");
+                    case 409:
+                        throw new Exception("Deze gebruikersnaam is al in gebruik!");
+                    case 405:
+                        throw new Exception("Dit account is al opgewaardeerd! Log opnieuw in");
+                    case 500:
+                        Log.e("AccountWebRequest", data);
+                        throw new Exception("Serverfout");
+                    case 200:
+                        return data;
+                    default:
+                        throw new Exception("Onbekende fout");
+                }
+            }
+
+            @Override
+            public void onDataHandle(Object data) {
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("appaccount", false).commit();
+                isAppAccount = false;
+                try {
+                    callback.onAsyncActionComplete(data);
+                } catch(Exception e) {
+                    ExceptionHandler.handleException(new Exception("Fout bij verwerken. Herstart de app en het werkt", e), context, ExceptionHandler.HandleType.SIMPLE);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                ExceptionHandler.handleException(new Exception("Fout bij verwerken: " + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        };
+
+        new WebActions().execute(webRequestCallbacks);
+    }
+
+    //endregion
+
+    //region Subklassen
+    //region get
+
+    public void getSubklassen(boolean all, AsyncActionCallback callback) {
+        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+            @Override
+            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
+                String url = Settings.API_Base_URL + "account/clusterklassen?key="+apiKey;
+                if(all) {
+                    url += "&all";
+                }
+                HttpGet httpGet = new HttpGet(url);
+                return client.execute(httpGet);
+            }
+
+            @Override
+            public Object onRequestComplete(String data, int status) throws Exception {
+                switch(status) {
+                    case 401:
+                        throw new Exception("Foute gegevens. Log opnieuw in");
+                    case 404:
+                        throw new Exception("Gebruiker niet gevonden. Log opnieuw in");
+                    case 405:
+                        throw new Exception("Hiervoor moet je leerling zijn");
+                    case 500:
+                        Log.e("AccountWebRequest", data);
+                        throw new Exception("Serverfout");
+                    case 200:
+                        if("".equals(data)) throw new Exception("Onbekende fout");
+                        return data;
+                    default:
+                        throw new Exception("Onbekende fout");
+                }
+            }
+
+            @Override
+            public void onDataHandle(Object data) {
+                try {
+                    ArrayList<Subklas> subklassen = new ArrayList<>();
+                    JSONArray jsonArray = new JSONArray((String) data);
+
+                    for(int i = 0;i < jsonArray.length(); i++) {
+                        JSONObject subklas = jsonArray.getJSONObject(i);
+                        subklassen.add(new Subklas(subklas));
+                    }
+
+                    callback.onAsyncActionComplete(subklassen);
+                } catch (Exception e) {
+                    ExceptionHandler.handleException(new Exception("Fout bij verwerken", e), context, ExceptionHandler.HandleType.SIMPLE);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                ExceptionHandler.handleException(new Exception("Fout bij verwerken: "+e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        };
+
+        new WebActions().execute(webRequestCallbacks);
+    }
+
+    //endregion
+    //region set
+
+    public void setSubklassen(boolean refresh, ArrayList<String> subklassen, AsyncActionCallback callback) {
+        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+            @Override
+            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
+                String url = Settings.API_Base_URL + "account/clusterklassen";
+                if(refresh) url += "?refresh";
+
+                HttpPost httpPost = new HttpPost(url);
+
+                List<NameValuePair> postParameters = new ArrayList<>();
+                postParameters.add(new BasicNameValuePair("key", apiKey));
+                for(int i = 0; i < subklassen.size(); i++) {
+                    postParameters.add(new BasicNameValuePair("klassen["+i+"]", subklassen.get(i)));
+                }
+
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
+                httpPost.setEntity(entity);
+
+                return client.execute(httpPost);
+            }
+
+            @Override
+            public Object onRequestComplete(String data, int status) throws Exception {
+                switch(status) {
+                    case 401:
+                        throw new Exception("Foute gegevens. Log opnieuw in");
+                    case 404:
+                        throw new Exception("Gebruiker niet gevonden. Log opnieuw in");
+                    case 405:
+                        throw new Exception("Hiervoor moet je leerling zijn");
+                    case 400:
+                        throw new Exception("Deze leerling bestaat niet meer");
+                    case 500:
+                        Log.e("AccountWebRequest", data);
+                        throw new Exception("Serverfout");
+                    case 200:
+                        if("".equals(data)) throw new Exception("Onbekende fout");
+                        return data;
+                    default:
+                        throw new Exception("Onbekende fout");
+                }
+            }
+
+            @Override
+            public void onDataHandle(Object data) {
+                try {
+                    callback.onAsyncActionComplete(data);
+                } catch (Exception e) {
+                    ExceptionHandler.handleException(new Exception("Fout bij verwerken", e), context, ExceptionHandler.HandleType.SIMPLE);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                ExceptionHandler.handleException(new Exception("Fout bij verwerken: "+e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        };
+
+        new WebActions().execute(webRequestCallbacks);
+    }
+
+    //endregion
+    //endregion
+
+
     //region WebActions
 
     private class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, Object> {
@@ -490,6 +737,27 @@ public class Account {
             Exception exception = values[0];
             callbacks.onError(exception);
             cancel(true);
+        }
+    }
+
+    //endregion
+    //region Types
+
+    public static class Subklas {
+        public String naam;
+        public int jaarlaag;
+        public String vak;
+        public String leraar;
+        public String nummer;
+        public boolean isIn;
+
+        public Subklas(JSONObject object) throws JSONException {
+            naam = object.getString("klasnaam");
+            vak = object.getString("vak");
+            nummer = object.getString("cijfer");
+            leraar = object.getString("leraar");
+            jaarlaag = object.getInt("jaarlaag");
+            isIn = object.getBoolean("isIn");
         }
     }
 

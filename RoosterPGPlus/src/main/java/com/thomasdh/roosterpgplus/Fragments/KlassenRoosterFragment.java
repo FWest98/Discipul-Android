@@ -52,14 +52,14 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     }
 
     @Override
-    public long getLoad() { return RoosterInfo.getLoad("klas"+getKlas(), getActivity()); }
+    public long getLoad() { return RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getActivity()); }
 
     @Override
-    public void setLoad() { RoosterInfo.setLoad("klas"+getKlas(), System.currentTimeMillis(), getActivity()); }
+    public void setLoad() { RoosterInfo.setLoad("klas"+getKlas()+getWeek(), System.currentTimeMillis(), getActivity()); }
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("klas"+getKlas(), getActivity());
+        Long lastLoad = RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getActivity());
         if(lastLoad == null) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {

@@ -56,14 +56,14 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     }
 
     @Override
-    public long getLoad() { return RoosterInfo.getLoad("docent"+getLeraar(), getActivity()); }
+    public long getLoad() { return RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity()); }
 
     @Override
-    public void setLoad() { RoosterInfo.setLoad("docent"+getLeraar(), System.currentTimeMillis(), getActivity()); }
+    public void setLoad() { RoosterInfo.setLoad("docent"+getLeraar()+getWeek(), System.currentTimeMillis(), getActivity()); }
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("docent"+getLeraar(), getActivity());
+        Long lastLoad = RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity());
         if(lastLoad == null) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
