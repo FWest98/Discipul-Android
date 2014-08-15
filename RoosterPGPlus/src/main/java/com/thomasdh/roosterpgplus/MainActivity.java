@@ -257,13 +257,14 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
                 }
             }
 
-            setSelectedWeek(wekenArray.get(indexCurrentWeek).week);
+            // Wordt al in de listener gedaan......
+            //setSelectedWeek(wekenArray.get(indexCurrentWeek).week);
 
             for (int c = 0; c < Settings.WEEKS_IN_SPINNER && c < wekenArray.size(); c++) {
                 strings.add("Week " + wekenArray.get(indexCurrentWeek + c).week);
             }
         }
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, mainFragment.getClass());
+        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, mainFragment.getClass()); // bug in IntelliJ, issue 79680. It compiles, ship it!
         actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, this);
     }
 

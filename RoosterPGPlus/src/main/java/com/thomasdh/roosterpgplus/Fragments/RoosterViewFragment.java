@@ -55,8 +55,6 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     }
     @Setter private onRoosterLoadedListener roosterLoadedListener;
 
-    public boolean loadWaiting = false;
-
     //region Types
     public static Class<? extends RoosterViewFragment>[] types = new Class[]{
             PersoonlijkRoosterFragment.class,
@@ -87,7 +85,6 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
 
         fragment.setRoosterLoadedListener(listener);
         fragment.setWeek(week, false);
-        fragment.loadWaiting = true;
 
         return fragment;
     }
@@ -104,10 +101,6 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     public void onResume() {
         super.onResume();
         setInternetConnectionState(HelperFunctions.hasInternetConnection(getActivity()));
-        if(loadWaiting) {
-            loadWaiting = false;
-            loadRooster();
-        }
     }
 
     //endregion

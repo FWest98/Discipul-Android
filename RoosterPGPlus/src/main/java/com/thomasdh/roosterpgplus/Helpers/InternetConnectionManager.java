@@ -27,6 +27,8 @@ public class InternetConnectionManager {
     }
 
     private static void notifyChange(boolean hasInternetConnection) {
+        if(listeners == null) return;
+
         for(InternetConnectionChangeListener listener : listeners.values()) {
             listener.internetConnectionChanged(hasInternetConnection);
         }
