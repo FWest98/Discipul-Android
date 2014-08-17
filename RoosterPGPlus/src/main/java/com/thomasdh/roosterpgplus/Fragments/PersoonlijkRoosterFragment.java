@@ -64,7 +64,7 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         setRootView(inflater.inflate(R.layout.fragment_main, container, false));
-        viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager);
+        viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
         if(!Account.isSet()) {

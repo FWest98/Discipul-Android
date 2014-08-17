@@ -1,7 +1,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <Preference
-        android:summary="Deze app is gemaakt door Floris Westerman en Thomas den Hollander."
+        android:summary="Deze app is gemaakt door Floris Westerman"
         android:title="Credits" />
     <Preference
         android:key="versie"

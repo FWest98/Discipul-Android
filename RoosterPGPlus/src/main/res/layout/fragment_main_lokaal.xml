@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity$PlaceholderFragment">
+    tools:context=".Fragments.LokalenRoosterFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,16 +17,16 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/rooster_klas_desc"
+            android:text="@string/rooster_lokaal_desc"
             android:textSize="@dimen/docentenrooster_descSize"/>
 
         <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
-            android:id="@+id/main_fragment_spinner_klas"
+            android:id="@+id/main_fragment_spinner_lokaal"
             android:layout_width="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="5dp"
             android:layout_height="wrap_content"
-            android:prompt="@string/rooster_klas_klasSpinner_placeholder"/>
+            android:prompt="@string/rooster_lokaal_lokaalSpinner_placeholder"/>
 
     </LinearLayout>
 

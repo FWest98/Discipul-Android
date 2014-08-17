@@ -12,6 +12,7 @@ import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.thomasdh.roosterpgplus.Data.Account;
+import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +38,11 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         } else {
             summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
         }
-        //findPreference("mijn_account").setSummary(summary);
+        findPreference("mijn_account").setSummary(summary);
 
-        //findPreference("account_upgraden").setEnabled(Account.isAppAccount());
-        //findPreference("subklassen").setEnabled(!Account.isAppAccount());
+        findPreference("account_upgraden").setEnabled(Account.isAppAccount());
+        findPreference("subklassen").setEnabled(!Account.isAppAccount());
+        findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
     }
 
     @Override
@@ -111,6 +113,14 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             findPreference("account_upgraden").setEnabled(Account.isAppAccount());
             findPreference("account_upgraden").setOnPreferenceClickListener(preference -> {
                 Account.getInstance(this).extend();
+
+                return true;
+            });
+
+            findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
+            findPreference("clusterklassen_reload").setOnPreferenceClickListener(preference -> {
+                Account.getInstance(this).setSubklassen(true, null, result -> {
+                });
 
                 return true;
             });
@@ -213,26 +223,36 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class UserFragment extends PreferenceFragment {
+    public static class UserFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-        private SharedPreferences.OnSharedPreferenceChangeListener listener;
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            String summary;
+            if(Account.getUserType() == Account.UserType.LEERLING) {
+                summary = "Naam: " + Account.getName() + ", " + "Klas: " + Account.getLeerlingKlas();
+            } else {
+                summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
+            }
+            findPreference("mijn_account").setSummary(summary);
+
+            findPreference("account_upgraden").setEnabled(Account.isAppAccount());
+            findPreference("subklassen").setEnabled(!Account.isAppAccount());
+            findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
+        }
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_user);
 
-            listener = (SharedPreferences.OnSharedPreferenceChangeListener) getActivity();
-
             // Initialize subklassen
             ListPreferenceMultiSelect subklassenPref = (ListPreferenceMultiSelect) findPreference("subklassen");
-            subklassenPref.setEnabled(!Account.isAppAccount());
-            subklassenPref.setEntries(new String[]{"Subklassen"});
-            subklassenPref.setEntryValues(new String[]{"Subklassen"});
 
             subklassenPref.setOnPreferenceChangeListener((preference, newValue) -> {
                 ArrayList<String> newSubklassen = (ArrayList<String>) newValue;
-                Account.getInstance(getActivity()).setSubklassen(false, newSubklassen, result -> {});
+                Account.getInstance(getActivity()).setSubklassen(false, newSubklassen, result -> {
+                    ExceptionHandler.handleException(new Exception("Clusterklassen bijgewerkt!"), getActivity(), ExceptionHandler.HandleType.SIMPLE);
+                });
 
                 return true;
             });
@@ -243,19 +263,29 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                 if (subklassenPref != null && subklasArray != null) {
                     ArrayList<String> strings = new ArrayList<>();
                     ArrayList<String> namen = new ArrayList<>();
+                    ArrayList<Boolean> enabled = new ArrayList<>();
 
                     for (Account.Subklas subklas : subklasArray) {
                         strings.add(subklas.naam + ": " + subklas.vak + " van " + subklas.leraar);
                         namen.add(subklas.naam);
+                        enabled.add(subklas.isIn);
                     }
 
-                    subklassenPref.setEntries(strings.toArray(new String[strings.size()]));
+                    boolean[] enabledNew = new boolean[enabled.size()];
+
+                    for(int i = 0; i < enabled.size(); i++) {
+                        enabledNew[i] = enabled.get(i).booleanValue();
+                    }
+
+                    subklassenPref.setEntries(strings.toArray(new String[strings.size()]), enabledNew);
                     subklassenPref.setEntryValues(namen.toArray(new String[namen.size()]));
+
+                    subklassenPref.setEnabled(!Account.isAppAccount());
                 }
             });
 
             // Create user and fill in account information
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
             String summary;
             if(Account.getUserType() == Account.UserType.LEERLING) {
                 summary = "Naam: " + Account.getName() + ", " + "Klas: " + Account.getLeerlingKlas();
@@ -278,18 +308,27 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
                 return true;
             });
+
+            findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
+            findPreference("clusterklassen_reload").setOnPreferenceClickListener(preference -> {
+                Account.getInstance(getActivity()).setSubklassen(true, null, result -> {
+                    ExceptionHandler.handleException(new Exception("Clusterklassen opnieuw ingesteld!"), getActivity(), ExceptionHandler.HandleType.SIMPLE);
+                });
+
+                return true;
+            });
         }
 
         @Override
         public void onResume() {
             super.onResume();
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         }
 
         @Override
         public void onPause() {
             super.onPause();
-            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
+            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         }
     }
 }

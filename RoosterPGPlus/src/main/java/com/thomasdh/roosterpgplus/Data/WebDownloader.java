@@ -4,6 +4,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
+import com.thomasdh.roosterpgplus.Models.Klas;
+import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Leraar;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
@@ -225,6 +227,70 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
         };
 
         new WebDownloader(AsyncCallback, parentCallback, errorCallback).execute(url);
+    }
+
+    /* Leerlingen downloader */
+    public static void getLeerlingen(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+        String url = "rooster/info?leerlingen&sort";
+
+        AsyncCallback asyncCallback = r -> {
+            HttpResponse response = (HttpResponse) r;
+            int status = response.getStatusLine().getStatusCode();
+            switch(status) {
+                case 500: throw new Exception("Serverfout, probeer het later nogmaals");
+                case 401: throw new Exception("Fout in de aanvraag, probeer de app te updaten");
+                case 200: break;
+                default: throw new Exception("Onbekende fout, "+status);
+            }
+
+            String s = "";
+            Scanner scanner = new Scanner(response.getEntity().getContent());
+            while(scanner.hasNext()) {
+                s += scanner.nextLine();
+            }
+
+            if("".equals(s)) throw new Exception("Geen leerlingen gevonden");
+
+            ArrayList<Klas> klassen = new ArrayList<>();
+            ArrayList<Leerling> leerlingen = new ArrayList<>();
+
+            JSONArray root = new JSONArray(s);
+
+            for(int i = 0; i < root.length(); i++) {
+                JSONObject JSONklas = root.getJSONObject(i);
+                Klas klas = new Klas(JSONklas.getString("klas"));
+
+                JSONArray JSONleerlingen = JSONklas.getJSONArray("leerlingen");
+                for(int a = 0; a < JSONleerlingen.length(); a++) {
+                    JSONObject JSONleerling = JSONleerlingen.getJSONObject(a);
+                    Leerling leerling = new Leerling(JSONleerling.getString("llnr"), JSONleerling.getString("naam"));
+
+                    klas.setLeerlingen(leerling);
+                    leerlingen.add(leerling);
+                }
+
+                klassen.add(klas);
+            }
+
+            Klas allKlas = new Klas("Alle");
+            allKlas.setLeerlingen(leerlingen);
+            klassen.add(allKlas);
+
+            // Sorteersels
+            Collections.sort(klassen, (lhs, rhs) -> {
+                if(lhs.klas.equals("Alle")) return -1;
+                if(rhs.klas.equals("Alle")) return 1;
+                return lhs.klas.compareToIgnoreCase(rhs.klas);
+            });
+
+            for(Klas klas : klassen) {
+                Collections.sort(klas.leerlingen, (lhs, rhs) -> lhs.getNaam().compareToIgnoreCase(rhs.getNaam()));
+            }
+
+            return klassen;
+        };
+
+        new WebDownloader(asyncCallback, callback, errorCallback).execute(url);
     }
 
     /* Rooster downloader */

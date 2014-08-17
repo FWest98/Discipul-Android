@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
+import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
@@ -22,6 +23,7 @@ public class RoosterInfo {
     private static final String WEKEN_FILENAME = "wekenarray";
     private static final String KLASSEN_FILENAME = "klassenarray";
     private static final String LERAREN_FILENAME = "lerarenarray";
+    private static final String LEERLINGEN_FILENAME = "leerlingenarray";
     private static final String LOADS_FILENAME = "loadshashtable";
     private static final String WEKEN_UREN_FILENAME = "wekenhashtable";
 
@@ -58,7 +60,6 @@ public class RoosterInfo {
     }
 
     //endregion
-
     //region Klassen
 
     public static void getKlassen(Context context, AsyncActionCallback callback) {
@@ -91,6 +92,17 @@ public class RoosterInfo {
             });
         } else {
             RoosterInfo.<ArrayList<Vak>>getOnError(LERAREN_FILENAME, context, callback);
+        }
+    }
+
+    //endregion
+    //region Leerlingen
+
+    public static void getLeerlingen(Context context, AsyncActionCallback callback) {
+        if(HelperFunctions.hasInternetConnection(context)) {
+
+        } else {
+            RoosterInfo.<ArrayList<Leerling>>getOnError(LEERLINGEN_FILENAME, context, callback);
         }
     }
 

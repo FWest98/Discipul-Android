@@ -645,8 +645,10 @@ public class Account {
 
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("key", apiKey));
-                for(int i = 0; i < subklassen.size(); i++) {
-                    postParameters.add(new BasicNameValuePair("klassen["+i+"]", subklassen.get(i)));
+                if(subklassen != null) {
+                    for (int i = 0; i < subklassen.size(); i++) {
+                        postParameters.add(new BasicNameValuePair("klassen[" + i + "]", subklassen.get(i)));
+                    }
                 }
 
                 UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);

@@ -40,9 +40,17 @@
 
     <string name="rooster_docenten_desc">Kies een vak en daarna een docent: </string>
     <string name="rooster_klas_desc">Kies een klas: </string>
-    <string name="rooster_klas_prompt">Klas...</string>
+    <string name="rooster_lokaal_desc">Kies een lokaal: </string>
+    <string name="rooster_leerling_desc">Kies een leerling: </string>
+
+    <string name="rooster_leerling_leerlingNummer_hint">... of vul een leerlingnummer in</string>
+
+    <string name="rooster_klas_klasSpinner_placeholder">Klas...</string>
     <string name="rooster_docenten_vakspinner_placeholder">Vak...</string>
     <string name="rooster_docenten_docentspinner_placeholder">Docent...</string>
+    <string name="rooster_lokaal_lokaalSpinner_placeholder">Lokaal...</string>
+    <string name="rooster_leerling_klasSpinner_placeholder">Klas...</string>
+    <string name="rooster_leerling_leerlingSpinner_placeholder">Leerling...</string>
 
     <!-- Logindialog -->
     <string name="logindialog_title">Log in</string>
@@ -93,6 +101,8 @@
     <string name="logindialog_registerbutton">Registreer</string>
     <string name="registerdialog_title">Registreer</string>
     <string name="extenddialog_title">Upgrade account</string>
+    <string name="settings_user_resetClusterklassenSummary">Herstel jouw rooster naar de standaard</string>
+    <string name="settings_user_resetClusterklassenTitle">Reset clusterklassen</string>
 
     <string-array name="settings_notification_check_interval">
         <item>5 minuten</item>

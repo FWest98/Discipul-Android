@@ -86,6 +86,12 @@ public class ListPreferenceMultiSelect extends ListPreference {
         return false;
     }
 
+
+    public void setEntries(CharSequence[] entries, boolean[] enabled) {
+        setEntries(entries);
+        mClickedDialogEntryIndices = enabled;
+    }
+
     @Override
     public void setEntries(CharSequence[] entries) {
         super.setEntries(entries);

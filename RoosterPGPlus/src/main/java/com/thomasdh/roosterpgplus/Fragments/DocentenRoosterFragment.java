@@ -78,7 +78,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         super.onCreateView(inflater, container, savedInstanceState);
 
         setRootView(inflater.inflate(R.layout.fragment_main_docenten, container, false));
-        viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_docent);
+        viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
         leraarSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_naam);

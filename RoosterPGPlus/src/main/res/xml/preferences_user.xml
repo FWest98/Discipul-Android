@@ -24,4 +24,9 @@
         thomasdhprefs:checkAll="check"
         thomasdhprefs:separator="|" />
 
+    <Preference
+        android:key="clusterklassen_reload"
+        android:summary="@string/settings_user_resetClusterklassenSummary"
+        android:title="@string/settings_user_resetClusterklassenTitle" />
+
 </PreferenceScreen>

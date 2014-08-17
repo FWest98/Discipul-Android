@@ -74,7 +74,7 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
         super.onCreateView(inflater, container, savedInstanceState);
 
         setRootView(inflater.inflate(R.layout.fragment_main_klas, container, false));
-        viewPager = (ViewPager) getRootView().findViewById(R.id.viewPager_klas);
+        viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
         klasSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_klas);

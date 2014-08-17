@@ -195,7 +195,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
 
             //Als het de goede week is, gebruik hem
             if (roosterWeek != null && roosterWeek.getWeek() == selectedWeek) {
-                new RoosterBuilderOld(context, (ViewPager) rootView.findViewById(R.id.viewPager), selectedWeek, type).buildLayout(roosterWeek);
+                new RoosterBuilderOld(context, (ViewPager) rootView.findViewById(R.id.rooster_viewPager), selectedWeek, type).buildLayout(roosterWeek);
                 Log.d("MainActivity", "Het uit het geheugen geladen rooster is van de goede week");
                 new RoosterDownloaderOld(context, rootView, false, refreshItem.get(), selectedWeek).execute();
             } else {
