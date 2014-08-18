@@ -40,12 +40,6 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     private DefaultSpinner leraarSpinner;
     private DefaultSpinner vakSpinner;
 
-
-    @Override
-    public Type getType() {
-        return Type.DOCENTENROOSTER;
-    }
-
     @Override
     public boolean canLoadRooster() { return getLeraar() != null; }
 

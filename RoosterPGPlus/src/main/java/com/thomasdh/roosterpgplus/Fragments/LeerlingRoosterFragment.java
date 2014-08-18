@@ -146,11 +146,6 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
     //region Rooster
 
     @Override
-    public Type getType() {
-        return Type.LEERLINGROOSTER;
-    }
-
-    @Override
     public boolean canLoadRooster() { return getLeerling() != null; }
 
     @Override

@@ -18,9 +18,8 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
-import com.thomasdh.roosterpgplus.Models.Lesuur;
-import com.thomasdh.roosterpgplus.Helpers.RoosterWeek;
 import com.thomasdh.roosterpgplus.Helpers.Converter;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -95,6 +94,10 @@ public class RoosterBuilderOld {
 
         }
         return null;
+    }
+
+    private static class RoosterWeek {
+        Lesuur[] getUren(int d, int i) { return null; }
     }
 
     public void buildLayout(RoosterWeek roosterWeek) {

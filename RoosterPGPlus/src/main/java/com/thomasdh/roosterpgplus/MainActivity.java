@@ -89,7 +89,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         ArrayList<String> groups = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_groups)));
         ArrayList<ArrayList<String>> children = new ArrayList<ArrayList<String>>() {{
             add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_roosters))));
-            add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_pgtv))));
+            //add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_pgtv)))); TODO implement
         }};
 
         drawerList.setAdapter(new NavigationDrawerAdapter(this, groups, children));

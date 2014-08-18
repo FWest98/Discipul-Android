@@ -87,11 +87,4 @@ public class LokalenRoosterFragment extends RoosterViewFragment {
     }
 
     //endregion
-
-    @Override
-    public Type getType() {
-        return Type.LOKALENROOSTER;
-    }
-
-
 }

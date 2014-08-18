@@ -38,11 +38,6 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     @Getter @Setter private String klas;
 
     @Override
-    public Type getType() {
-        return Type.KLASROOSTER;
-    }
-
-    @Override
     public boolean canLoadRooster() { return getKlas() != null; }
 
     @Override

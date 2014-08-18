@@ -28,11 +28,6 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 2700000;
 
     @Override
-    public Type getType() {
-        return Type.PERSOONLIJK_ROOSTER;
-    }
-
-    @Override
     public boolean canLoadRooster() { return Account.isSet(); }
 
     @Override
