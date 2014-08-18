@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus.adapters;
+package com.thomasdh.roosterpgplus.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -20,8 +20,8 @@ public class NavigationDrawerAdapter extends BaseExpandableListAdapter {
         return true;
     }
 
-    public static final int GROUP_LAYOUT_ID = R.layout.drawer_list_item;
-    public static final int CHILD_LAYOUT_ID = R.layout.drawer_list_child;
+    private static final int GROUP_LAYOUT_ID = R.layout.drawer_list_item;
+    private static final int CHILD_LAYOUT_ID = R.layout.drawer_list_child;
 
 
     private Context context;

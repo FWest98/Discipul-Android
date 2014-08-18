@@ -14,10 +14,11 @@
         android:paddingRight="10dp"
         android:paddingTop="3dp"
 
+        android:background="@drawable/diagonal_stripes_optioneeluur"
         android:id="@+id/optioneel_container">
 
         <TextView
-            android:id="@+id/layers"
+            android:id="@+id/layerCounter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"

@@ -10,7 +10,7 @@
     <dimen name="klasrooster_desc_padding">3dp</dimen>
     <dimen name="rooster_uur_vak_fontSize">20sp</dimen>
 
-    <bool name="wide_enough_for_weekview">false</bool>
-    <bool name="high_enough_for_weekview">false</bool>
+    <bool name="isWideWeekview">false</bool>
+    <bool name="isHighWeekview">false</bool>
 
 </resources>

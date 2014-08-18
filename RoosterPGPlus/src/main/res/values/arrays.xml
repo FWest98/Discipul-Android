@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string-array name="pref_upload_buckets_default_entries">
-		<item>Op deze plaats</item>
-		<item>kun je straks</item>
-		<item>kiezen welke</item>
-        <item>subklassen je</item>
-        <item>wilt zien.</item>
+	<string-array name="drawer_groups">
+		<item>Roosters</item>
+		<!--<item>PG-TV</item>-->
 	</string-array>
-	<string-array name="pref_upload_buckets_default_values">
-		<item>#ALL#</item>
-		<item>Test1 Value</item>
-		<item>Test2 Value</item>
-        <item>Test1 Value</item>
-        <item>Test2 Value</item>
-	</string-array>
+    <string-array name="drawer_items_roosters">
+        <item>Persoonlijk rooster</item>
+        <item>Klassenrooster</item>
+        <item>Docentenrooster</item>
+        <!--<item>Lokalenrooster</item>--><!--TODO Implement-->
+        <item>Leerlingrooster</item>
+    </string-array>
+    <!--
+    <string-array name="drawer_items_pgtv">
+        <item>Roosterwijzigingen</item>
+        <item>Algemene mededelingen</item>
+    </string-array>
+    TODO IMPLEMENT
+    -->
 </resources>
