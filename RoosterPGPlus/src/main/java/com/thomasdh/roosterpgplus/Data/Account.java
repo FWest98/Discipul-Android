@@ -62,7 +62,7 @@ public class Account {
 
     public static void initialize(Context context) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-        if(pref.getString("version", null) != "2.0") {
+        if(pref.getString("version", null) != "2.0" && pref.getString("key", null) != null) {
             isSet = false;
             userType = UserType.NO_ACCOUNT;
             ExceptionHandler.handleException(new Exception("Log opnieuw in of registreer opnieuw, vanwege nieuwe schooljaar"), context, ExceptionHandler.HandleType.SIMPLE);
