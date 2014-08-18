@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus.adapters;
+package com.thomasdh.roosterpgplus.Adapters;
 
 import android.content.Context;
 import android.database.DataSetObserver;
@@ -8,21 +8,34 @@ import android.view.ViewGroup;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
-import com.thomasdh.roosterpgplus.MainActivity;
+import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+
 public class ActionBarSpinnerAdapter implements SpinnerAdapter {
-    private final MainActivity.PlaceholderFragment.Type type;
+    @Getter
+    private Class<? extends RoosterViewFragment> type;
     private final WeakReference<Context> context;
     private final List<String> data;
+    private ArrayList<DataSetObserver> observers = new ArrayList<>();
 
-    public ActionBarSpinnerAdapter(Context context, List<String> data, MainActivity.PlaceholderFragment.Type type) {
-        this.context = new WeakReference<Context>(context);
+    public ActionBarSpinnerAdapter(Context context, List<String> data, Class<? extends RoosterViewFragment> type) {
+        this.context = new WeakReference<>(context);
         this.data = data;
+        setType(type);
+    }
+
+    public void setType (Class<? extends RoosterViewFragment> type) {
         this.type = type;
+        for(DataSetObserver observer : observers) {
+            observer.onChanged();
+        }
     }
 
     @Override
@@ -76,17 +89,9 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
         if (context.get() != null) {
             View view = View.inflate(context.get(), R.layout.action_bar_list_view, null);
             ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
-            switch (type){
-                case DOCENTENROOSTER:
-                    ((TextView) view.findViewById(R.id.action_bar_dropdown_type)).setText(context.get().getString(R.string.action_bar_dropdown_docentenrooster));
-                    break;
-                case KLASROOSTER:
-                    ((TextView) view.findViewById(R.id.action_bar_dropdown_type)).setText(context.get().getString(R.string.action_bar_dropdown_klassenrooster));
-                    break;
-                case PERSOONLIJK_ROOSTER:
-                    ((TextView) view.findViewById(R.id.action_bar_dropdown_type)).setText(context.get().getString(R.string.action_bar_dropdown_persoonlijk_rooster));
-                    break;
-            }
+
+            int typeRes = type.getAnnotation(FragmentTitle.class).title();
+            ((TextView) view.findViewById(R.id.action_bar_dropdown_type)).setText(context.get().getString(typeRes));
             return view;
         }
         return null;
@@ -94,13 +99,15 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
 
     @Override
     public void registerDataSetObserver(DataSetObserver observer) {
-
+        observers.add(observer);
     }
 
     @Override
     public void unregisterDataSetObserver(DataSetObserver observer) {
-
+        observers.remove(observer);
     }
+
+
 }
 
 

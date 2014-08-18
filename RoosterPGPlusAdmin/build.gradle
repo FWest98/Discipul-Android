@@ -1,0 +1,40 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.12.+'
+        classpath 'me.tatarka:gradle-retrolambda:1.+'
+    }
+}
+apply plugin: 'com.android.application'
+apply plugin: 'retrolambda'
+
+repositories {
+    mavenCentral()
+}
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.1.0"
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 19
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+	compile 'com.android.support:support-v4:19.1.0'
+}
+
+retrolambda {
+    jdk System.getenv("JAVA8_HOME")
+    oldJdk System.getenv("JAVA7_HOME")
+    javaVersion JavaVersion.VERSION_1_7
+}

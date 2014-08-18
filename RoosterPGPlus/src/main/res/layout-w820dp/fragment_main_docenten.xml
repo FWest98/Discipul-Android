@@ -1,5 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_linearlayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -21,19 +22,21 @@
             android:paddingTop="7dp"
             android:textSize="@dimen/docentenrooster_descSize"/>
 
-        <Spinner
+        <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
             android:id="@+id/main_fragment_spinner_docent_vak"
             android:layout_width="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:prompt="@string/rooster_docenten_vakspinner_placeholder"/>
 
-        <Spinner
+        <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
             android:id="@+id/main_fragment_spinner_docent_naam"
             android:layout_width="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:prompt="@string/rooster_docenten_docentspinner_placeholder"/>
 
     </LinearLayout>
 
@@ -43,7 +46,7 @@
         android:background="#CCC" />
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/viewPager_docent"
+        android:id="@+id/rooster_viewPager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

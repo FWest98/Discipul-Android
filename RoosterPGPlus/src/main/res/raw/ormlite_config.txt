@@ -1,0 +1,67 @@
+#
+# generated on 2014/08/07 12:53:13
+#
+# --table-start--
+dataClass=com.thomasdh.roosterpgplus.Models.Lesuur
+tableName=Lessen
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=query
+# --field-end--
+# --field-start--
+fieldName=dag
+# --field-end--
+# --field-start--
+fieldName=uur
+# --field-end--
+# --field-start--
+fieldName=lesStart
+# --field-end--
+# --field-start--
+fieldName=lesEind
+# --field-end--
+# --field-start--
+fieldName=week
+# --field-end--
+# --field-start--
+fieldName=klassen
+dataPersister=SERIALIZABLE
+# --field-end--
+# --field-start--
+fieldName=leraren
+dataPersister=SERIALIZABLE
+# --field-end--
+# --field-start--
+fieldName=vak
+# --field-end--
+# --field-start--
+fieldName=lokaal
+# --field-end--
+# --field-start--
+fieldName=verandering
+# --field-end--
+# --field-start--
+fieldName=vervallen
+# --field-end--
+# --field-start--
+fieldName=isNew
+# --field-end--
+# --field-start--
+fieldName=verplaatsing
+# --field-end--
+# --field-start--
+fieldName=huiswerk
+# --field-end--
+# --field-start--
+fieldName=master
+# --field-end--
+# --field-start--
+fieldName=bijzonderheid
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################

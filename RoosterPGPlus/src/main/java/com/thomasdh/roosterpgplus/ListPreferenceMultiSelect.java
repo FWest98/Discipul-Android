@@ -86,6 +86,12 @@ public class ListPreferenceMultiSelect extends ListPreference {
         return false;
     }
 
+
+    public void setEntries(CharSequence[] entries, boolean[] enabled) {
+        setEntries(entries);
+        mClickedDialogEntryIndices = enabled;
+    }
+
     @Override
     public void setEntries(CharSequence[] entries) {
         super.setEntries(entries);
@@ -104,14 +110,13 @@ public class ListPreferenceMultiSelect extends ListPreference {
 
         restoreCheckedEntries();
         builder.setMultiChoiceItems(entries, mClickedDialogEntryIndices,
-                new DialogInterface.OnMultiChoiceClickListener() {
-                    public void onClick(DialogInterface dialog, int which, boolean val) {
-                        if (isCheckAllValue(which)) {
-                            checkAll(dialog, val);
-                        }
-                        mClickedDialogEntryIndices[which] = val;
+                (dialog, which, val) -> {
+                    if (isCheckAllValue(which)) {
+                        checkAll(dialog, val);
                     }
-                });
+                    mClickedDialogEntryIndices[which] = val;
+                }
+        );
     }
 
     private boolean isCheckAllValue(int which) {

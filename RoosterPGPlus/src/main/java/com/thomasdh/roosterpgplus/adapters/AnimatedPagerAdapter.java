@@ -1,10 +1,9 @@
-package com.thomasdh.roosterpgplus.adapters;
+package com.thomasdh.roosterpgplus.Adapters;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,11 +11,8 @@ import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 
-/**
- * Created by Thomas on 27-11-13.
- */
-public class MyPagerAdapter extends PagerAdapter {
-    private final ArrayList<View> views = new ArrayList<View>();
+public class AnimatedPagerAdapter extends PagerAdapter {
+    private final ArrayList<View> views = new ArrayList<>();
 
     @Override
     public int getCount() {
@@ -59,7 +55,7 @@ public class MyPagerAdapter extends PagerAdapter {
         }
 
         final FrameLayout parent = (FrameLayout) views.get(position);
-        boolean animationsBeschikbaar = Build.VERSION.SDK_INT >= 12;
+        boolean animationsBeschikbaar = false;
 
         if (animationsBeschikbaar) {
             int shortAnimationDuration = context.getResources().getInteger(

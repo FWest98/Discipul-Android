@@ -18,12 +18,15 @@
     <com.thomasdh.roosterpgplus.ListPreferenceMultiSelect
         android:defaultValue="#ALL#"
         android:dialogTitle="Subklassen"
-        android:entries="@array/pref_upload_buckets_default_entries"
-        android:entryValues="@array/pref_upload_buckets_default_values"
         android:key="subklassen"
         android:summary="@string/settings_user_clusterklassen_summary"
         android:title="@string/settings_user_clusterklassen_title"
         thomasdhprefs:checkAll="check"
         thomasdhprefs:separator="|" />
+
+    <Preference
+        android:key="clusterklassen_reload"
+        android:summary="@string/settings_user_resetClusterklassenSummary"
+        android:title="@string/settings_user_resetClusterklassenTitle" />
 
 </PreferenceScreen>

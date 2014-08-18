@@ -1,24 +1,25 @@
 package com.thomasdh.roosterpgplus;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.thomasdh.roosterpgplus.adapters.MyPagerAdapter;
-import com.thomasdh.roosterpgplus.roosterdata.RoosterWeek;
+import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
+import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
+import com.thomasdh.roosterpgplus.Helpers.Converter;
+import com.thomasdh.roosterpgplus.Models.Lesuur;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -31,16 +32,17 @@ import java.util.Iterator;
 /**
  * Created by Thomas on 2-12-13.
  */
-class RoosterBuilder {
+@Deprecated
+public class RoosterBuilderOld {
 
     private final WeakReference<Context> context;
     private final WeakReference<ViewPager> viewPager;
     private final int week;
-    private final MainActivity.PlaceholderFragment.Type type;
+    private final RoosterViewFragment.Type type;
     private String klas;
 
 
-    public RoosterBuilder(Context context, ViewPager viewPager, int week, MainActivity.PlaceholderFragment.Type type) {
+    public RoosterBuilderOld(Context context, ViewPager viewPager, int week, RoosterViewFragment.Type type) {
         this.context = new WeakReference<Context>(context);
         this.viewPager = new WeakReference<ViewPager>(viewPager);
         this.week = week;
@@ -48,7 +50,7 @@ class RoosterBuilder {
         klas = null;
     }
 
-    public RoosterBuilder(Context context, ViewPager viewPager, int week, MainActivity.PlaceholderFragment.Type type, String klas) {
+    public RoosterBuilderOld(Context context, ViewPager viewPager, int week, RoosterViewFragment.Type type, String klas) {
         this(context, viewPager, week, type);
         this.klas = klas;
     }
@@ -94,24 +96,26 @@ class RoosterBuilder {
         return null;
     }
 
+    private static class RoosterWeek {
+        Lesuur[] getUren(int d, int i) { return null; }
+    }
+
     public void buildLayout(RoosterWeek roosterWeek) {
         if (viewPager.get() != null) {
             if (viewPager.get().getAdapter() == null) {
-                viewPager.get().setAdapter(new MyPagerAdapter());
+                viewPager.get().setAdapter(new AnimatedPagerAdapter());
             }
         }
-        boolean weekView = PreferenceManager.getDefaultSharedPreferences(context.get()).getBoolean("weekview", context.get().getResources().getBoolean(R.bool.big_screen));
+        boolean wideEnoughForWeekview = context.get().getResources().getBoolean(R.bool.isWideWeekview);
+        final boolean highEnoughForWeekview = context.get().getResources().getBoolean(R.bool.isHighWeekview);
 
         if (roosterWeek != null) {
 
-            // Verwijder alle bestaande items
-            // ((MyPagerAdapter) viewPager.get().getAdapter()).deleteItems();
-
             LinearLayout weekLinearLayout = null;
-            if (weekView) {
+            if (wideEnoughForWeekview || highEnoughForWeekview) {
                 weekLinearLayout = new LinearLayout(context.get());
                 weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
-                int paddingLeftRight = (int) convertDPToPX(10, context.get());
+                int paddingLeftRight = (int) Converter.convertDPToPX(10, context.get());
                 weekLinearLayout.setPadding(paddingLeftRight, 0, paddingLeftRight, 0);
             }
 
@@ -182,142 +186,105 @@ class RoosterBuilder {
                             }
                             // In het persoonlijke rooster wordt uitval niet weergegeven als er tegelijkertijd een
                             // andere les is die niet uitvalt.
-                            if (type != MainActivity.PlaceholderFragment.Type.PERSOONLIJK_ROOSTER || tempUurArray.isEmpty()) {
+                            if (type != RoosterViewFragment.Type.PERSOONLIJK_ROOSTER || tempUurArray.isEmpty()) {
                                 tempUurArray.add(new Lesuur(uitgevallenUren.get(0).dag,
                                         uitgevallenUren.get(0).uur,
+                                        null, null,
                                         uitgevallenUren.get(0).week,
-                                        uitgevallenUren.get(0).klas,
-                                        uitgevallenUren.get(0).leraar,
-                                        uurNamen,
+                                        uitgevallenUren.get(0).klassen,
+                                        uitgevallenUren.get(0).leraren,
+                                        null,
                                         uitgevallenUren.get(0).lokaal,
-                                        true, false));
+                                        false, true, false, false, null, false, 0, null));
                             }
                         }
-                        final ArrayList<View> allUren = new ArrayList<View>();
+                        final ArrayList<RelativeLayout> allUren = new ArrayList<>();
                         uurArray = tempUurArray.toArray(new Lesuur[tempUurArray.size()]);
 
 
                         boolean multipleViews = uurArray.length > 1;
 
-                        final FrameLayout frameLayout = new FrameLayout(context.get());
+
+                        final RelativeLayout parentLayout = new RelativeLayout(context.get());
+
                         int a = -1;
-                        for (int u = uurArray.length - 1; u > -1; u = u - 1) {
+
+                        for (int u = uurArray.length - 1; u >= 0; u--) {
                             a++;
-                            final int k = a;
-                            final int h = u;
                             Lesuur lesuur = uurArray[u];
                             RelativeLayout uurview = (RelativeLayout) makeView(lesuur, inflater, y);
-                            if (multipleViews) {
-                                TextView lagen = (TextView) uurview.findViewById(R.id.layers);
-                                lagen.setVisibility(View.VISIBLE);
-                                lagen.setText("(" + (u + 1) + "/" + uurArray.length + ")");
-                                //uurview.findViewById(R.id.filler).setMinimumWidth((int) convertDPToPX(50, context.get()));
-                                ViewGroup.LayoutParams p = uurview.findViewById(R.id.fillerRight).getLayoutParams();
-                                p.width = p.width + (int) convertDPToPX(a * 8, context.get());
-                                uurview.findViewById(R.id.fillerRight).setLayoutParams(p);
-                                p = uurview.findViewById(R.id.fillerLeft).getLayoutParams();
-                                p.width = p.width + (int) convertDPToPX(u * 8, context.get());
-                                uurview.findViewById(R.id.fillerLeft).setLayoutParams(p);
-                            }
 
                             allUren.add(uurview);
 
-                            final int shortAnimationTime = context.get().getResources().getInteger(
-                                    android.R.integer.config_shortAnimTime);
+                            if (multipleViews) {
+                                TextView lagen = (TextView) uurview.findViewById(R.id.layerCounter);
+                                lagen.setVisibility(View.VISIBLE);
+                                lagen.setText("(" + (u + 1) + "/" + uurArray.length + ")");
 
-                            //allUren.get(a).setVisibility(View.GONE);
-                            if (uurArray.length > 1) {
-                                allUren.get(a).setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-                                    public void onClick(View v) {
-                                        final View oldView = allUren.get(k);
-                                        final View newView = allUren.get(k < 1 ? allUren.size() - 1 : k - 1);
-                                        //if (Build.VERSION.SDK_INT >= 12) {
-                                        if (k < 1) { // opnieuw beginnen
-                                            for (int c = 0; c < allUren.size(); c++) {
-                                                frameLayout.bringChildToFront(allUren.get(c));
-                                            }
-                                        }
-                                        //newView.setAlpha(1f);
-                                        //newView.setVisibility(View.VISIBLE);
-                                        frameLayout.bringChildToFront(newView);
-                                        frameLayout.invalidate();
-                                        newView.setClickable(false);
-                                        oldView.setClickable(false);
-                                        newView.setClickable(true);
-                                        oldView.setClickable(true);
-                                            /*oldView.animate().alpha(0f).setDuration(shortAnimationTime).setListener(new AnimatorListenerAdapter() {
-                                                @Override
-                                                public void onAnimationEnd(Animator animation) {
-                                                    oldView.setVisibility(View.GONE);
-                                                    newView.setVisibility(View.VISIBLE);
-                                                    newView.setAlpha(1f);
-                                                    newView.setClickable(true);
-                                                    oldView.setClickable(true);
-                                                }
-                                            });*/
-                                        //} else {
-                                        //oldView.setVisibility(View.GONE);
-                                        //newView.setVisibility(View.VISIBLE);
-                                        //}
-                                    }
-                                });
+
+                                // Dit geeft de padding door voor uren zodat je achterliggende uren kunt zien
+                                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                params.setMargins(0, 0, (int) Converter.convertDPToPX(a * 8, context.get()), 0);
+                                uurview.setLayoutParams(params);
                             }
-                            frameLayout.addView(allUren.get(a));
-                            // allUren.get(a).setVisibility(View.VISIBLE);
-                            frameLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+                            parentLayout.addView(allUren.get(a));
+                            parentLayout.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
-                        ll.addView(frameLayout);
+
+                        if (multipleViews)
+                            parentLayout.setOnClickListener(new MultipleUrenClickListener(allUren, context.get()));
+
+                        ll.addView(parentLayout);
                     } else {
                         View vrij = inflater.inflate(R.layout.rooster_tussenuur, null);
-                        vrij.setMinimumHeight((int) convertDPToPX(79, context.get()));
+                        vrij.setMinimumHeight((int) Converter.convertDPToPX(79, context.get()));
                         if (y == 6) {
                             vrij.setBackgroundResource(R.drawable.basic_rect);
-                            vrij.setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));
+                            vrij.setPadding(0, 0, 0, (int) Converter.convertDPToPX(1, context.get()));
                         }
                         ll.addView(vrij);
                     }
 
                 }
 
-                if (weekView) {
-                    ll.setPadding((int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(3, context.get()));
+                if (wideEnoughForWeekview || highEnoughForWeekview) {
+                    ll.setPadding((int) Converter.convertDPToPX(3, context.get()), (int) Converter.convertDPToPX(3, context.get()), (int) Converter.convertDPToPX(3, context.get()), (int) Converter.convertDPToPX(3, context.get()));
+                    ll.setMinimumWidth((int) Converter.convertDPToPX(250, context.get()));
                     dagView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                     weekLinearLayout.addView(dagView);
                 } else {
-
-                    TextView dataTextView = new TextView(context.get());
-                    Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-                    dataTextView.setText("Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate));
-                    ll.addView(dataTextView);
-
-                    ll.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
-                    ((MyPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
+                    ll.addView(getBottomTextView());
+                    ll.setPadding((int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()));
+                    ((AnimatedPagerAdapter) viewPager.get().getAdapter()).setView(dagView, day - 2, context.get());
                 }
             }
-            if (weekView) {
+            if (wideEnoughForWeekview || highEnoughForWeekview) {
                 LinearLayout completeLinearLayout = new LinearLayout(context.get());
                 completeLinearLayout.setOrientation(LinearLayout.VERTICAL);
                 completeLinearLayout.addView(weekLinearLayout);
 
                 // Maak het laatstgeupdate vak
-                TextView dataTextView = new TextView(context.get());
-                Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-                dataTextView.setText("Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate));
+                TextView dataTextView = getBottomTextView();
                 dataTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                dataTextView.setPadding((int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(10, context.get()));
-
+                dataTextView.setPadding((int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()), (int) Converter.convertDPToPX(10, context.get()));
                 completeLinearLayout.addView(dataTextView);
 
-                ScrollView weekScrollView = new ScrollView(context.get());
-                weekScrollView.addView(completeLinearLayout);
-                ((MyPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
+                if (wideEnoughForWeekview && highEnoughForWeekview) {
+                    ((AnimatedPagerAdapter) viewPager.get().getAdapter()).setView(completeLinearLayout, 0, context.get());
+                } else if (wideEnoughForWeekview) {
+                    ScrollView weekScrollView = new ScrollView(context.get());
+                    weekScrollView.addView(completeLinearLayout);
+                    ((AnimatedPagerAdapter) viewPager.get().getAdapter()).setView(weekScrollView, 0, context.get());
+                } else if (highEnoughForWeekview) {
+                    HorizontalScrollView completeScrollView = new HorizontalScrollView(context.get());
+                    completeScrollView.addView(completeLinearLayout);
+                    ((AnimatedPagerAdapter) viewPager.get().getAdapter()).setView(completeScrollView, 0, context.get());
+                }
+
             }
             viewPager.get().getAdapter().notifyDataSetChanged();
-            if (!weekView)
+            if (!wideEnoughForWeekview && !highEnoughForWeekview)
                 // Ga naar de gewilde dag
                 if (PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("geselecteerdeweek", -1) == week) {
                     Log.d(getClass().getSimpleName(), "De geselecteerde week is niet veranderd, de dag blijft " + PreferenceManager.getDefaultSharedPreferences(context.get()).getInt("dagvandeweeklaatst", 0));
@@ -354,67 +321,93 @@ class RoosterBuilder {
         }
     }
 
-    float convertDPToPX(float pixel, Context c) {
-        Resources r = c.getResources();
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, r.getDisplayMetrics());
+    TextView getBottomTextView() {
+        TextView dataTextView = new TextView(context.get());
+        Date laatstGeupdate = new Date(PreferenceManager.getDefaultSharedPreferences(context.get()).getLong("lastRefreshTime", 0));
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+        String subText = "Laatst geupdate: " + simpleDateFormat.format(laatstGeupdate) + ".";
+
+        ConnectivityManager cm = (ConnectivityManager) context.get().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo == null || !netInfo.isConnectedOrConnecting()) {
+            subText = "Geen internetverbinding. " + subText;
+        }
+
+        dataTextView.setText(subText);
+        return dataTextView;
     }
+
 
     View makeView(Lesuur lesuur, LayoutInflater inflater, int y) {
         View uur;
-        boolean paddingRight = true;
         if (lesuur.vervallen) {
             uur = inflater.inflate(R.layout.rooster_vervallen_uur, null);
-            uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
+            uur.setMinimumHeight((int) Converter.convertDPToPX(80, context.get()));
+            TextView vervallenTextView = (TextView) uur.findViewById(R.id.vervallen_tekst);
             if (lesuur.vak.endsWith("MULTIPLE")) {
                 String temp = lesuur.vak.replace("MULTIPLE", "");
-                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(temp + " vallen uit");
+                vervallenTextView.setText(temp + " vallen uit");
             } else {
-                ((TextView) uur.findViewById(R.id.vervallen_tekst)).setText(lesuur.vak + " valt uit");
+                vervallenTextView.setText(lesuur.vak + " valt uit");
             }
+
+            // CAPS LOCK DAY
+            if (Build.VERSION.SDK_INT >= 14)
+                if (Calendar.getInstance().get(Calendar.MONTH) == 9 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 22)
+                    vervallenTextView.setAllCaps(true);
+
         } else {
-            paddingRight = false;
             if (lesuur.verandering) {
                 uur = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
-                if (klas != null && !lesuur.klas.equals(klas)) {
+                if (klas != null && !lesuur.klassen.get(0).equals(klas)) {
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(100);
-                }else{
+                } else {
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(0);
                 }
             } else {
                 //Als het geen algemeen uur is
-                if (klas != null && !lesuur.klas.equals(klas)) {
+                if (klas != null && !lesuur.klassen.get(0).equals(klas)) {
                     uur = inflater.inflate(R.layout.rooster_uur_optioneel, null);
                     uur.findViewById(R.id.optioneel_container).getBackground().setAlpha(100);
-
-                    paddingRight = true;
                 } else {
                     uur = inflater.inflate(R.layout.rooster_uur, null);
                 }
             }
-            ((TextView) uur.findViewById(R.id.rooster_vak)).setText(lesuur.vak);
-            if (type != MainActivity.PlaceholderFragment.Type.DOCENTENROOSTER) {
+            TextView vakTextView = (TextView) uur.findViewById(R.id.rooster_vak);
+            vakTextView.setText(lesuur.vak);
+
+            TextView leraarTextView = (TextView) uur.findViewById(R.id.rooster_leraar);
+            if (type != RoosterViewFragment.Type.DOCENTENROOSTER) {
                 // Vul de leraar in
-                if (lesuur.leraar2 == null || lesuur.leraar2.equals("")) {
-                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar);
+                if (lesuur.leraren.size() == 1) {
+                    leraarTextView.setText(lesuur.leraren.get(0));
                 } else {
-                    ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.leraar + " & " + lesuur.leraar2);
+                    leraarTextView.setText(lesuur.leraren.toString());
                 }
             } else {
                 //Geef bij een docentenrooster de klas in plaats van de leraar
-                ((TextView) uur.findViewById(R.id.rooster_leraar)).setText(lesuur.klas);
+                leraarTextView.setText(lesuur.klassen.get(0));
             }
-            ((TextView) uur.findViewById(R.id.rooster_lokaal)).setText(lesuur.lokaal);
-            ((TextView) uur.findViewById(R.id.rooster_tijden)).setText(getTijden(y));
+            TextView lokaalTextView = (TextView) uur.findViewById(R.id.rooster_lokaal);
+            lokaalTextView.setText(lesuur.lokaal);
+
+            TextView tijdenTextView = (TextView) uur.findViewById(R.id.rooster_tijden);
+            tijdenTextView.setText(getTijden(y));
+
+            // CAPS LOCK DAY
+            if (Build.VERSION.SDK_INT >= 14)
+                if (Calendar.getInstance().get(Calendar.MONTH) == 9 && Calendar.getInstance().get(Calendar.DAY_OF_MONTH) == 22) {
+                    lokaalTextView.setAllCaps(true);
+                    tijdenTextView.setAllCaps(true);
+                    leraarTextView.setAllCaps(true);
+                    vakTextView.setAllCaps(true);
+                }
         }
         if (y == 6) {
             uur.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
-            if (!paddingRight) {
-                uur.findViewById(R.id.rooster_uur_linearlayout).setPadding((int) convertDPToPX(7, context.get()), (int) convertDPToPX(3, context.get()), (int) convertDPToPX(10, context.get()), (int) convertDPToPX(0, context.get()));
-            } else {
-                uur.findViewById(R.id.rooster_uur_linearlayout).setPadding(0, 0, 0, (int) convertDPToPX(1, context.get()));
-            }
         }
-        uur.setMinimumHeight((int) convertDPToPX(80, context.get()));
+        uur.setMinimumHeight((int) Converter.convertDPToPX(80, context.get()));
         return uur;
     }
 }

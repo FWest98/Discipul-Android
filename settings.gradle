@@ -1,1 +1,1 @@
-include ':RoosterPGPlus', ':RoosterPG+ admin'
+include ':RoosterPGPlus', 'RoosterPGPlusAdmin'

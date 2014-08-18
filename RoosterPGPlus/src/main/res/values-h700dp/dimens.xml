@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="isHighWeekview">true</bool>
+    <dimen name="rooster_uur_vak_fontSize">20sp</dimen>
+</resources>

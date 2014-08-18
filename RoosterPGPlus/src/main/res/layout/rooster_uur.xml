@@ -2,29 +2,23 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="3dp">
-
-    <View
-        android:layout_width="0dp"
-        android:layout_height="80dp"
-        android:id="@+id/fillerLeft"
-        android:layout_alignParentLeft="true"/>
+    android:layout_height="80dp"
+    android:background="@drawable/basic_rect_nobottom"
+    android:id="@+id/rooster_uur_linearlayout">
 
     <RelativeLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:background="@drawable/basic_rect_nobottom"
-        android:orientation="vertical"
+
         android:paddingLeft="7dp"
         android:paddingRight="10dp"
         android:paddingTop="3dp"
-        android:layout_toLeftOf="@+id/fillerRight"
-        android:layout_toRightOf="@+id/fillerLeft"
-        android:id="@+id/rooster_uur_linearlayout">
+
+        android:background="@drawable/diagonal_stripes_optioneeluur"
+        android:id="@+id/optioneel_container">
 
         <TextView
-            android:id="@+id/layers"
+            android:id="@+id/layerCounter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
@@ -38,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="3dp"
             android:text="@string/rooster_vak"
-            android:textSize="20sp" />
+            android:textSize="@dimen/rooster_uur_vak_fontSize" />
 
         <TextView
             android:id="@+id/rooster_lokaal"
@@ -68,13 +62,5 @@
             android:layout_margin="3dp"
             android:text="@string/rooster_tijden"
             android:textSize="15sp" />
-
     </RelativeLayout>
-
-    <View
-        android:layout_width="0dp"
-        android:layout_height="80dp"
-        android:id="@+id/fillerRight"
-        android:layout_alignParentRight="true"/>
-
 </RelativeLayout>

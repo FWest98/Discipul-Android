@@ -1,0 +1,72 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_linearlayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Fragments.LeerlingRoosterFragment">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/rooster_leerling_desc"
+        android:paddingLeft="10dp"
+        android:paddingTop="7dp"
+        android:textSize="@dimen/docentenrooster_descSize"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="3dp">
+
+        <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
+            android:id="@+id/main_fragment_spinner_leerling_klas"
+            android:layout_width="0dp"
+            android:layout_marginLeft="5dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".25"
+            android:prompt="@string/rooster_leerling_klasSpinner_placeholder"/>
+
+        <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
+            android:id="@+id/main_fragment_spinner_leerling_naam"
+            android:layout_width="0dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".75"
+            android:prompt="@string/rooster_leerling_leerlingSpinner_placeholder"/>
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/rooster_leerling_leerlingNummer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:fontFamily="sans-serif"
+        android:hint="@string/rooster_leerling_leerlingNummer_hint"
+        android:paddingBottom="10dp"
+        android:singleLine="true"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCC" />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/rooster_viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/internet_connection_warning"
+        android:id="@+id/internet_connection_warning"
+        android:padding="10dp"
+        android:text="@string/internet_connection_warning" />
+
+</LinearLayout>
