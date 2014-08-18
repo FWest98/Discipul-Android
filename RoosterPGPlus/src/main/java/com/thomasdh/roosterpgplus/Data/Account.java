@@ -62,6 +62,11 @@ public class Account {
 
     public static void initialize(Context context) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        if(pref.getString("version", null) != "2.0") {
+            isSet = false;
+            userType = UserType.NO_ACCOUNT;
+            ExceptionHandler.handleException(new Exception("Log opnieuw in of registreer opnieuw, vanwege nieuwe schooljaar"), context, ExceptionHandler.HandleType.SIMPLE);
+        }
         String key;
         if((key = pref.getString("key", null)) == null) {
             isSet = false;
@@ -100,6 +105,8 @@ public class Account {
         pref.putBoolean("appaccount", isAppAccount);
 
         isSet = true;
+
+        pref.putString("version", "2.0");
 
         if(base.has("code")) {
             // LERAAR
