@@ -64,6 +64,8 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
 
         if(!Account.isSet()) {
             Account.getInstance(getActivity()).login(result -> loadRooster());
+        } else {
+            loadRooster();
         }
 
         return getRootView();

@@ -24,9 +24,8 @@
             android:id="@+id/main_fragment_spinner_leerling_klas"
             android:layout_width="0dp"
             android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
             android:layout_height="wrap_content"
-            android:layout_weight=".2"
+            android:layout_weight=".25"
             android:prompt="@string/rooster_leerling_klasSpinner_placeholder"/>
 
         <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
@@ -35,7 +34,7 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_height="wrap_content"
-            android:layout_weight=".8"
+            android:layout_weight=".75"
             android:prompt="@string/rooster_leerling_leerlingSpinner_placeholder"/>
 
     </LinearLayout>
@@ -49,8 +48,8 @@
         android:hint="@string/rooster_leerling_leerlingNummer_hint"
         android:paddingBottom="10dp"
         android:singleLine="true"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"/>
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"/>
 
     <View
         android:layout_width="match_parent"

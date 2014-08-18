@@ -33,6 +33,7 @@ import roboguice.inject.InjectView;
 
 public class MainActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadedListener {
     private static final String ROOSTER_TYPE = "roosterType";
+    private static final String WEKEN_STORE = "wekenStore";
 
     @Getter
     private static int selectedWeek = -1;
@@ -83,6 +84,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         } else {
             roosterType = (Class<? extends RoosterViewFragment>) savedInstanceState.getSerializable(ROOSTER_TYPE);
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
+            mainFragment.setRoosterLoadedListener(this);
         }
 
         /* Navigation Drawer */
