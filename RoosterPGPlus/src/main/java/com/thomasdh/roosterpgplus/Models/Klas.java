@@ -14,7 +14,7 @@ public class Klas implements Serializable {
     }
 
     public void setLeerlingen(ArrayList<Leerling> leerlingen) {
-        if(leerlingen == null) { leerlingen = new ArrayList<>(); }
+        if(this.leerlingen == null) { this.leerlingen = new ArrayList<>(); }
         this.leerlingen.addAll(leerlingen);
     }
 

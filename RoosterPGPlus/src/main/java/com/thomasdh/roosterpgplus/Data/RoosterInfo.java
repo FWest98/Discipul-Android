@@ -100,7 +100,14 @@ public class RoosterInfo {
 
     public static void getLeerlingen(Context context, AsyncActionCallback callback) {
         if(HelperFunctions.hasInternetConnection(context)) {
-
+            WebDownloader.getLeerlingen(leerlingen -> {
+                callback.onAsyncActionComplete(leerlingen);
+                saveInStorage(LEERLINGEN_FILENAME, context, leerlingen);
+            }, exception -> {
+                Log.e("WebDownloader", "Er ging iets met het het ophalen van de leerlingen", (Exception) exception);
+                ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
+                RoosterInfo.<ArrayList<Leerling>>getOnError(LEERLINGEN_FILENAME, context, callback);
+            });
         } else {
             RoosterInfo.<ArrayList<Leerling>>getOnError(LEERLINGEN_FILENAME, context, callback);
         }

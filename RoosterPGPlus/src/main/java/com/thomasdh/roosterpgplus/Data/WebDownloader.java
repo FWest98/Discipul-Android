@@ -252,7 +252,6 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             if("".equals(s)) throw new Exception("Geen leerlingen gevonden");
 
             ArrayList<Klas> klassen = new ArrayList<>();
-            ArrayList<Leerling> leerlingen = new ArrayList<>();
 
             JSONArray root = new JSONArray(s);
 
@@ -266,26 +265,13 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
                     Leerling leerling = new Leerling(JSONleerling.getString("llnr"), JSONleerling.getString("naam"));
 
                     klas.setLeerlingen(leerling);
-                    leerlingen.add(leerling);
                 }
 
                 klassen.add(klas);
             }
 
-            Klas allKlas = new Klas("Alle");
-            allKlas.setLeerlingen(leerlingen);
-            klassen.add(allKlas);
-
             // Sorteersels
-            Collections.sort(klassen, (lhs, rhs) -> {
-                if(lhs.klas.equals("Alle")) return -1;
-                if(rhs.klas.equals("Alle")) return 1;
-                return lhs.klas.compareToIgnoreCase(rhs.klas);
-            });
-
-            for(Klas klas : klassen) {
-                Collections.sort(klas.leerlingen, (lhs, rhs) -> lhs.getNaam().compareToIgnoreCase(rhs.getNaam()));
-            }
+            Collections.sort(klassen, (lhs, rhs) -> lhs.klas.compareToIgnoreCase(rhs.klas));
 
             return klassen;
         };

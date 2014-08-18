@@ -43,7 +43,7 @@
     <string name="rooster_lokaal_desc">Kies een lokaal: </string>
     <string name="rooster_leerling_desc">Kies een leerling: </string>
 
-    <string name="rooster_leerling_leerlingNummer_hint">... of vul een leerlingnummer in</string>
+    <string name="rooster_leerling_leerlingNummer_hint">... of vul een leerlingnummer of naam in</string>
 
     <string name="rooster_klas_klasSpinner_placeholder">Klas...</string>
     <string name="rooster_docenten_vakspinner_placeholder">Vak...</string>
