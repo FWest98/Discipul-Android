@@ -713,11 +713,11 @@ public class Account {
     private class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, Object> {
         @Override
         protected Object doInBackground(WebRequestCallbacks... params) {
+            callbacks = params[0];
             if (!HelperFunctions.hasInternetConnection(context)) {
                 publishProgress(new Exception("Geen internetverbinding"));
                 return null;
             }
-            callbacks = params[0];
             try {
                 HttpClient httpClient = new DefaultHttpClient();
                 HttpResponse response = callbacks.onRequestCreate(httpClient);
