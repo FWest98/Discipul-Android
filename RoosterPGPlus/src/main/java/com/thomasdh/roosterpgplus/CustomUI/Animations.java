@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 public class Animations {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static void expand(View v) {
+        if(v == null) return;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             v.setVisibility(View.VISIBLE);
             final int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
@@ -23,6 +24,7 @@ public class Animations {
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static void collapse(View v) {
+        if(v == null) return;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             int finalHeight = v.getHeight();
             ValueAnimator mAnimator = slideAnimator(v, finalHeight, 0);
