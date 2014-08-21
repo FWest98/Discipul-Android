@@ -10,6 +10,7 @@ import com.nineoldandroids.animation.ValueAnimator;
 
 public class Animations {
     public static void expand(View v) {
+        if(v == null) return;
         v.setVisibility(View.VISIBLE);
         final int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         final int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
@@ -19,6 +20,7 @@ public class Animations {
     }
 
     public static void collapse(View v) {
+        if(v == null) return;
         int finalHeight = v.getHeight();
         ValueAnimator mAnimator = slideAnimator(v, finalHeight, 0);
         mAnimator.addListener(new Animator.AnimatorListener() {
