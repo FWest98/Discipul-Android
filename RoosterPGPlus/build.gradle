@@ -12,6 +12,7 @@ apply plugin: 'retrolambda'
 
 repositories {
     mavenCentral()
+    maven { url "http://dl.bintray.com/populov/maven" }
 }
 
 android {
@@ -46,6 +47,8 @@ dependencies {
     compile 'org.functionaljava:functionaljava:4.1'
     compile 'com.netflix.rxjava:rxjava-core:0.19.6'
     compile 'com.netflix.rxjava:rxjava-android:0.19.6'
+    compile 'com.viewpagerindicator:library:2.4.1'
+    compile 'com.nineoldandroids:library:2.4.0'
 }
 
 retrolambda {
