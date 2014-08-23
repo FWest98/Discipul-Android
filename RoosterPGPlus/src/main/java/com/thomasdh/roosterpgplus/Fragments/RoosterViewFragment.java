@@ -94,7 +94,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     public void setWeek(int week, boolean loadRooster) {
         this.week = week;
         if(week == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
-            setDag(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+            setDag(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
         } else {
             setDag(0);
         }
@@ -131,6 +131,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
 
     public void loadRooster(boolean reload) {
         if(!canLoadRooster()) return;
+        if(getWeek() == -1) return;
         roosterLoadedListener.onRoosterLoadStart();
 
         List<NameValuePair> query = new ArrayList<>();

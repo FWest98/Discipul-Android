@@ -33,6 +33,7 @@ import roboguice.inject.InjectView;
 
 public class MainActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadedListener {
     private static final String ROOSTER_TYPE = "roosterType";
+    private static final String WEKEN_STORE = "wekenStore";
 
     @Getter
     private static int selectedWeek = -1;
@@ -83,6 +84,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         } else {
             roosterType = (Class<? extends RoosterViewFragment>) savedInstanceState.getSerializable(ROOSTER_TYPE);
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
+            mainFragment.setRoosterLoadedListener(this);
         }
 
         /* Navigation Drawer */
@@ -241,27 +243,8 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         if (wekenArray == null || wekenArray.isEmpty()) {
             strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         } else {
-
-            //Get the index of the current week
-            int indexCurrentWeek = 0;
-
-            int correctionForWeekends = 0;
-            if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 1 || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 7) {
-                correctionForWeekends = 1;
-            }
-
-            for (int u = 0; u < wekenArray.size(); u++) {
-                if (wekenArray.get(u).week >= Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + correctionForWeekends) {
-                    indexCurrentWeek = u;
-                    break;
-                }
-            }
-
-            // Wordt al in de listener gedaan......
-            //setSelectedWeek(wekenArray.get(indexCurrentWeek).week);
-
             for (int c = 0; c < Settings.WEEKS_IN_SPINNER && c < wekenArray.size(); c++) {
-                strings.add("Week " + wekenArray.get(indexCurrentWeek + c).week);
+                strings.add("Week " + wekenArray.get(c).week);
             }
         }
         actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, mainFragment.getClass()); // bug in IntelliJ, issue 79680. It compiles, ship it!

@@ -54,7 +54,6 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
     public static void build(List<Lesuur> lessenList, int showDag, boolean showVervangenUren, long lastLoad, int urenCount, ViewPager viewPager, Context context, ViewPager.OnPageChangeListener listener, lesViewBuilder builder) {
         if(viewPager == null) throw new IllegalArgumentException("Geen viewPager");
         if(viewPager.getAdapter() == null) viewPager.setAdapter(new AnimatedPagerAdapter());
-        RelativeLayout.LayoutParams lesLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT); // Voor meerdere uren
         AnimatedPagerAdapter pagerAdapter = (AnimatedPagerAdapter) viewPager.getAdapter();
 
         if(lessenList == null || lessenList.size() == 0) {
@@ -165,6 +164,7 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
                         uurCounter.setText(new StringBuilder("(").append(reverseCounter).append("/").append(lesViews.size()).append(")"));
 
                         // Padding links/rechts zodat je uren kan zien :D
+                        RelativeLayout.LayoutParams lesLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT); // Voor meerdere uren
                         lesLayoutParams.setMargins(0, 0, converter.DPtoPX(8*counter), 0);
                         lesView.setLayoutParams(lesLayoutParams);
                     }

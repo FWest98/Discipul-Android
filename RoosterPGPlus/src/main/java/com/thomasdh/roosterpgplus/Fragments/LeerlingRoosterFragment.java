@@ -64,9 +64,22 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
         leerlingSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_leerling_naam);
         leerlingNummerEditor = (EditText) getRootView().findViewById(R.id.rooster_leerling_leerlingNummer);
 
+        if(savedInstanceState != null) {
+            setLeerling((Leerling) savedInstanceState.getSerializable("LEERLING"));
+            setKlas((Klas) savedInstanceState.getSerializable("KLAS"));
+        }
+
         RoosterInfo.getLeerlingen(getActivity(), s -> onLeerlingenLoaded((ArrayList<Klas>) s));
 
         return getRootView();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable("KLAS", getKlas());
+        outState.putSerializable("LEERLING", getLeerling());
+
+        super.onSaveInstanceState(outState);
     }
 
     public void onLeerlingenLoaded(ArrayList<Klas> result) {
@@ -83,6 +96,11 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
         klasSpinner.setOnItemSelectedListener(this);
 
         leerlingSpinner.setOnItemSelectedListener(this);
+
+        if(getLeerling() != null && getKlas() != null) {
+            llToGet = getLeerling().getNaam();
+            klasSpinner.setSelection(klasAdapter.getPosition(getKlas().klas));
+        }
 
         leerlingen = Array.join(klassen.map(s -> Array.iterableArray(s.leerlingen)));
         leerlingNummerEditor.addTextChangedListener(new TextWatcher() {

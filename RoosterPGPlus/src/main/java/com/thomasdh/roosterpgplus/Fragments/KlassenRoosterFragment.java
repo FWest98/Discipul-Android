@@ -31,6 +31,7 @@ import lombok.Setter;
 @FragmentTitle(title = R.string.action_bar_dropdown_klassenrooster)
 public class KlassenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
     private static final String CHOSEN_KLAS_KEY = "lastChosenKlas";
+    private static final String KLAS_CHOICE = "KLAS_CHOICE";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
 
     private DefaultSpinner klasSpinner;
@@ -50,7 +51,7 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     public long getLoad() { return RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getActivity()); }
 
     @Override
-    public void setLoad() { RoosterInfo.setLoad("klas"+getKlas()+getWeek(), System.currentTimeMillis(), getActivity()); }
+    public void setLoad() { RoosterInfo.setLoad("klas" + getKlas() + getWeek(), System.currentTimeMillis(), getActivity()); }
 
     @Override
     public LoadType getLoadType() {
@@ -91,7 +92,8 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
         String lastChosenKlas = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(CHOSEN_KLAS_KEY, null);
         if(lastChosenKlas == null) return;
-        klasSpinner.setTag(lastChosenKlas);
+        setKlas(lastChosenKlas);
+        klasSpinner.setSelection(klasAdapter.getPosition(lastChosenKlas));
     }
 
     @Override

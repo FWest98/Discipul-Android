@@ -36,6 +36,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     @Getter @Setter private Vak vak;
     @Getter @Setter private String leraar;
     @Getter @Setter private ArrayList<Vak> vakken;
+    private String leraarToGet = null;
 
     private DefaultSpinner leraarSpinner;
     private DefaultSpinner vakSpinner;
@@ -53,7 +54,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     public long getLoad() { return RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity()); }
 
     @Override
-    public void setLoad() { RoosterInfo.setLoad("docent"+getLeraar()+getWeek(), System.currentTimeMillis(), getActivity()); }
+    public void setLoad() { RoosterInfo.setLoad("docent" + getLeraar() + getWeek(), System.currentTimeMillis(), getActivity()); }
 
     @Override
     public LoadType getLoadType() {
@@ -78,15 +79,24 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         leraarSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_naam);
         vakSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_vak);
 
-        RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s));
+        if(savedInstanceState == null) {
+            RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s));
+        } else {
+            setVak((Vak) savedInstanceState.getSerializable("VAK"));
+            setLeraar(savedInstanceState.getString("LERAAR"));
+            RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s, getLeraar(), getVak()));
+        }
 
         return getRootView();
     }
 
     public void onLerarenLoaded(ArrayList<Vak> result) {
-        setVakken(result);
+        onLerarenLoaded(result, null, null);
+    }
 
-        if(getVakken() == null) return;
+    public void onLerarenLoaded(ArrayList<Vak> result, String Sleraar, Vak Svak) {
+        if(result == null) return;
+        setVakken(result);
 
         ArrayList<String> vakNamen = new ArrayList<>();
         for(Vak vak : vakken) { vakNamen.add(vak.getNaam()); }
@@ -96,6 +106,9 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         vakSpinner.setAdapter(vakAdapter);
         vakSpinner.setOnItemSelectedListener(this);
         leraarSpinner.setOnItemSelectedListener(this);
+
+        vakSpinner.setSelection(vakAdapter.getPosition(Svak.getNaam()));
+        leraarToGet = Sleraar;
     }
 
     @Override
@@ -116,6 +129,11 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         ArrayAdapter<String> leraarAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, leraarNamen.toArray(new String[leraarNamen.size()]));
         leraarAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         leraarSpinner.setAdapter(leraarAdapter);
+
+        if(leraarToGet != null) {
+            leraarSpinner.setSelection(leraarAdapter.getPosition(leraarToGet));
+            leraarToGet = null;
+        }
     }
 
     public void onLeraarSelected(int position) {
@@ -141,5 +159,13 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
 
         return lesView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString("LERAAR", leraar);
+        outState.putSerializable("VAK", vak);
+
+        super.onSaveInstanceState(outState);
     }
 }
