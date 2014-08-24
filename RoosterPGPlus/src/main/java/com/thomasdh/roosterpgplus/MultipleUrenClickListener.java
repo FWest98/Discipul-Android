@@ -28,7 +28,8 @@ public class MultipleUrenClickListener implements View.OnClickListener {
         highestView = 0;
         this.allUren = allUren;
         this.context = context;
-        shortAnimationTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
+        shortAnimationTime = 10000;
+                //context.getResources().getInteger(android.R.integer.config_shortAnimTime);
     }
 
     @Override
@@ -67,7 +68,6 @@ public class MultipleUrenClickListener implements View.OnClickListener {
                 ObjectAnimator.ofFloat(oldView, "alpha", 1f)
                         .setDuration(0)
                         .start();
-
                 shiftViews(parentLayout);
             }
         });
@@ -76,13 +76,13 @@ public class MultipleUrenClickListener implements View.OnClickListener {
 
     void shiftViews(RelativeLayout parentLayout) {
         for (int ind = highestView + 1; ind < highestView + allUren.size(); ind++) {
-            final int uurIndex = ind % allUren.size();
+            int uurIndex = ind % allUren.size();
             parentLayout.bringChildToFront(allUren.get(uurIndex));
 
-            final int currentMargin = ((RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams()).rightMargin;
-            final float newMargin = Converter.convertDPToPX(8, context);
+            int currentMargin = ((RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams()).rightMargin;
+            float newMargin = Converter.convertDPToPX(8, context);
 
-            ValueAnimator a = ValueAnimator.ofFloat();
+            ValueAnimator a = ValueAnimator.ofFloat(1f);
             a.addUpdateListener(animation -> {
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams();
                 params.rightMargin = (int) (animation.getAnimatedFraction() * newMargin) + currentMargin;

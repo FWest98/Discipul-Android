@@ -52,11 +52,11 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
     }
 
     public static void build(List<Lesuur> lessenList, int showDag, boolean showVervangenUren, long lastLoad, int urenCount, ViewPager viewPager, Context context, ViewPager.OnPageChangeListener listener, lesViewBuilder builder) {
-        if(viewPager == null) throw new IllegalArgumentException("Geen viewPager");
-        if(viewPager.getAdapter() == null) viewPager.setAdapter(new AnimatedPagerAdapter());
+        if (viewPager == null) throw new IllegalArgumentException("Geen viewPager");
+        if (viewPager.getAdapter() == null) viewPager.setAdapter(new AnimatedPagerAdapter());
         AnimatedPagerAdapter pagerAdapter = (AnimatedPagerAdapter) viewPager.getAdapter();
 
-        if(lessenList == null || lessenList.size() == 0) {
+        if (lessenList == null || lessenList.size() == 0) {
             lessenList = new ArrayList<>();
             lessenList.add(new Lesuur(0, 0, null, null, 1, null, null, null, null, false, false, false, false, null, false, 0, null));
         }
@@ -81,16 +81,16 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
         calendar.setTime(new Date());
         Calendar now = Calendar.getInstance();
 
-        if(now.get(Calendar.WEEK_OF_YEAR) > 30 && week <= 30) { // Najaar en wil voorjaar, volgend jaar
+        if (now.get(Calendar.WEEK_OF_YEAR) > 30 && week <= 30) { // Najaar en wil voorjaar, volgend jaar
             calendar.set(Calendar.YEAR, now.get(Calendar.YEAR) + 1);
-        } else if(now.get(Calendar.WEEK_OF_YEAR) <= 30 && week > 30) { // Voorjaar en wil najaar, vorig jaar
-            calendar.set(Calendar.YEAR, now.get(Calendar.YEAR)-1);
+        } else if (now.get(Calendar.WEEK_OF_YEAR) <= 30 && week > 30) { // Voorjaar en wil najaar, vorig jaar
+            calendar.set(Calendar.YEAR, now.get(Calendar.YEAR) - 1);
         } else {
             calendar.set(Calendar.YEAR, now.get(Calendar.YEAR));
         }
         calendar.set(Calendar.WEEK_OF_YEAR, week);
 
-        if(weekView) {
+        if (weekView) {
             weekLinearLayout = new LinearLayout(context);
             weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
             int padding = (int) Converter.convertDPToPX(10, context);
@@ -114,7 +114,7 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
             TextView dagDatumTextView = (TextView) dagView.findViewById(R.id.weekdagdatum);
             dagDatumTextView.setText(dateFormat.format(calendar.getTime()));
 
-            for(int a = 1; a <= urenCount; a++) {
+            for (int a = 1; a <= urenCount; a++) {
                 final int uur = a;
                 boolean multipleViews;
                 RelativeLayout urenContainer = new RelativeLayout(context);
@@ -123,12 +123,12 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
 
                 Array<Lesuur> lesuur = lesdag.filter(s -> s.uur == uur);
 
-                if(lesuur == null || lesuur.length() == 0) { // Vrij
+                if (lesuur == null || lesuur.length() == 0) { // Vrij
                     View les = inflater.inflate(R.layout.rooster_tussenuur, null);
                     les.setMinimumHeight(converter.DPtoPX(79));
-                    if(uur == urenCount) {
+                    if (uur == urenCount) {
                         les.setBackgroundResource(R.drawable.basic_rect);
-                        les.setPadding(0,0,0,converter.DPtoPX(1));
+                        les.setPadding(0, 0, 0, converter.DPtoPX(1));
                     }
                     dagLinearLayout.addView(les);
                     continue;
@@ -139,15 +139,15 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
 
                 multipleViews = (vervallenLessen.isNotEmpty() && normalLessen.isNotEmpty()) || normalLessen.length() > 1;
 
-                if(vervallenLessen.isNotEmpty()) { // Vervallen uren
-                    if(normalLessen.isEmpty() || (normalLessen.isNotEmpty() && showVervangenUren)) { // Die weergeven
+                if (vervallenLessen.isNotEmpty()) { // Vervallen uren
+                    if (normalLessen.isEmpty() || (normalLessen.isNotEmpty() && showVervangenUren)) { // Die weergeven
                         RelativeLayout lesView = (RelativeLayout) makeView(vervallenLessen, inflater, builder, urenCount);
                         lesViews.add(lesView);
                     }
                 }
 
-                if(normalLessen.isNotEmpty()) {
-                    for(Lesuur les : normalLessen) {
+                if (normalLessen.isNotEmpty()) {
+                    for (Lesuur les : normalLessen) {
                         RelativeLayout lesView = (RelativeLayout) makeView(les, inflater, builder, urenCount);
                         lesViews.add(lesView);
                     }
@@ -155,26 +155,27 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
 
                 int reverseCounter = lesViews.size() + 1;
                 int counter = -1;
-                for(RelativeLayout lesView : lesViews) {
+                for (RelativeLayout lesView : lesViews) {
                     reverseCounter--;
                     counter++;
-                    if(multipleViews) {
+                    if (multipleViews) {
                         TextView uurCounter = (TextView) lesView.findViewById(R.id.layerCounter);
                         uurCounter.setVisibility(View.VISIBLE);
                         uurCounter.setText(new StringBuilder("(").append(reverseCounter).append("/").append(lesViews.size()).append(")"));
 
                         // Padding links/rechts zodat je uren kan zien :D
                         RelativeLayout.LayoutParams lesLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT); // Voor meerdere uren
-                        lesLayoutParams.setMargins(0, 0, converter.DPtoPX(8*counter), 0);
+                        lesLayoutParams.setMargins(0, 0, converter.DPtoPX(8 * counter), 0);
                         lesView.setLayoutParams(lesLayoutParams);
                     }
 
                     urenContainer.addView(lesView);
                 }
-                if(multipleViews) urenContainer.setOnClickListener(new MultipleUrenClickListener(lesViews, context));
+                if (multipleViews)
+                    urenContainer.setOnClickListener(new MultipleUrenClickListener(lesViews, context));
                 dagLinearLayout.addView(urenContainer);
             }
-            if(weekView) {
+            if (weekView) {
                 int pxPadding = converter.DPtoPX(3);
                 dagLinearLayout.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
                 dagLinearLayout.setMinimumWidth(converter.DPtoPX(250));
@@ -188,7 +189,7 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
             }
         }
 
-        if(weekView) {
+        if (weekView) {
             LinearLayout container = new LinearLayout(context);
             container.setOrientation(LinearLayout.VERTICAL);
             container.addView(weekLinearLayout);
@@ -199,13 +200,13 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
             lastUpdateTextView.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
             container.addView(lastUpdateTextView);
 
-            if(weekViewNoScroll) {
+            if (weekViewNoScroll) {
                 pagerAdapter.setView(container, 0, context);
-            } else if(weekViewVerticScroll) {
+            } else if (weekViewVerticScroll) {
                 ScrollView scrollView = new ScrollView(context);
                 scrollView.addView(container);
                 pagerAdapter.setView(scrollView, 0, context);
-            } else if(weekViewHorizScroll) {
+            } else if (weekViewHorizScroll) {
                 HorizontalScrollView scrollView = new HorizontalScrollView(context);
                 scrollView.addView(container);
                 pagerAdapter.setView(scrollView, 0, context);
@@ -214,7 +215,7 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
 
         pagerAdapter.notifyDataSetChanged();
 
-        if(!weekView) {
+        if (!weekView) {
             // Ga naar de juiste dag
             viewPager.setCurrentItem(showDag);
         }
@@ -253,23 +254,23 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
         View lesView;
         Converter con = new Converter(inflater.getContext());
 
-        if(lessen.get(0).vervallen) { // Vervallen lessen
+        if (lessen.get(0).vervallen) { // Vervallen lessen
             lessen = lessen.filter(lesuur -> lesuur.vervallen);
 
             lesView = inflater.inflate(R.layout.rooster_vervallen_uur, null);
             lesView.setMinimumHeight(con.DPtoPX(80));
 
             TextView vervallenTextView = (TextView) lesView.findViewById(R.id.vervallen_tekst);
-            if(lessen.length() > 1) {
+            if (lessen.length() > 1) {
                 vervallenTextView.setText(StringUtils.join(lessen.map(s -> s.vak).toList(), " & ") + " vallen uit");
             } else {
                 vervallenTextView.setText(lessen.get(0).vak + " valt uit");
             }
-        } else if(lessen.length() > 1) {
+        } else if (lessen.length() > 1) {
             throw new IllegalArgumentException("Meerdere lessen");
         } else {
             Lesuur lesuur = lessen.get(0);
-            if(lesuur.verandering) {
+            if (lesuur.verandering) {
                 lesView = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
             } else {
                 lesView = inflater.inflate(R.layout.rooster_uur, null);
@@ -277,7 +278,7 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
             lesView = builder.fillLesView(lesuur, lesView, inflater);
         }
 
-        if(lessen.get(0).uur == urenCount) {
+        if (lessen.get(0).uur == urenCount) {
             lesView.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
         }
 
@@ -290,9 +291,9 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
         Date lastUpdate = new Date(lastLoad);
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
-        String lastUpdateText = "Laatst geupdate: "+dateFormat.format(lastUpdate);
-        if(!HelperFunctions.hasInternetConnection(context)) {
-            lastUpdateText = "Geen internetverbinding. "+lastUpdateText;
+        String lastUpdateText = "Laatst geupdate: " + dateFormat.format(lastUpdate);
+        if (!HelperFunctions.hasInternetConnection(context)) {
+            lastUpdateText = "Geen internetverbinding. " + lastUpdateText;
         }
 
         textView.setText(lastUpdateText);
