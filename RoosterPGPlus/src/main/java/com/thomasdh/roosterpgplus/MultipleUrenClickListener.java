@@ -28,8 +28,7 @@ public class MultipleUrenClickListener implements View.OnClickListener {
         highestView = 0;
         this.allUren = allUren;
         this.context = context;
-        shortAnimationTime = 10000;
-                //context.getResources().getInteger(android.R.integer.config_shortAnimTime);
+        shortAnimationTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
     }
 
     @Override
