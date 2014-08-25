@@ -1,16 +1,13 @@
 package com.thomasdh.roosterpgplus;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
-import android.preference.PreferenceManager;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.Transformation;
 import android.widget.RelativeLayout;
 
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorListenerAdapter;
+import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.animation.ValueAnimator;
 import com.thomasdh.roosterpgplus.Helpers.Converter;
 
 import java.util.ArrayList;
@@ -20,104 +17,90 @@ import java.util.ArrayList;
  */
 public class MultipleUrenClickListener implements View.OnClickListener {
 
-    boolean animating = false;
-    int timesToGo = 0;
-    int highestView;
-    ArrayList<RelativeLayout> allUren;
-    final int shortAnimationTime;
-    Context context;
+    private boolean animating = false;
+    private int timesToGo = 0;
+    private int highestView;
+    private final ArrayList<RelativeLayout> allUren;
+    private final int shortAnimationTime;
+    private final Context context;
 
     public MultipleUrenClickListener(ArrayList<RelativeLayout> allUren, Context context) {
-        this.highestView = 0;
+        highestView = 0;
         this.allUren = allUren;
         this.context = context;
         shortAnimationTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
     }
 
     @Override
-
     public void onClick(View v) {
         if (animating) {
             // Wait until the current animation is done
             timesToGo++;
         } else {
-            final RelativeLayout parentLayout = (RelativeLayout) v;
+            RelativeLayout parentLayout = (RelativeLayout) v;
 
             highestView--;
             if (highestView < 0)
                 highestView += allUren.size();
 
-            if (Build.VERSION.SDK_INT >= 12 && PreferenceManager.getDefaultSharedPreferences(context).getBoolean("animaties", true)) {
-                // Use fancy animations
-                animateToNextView(parentLayout);
-            } else {
-                // Use the boring way to switch to the next view
-                View newView = allUren.get(highestView < 1 ? allUren.size() - 1 : highestView - 1);
-                if (highestView < 1) {
-                    for (int c = 0; c < allUren.size(); c++) {
-                        parentLayout.bringChildToFront(allUren.get(c));
-                    }
-                }
-                parentLayout.bringChildToFront(newView);
-                parentLayout.invalidate();
-            }
+            animateToNextView(parentLayout);
         }
     }
 
-    @TargetApi(12)
-    void animateToNextView (final RelativeLayout parentLayout){
+    void animateToNextView(RelativeLayout parentLayout) {
         animating = true;
+        View oldView = allUren.get(highestView);
+        fadeAwayOldView(oldView, parentLayout);
+    }
 
-        final View oldView = allUren.get(highestView);
-        oldView.animate().alpha(0f).setDuration(shortAnimationTime / 3).setListener(new AnimatorListenerAdapter() {
+    void fadeAwayOldView(View oldView, RelativeLayout parentLayout) {
+        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(oldView, "alpha", 0f);
+        objectAnimator.setDuration(shortAnimationTime / 3);
+        objectAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) oldView.getLayoutParams();
                 lp.setMargins(0, 0, 0, 0);
                 oldView.setLayoutParams(lp);
-                oldView.setAlpha(100f);
 
-                for (int ind = highestView + 1; ind < highestView + allUren.size(); ind++) {
-                    final int uurIndex = ind % allUren.size();
-                    parentLayout.bringChildToFront(allUren.get(uurIndex));
-
-                    final int currentMargin = ((RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams()).rightMargin;
-                    final float newMargin = Converter.convertDPToPX(8, context);
-
-                    Animation a = new Animation() {
-                        @Override
-                        protected void applyTransformation(float interpolatedTime, Transformation t) {
-                            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams();
-                            params.rightMargin = (int) (interpolatedTime * newMargin) + currentMargin;
-                            allUren.get(uurIndex).setLayoutParams(params);
-                        }
-                    };
-                    a.setDuration(shortAnimationTime / 3 * 2);
-                    a.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-                            // The user has clicked more!
-                            animating = false;
-                            timesToGo--;
-                            if (timesToGo > 0){
-                                animateToNextView(parentLayout);
-                            }
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-
-                        }
-                    });
-                    allUren.get(uurIndex).startAnimation(a);
-                }
+                // There doesn't seem to be a better way to reset the alpha
+                ObjectAnimator.ofFloat(oldView, "alpha", 1f)
+                        .setDuration(0)
+                        .start();
+                shiftViews(parentLayout);
             }
         });
+        objectAnimator.start();
+    }
+
+    void shiftViews(RelativeLayout parentLayout) {
+        for (int ind = highestView + 1; ind < highestView + allUren.size(); ind++) {
+            int uurIndex = ind % allUren.size();
+            parentLayout.bringChildToFront(allUren.get(uurIndex));
+
+            int currentMargin = ((RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams()).rightMargin;
+            float newMargin = Converter.convertDPToPX(8, context);
+
+            ValueAnimator a = ValueAnimator.ofFloat(1f);
+            a.addUpdateListener(animation -> {
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) allUren.get(uurIndex).getLayoutParams();
+                params.rightMargin = (int) (animation.getAnimatedFraction() * newMargin) + currentMargin;
+                allUren.get(uurIndex).setLayoutParams(params);
+            });
+            a.setDuration(shortAnimationTime / 3 * 2);
+            a.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    animating = false;
+                    timesToGo--;
+                    if (timesToGo > 0) {
+                        // The user has clicked more!
+                        animateToNextView(parentLayout);
+                    }
+                }
+            });
+            a.start();
+        }
     }
 
 }
