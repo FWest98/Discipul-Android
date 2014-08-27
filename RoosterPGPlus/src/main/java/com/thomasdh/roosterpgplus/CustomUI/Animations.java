@@ -1,7 +1,5 @@
 package com.thomasdh.roosterpgplus.CustomUI;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -44,7 +42,6 @@ public class Animations {
         mAnimator.start();
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private static ValueAnimator slideAnimator(View v, int start, int end) {
         ValueAnimator animator = ValueAnimator.ofInt(start, end);
         animator.addUpdateListener(valueAnimator -> {
