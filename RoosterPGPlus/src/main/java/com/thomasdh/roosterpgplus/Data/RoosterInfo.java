@@ -23,6 +23,7 @@ public class RoosterInfo {
     private static final String WEKEN_FILENAME = "wekenarray";
     private static final String KLASSEN_FILENAME = "klassenarray";
     private static final String LERAREN_FILENAME = "lerarenarray";
+    private static final String LOKALEN_FILENAME = "lokalenarray";
     private static final String LEERLINGEN_FILENAME = "leerlingenarray";
     private static final String LOADS_FILENAME = "loadshashtable";
     private static final String WEKEN_UREN_FILENAME = "wekenhashtable";
@@ -92,6 +93,24 @@ public class RoosterInfo {
             });
         } else {
             RoosterInfo.<ArrayList<Vak>>getOnError(LERAREN_FILENAME, context, callback);
+        }
+    }
+
+    //endregion
+    //region Lokalen
+
+    public static void getLokalen(Context context, AsyncActionCallback callback) {
+        if(HelperFunctions.hasInternetConnection(context)) {
+            WebDownloader.getLokalen(lokalen -> {
+                callback.onAsyncActionComplete(lokalen);
+                saveInStorage(LOKALEN_FILENAME, context, lokalen);
+            }, exception -> {
+                Log.e("WebDownloader", "Er ging iets mis het het ophalen van de lokalen", (Exception) exception);
+                ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
+                RoosterInfo.<ArrayList<String>>getOnError(LOKALEN_FILENAME, context, callback);
+            });
+        } else {
+            RoosterInfo.<ArrayList<String>>getOnError(LOKALEN_FILENAME, context, callback);
         }
     }
 

@@ -183,6 +183,41 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
         new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
     }
 
+    /* Lokalen downloader */
+    public static void getLokalen(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+        String url = "rooster/info?lokalen";
+
+        AsyncCallback AsyncCallback = r -> {
+            HttpResponse response = (HttpResponse) r;
+            int status = response.getStatusLine().getStatusCode();
+
+            switch(status) {
+                case 200: break;
+                case 500: throw new Exception("Serverfout. Probeer het later nogmaals");
+                case 401: throw new Exception("Onverwachte aanvraag. Update de app");
+                default: throw new Exception("Onbekende fout, "+status);
+            }
+
+            String s = "";
+            Scanner sc = new Scanner(response.getEntity().getContent());
+            while(sc.hasNext()) s += sc.nextLine();
+
+            if("".equals(s)) throw new NullPointerException("Geen lokalen gevonden!");
+
+            // verder verwerken
+            ArrayList<String> lokalen = new ArrayList<>();
+            JSONArray jsonArray = new JSONArray(s);
+
+            for(int i = 0; i < jsonArray.length(); i++) {
+                lokalen.add(jsonArray.getString(i));
+            }
+
+            return lokalen;
+        };
+
+        new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
+    }
+
     /* Weken downloader */
     public static void getWeken(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
         getWeken(false, true, 10, callback, errorCallback);
