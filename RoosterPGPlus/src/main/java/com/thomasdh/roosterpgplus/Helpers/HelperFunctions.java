@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.thomasdh.roosterpgplus.Settings.Settings;
 
 /**
  * Created by Floris on 13-7-2014.
@@ -23,9 +24,9 @@ public class HelperFunctions {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
         if (resultCode != ConnectionResult.SUCCESS) {
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, (Activity) context, 9000).show();
+                GooglePlayServicesUtil.getErrorDialog(resultCode, (Activity) context, Settings.GCM_RESOLUTION_REQUEST).show();
             } else {
-                Log.i("PlayServices", "This device is not supported.");
+                Log.i("PlayServices", "Geen pushmeldingen voor dit apparaat");
             }
             return false;
         }

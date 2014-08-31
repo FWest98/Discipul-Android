@@ -2,20 +2,17 @@
 <resources>
 	<string-array name="drawer_groups">
 		<item>Roosters</item>
-		<!--<item>PG-TV</item>-->
+		<item>PG-TV</item>
 	</string-array>
     <string-array name="drawer_items_roosters">
         <item>Persoonlijk rooster</item>
         <item>Klassenrooster</item>
         <item>Docentenrooster</item>
-        <!--<item>Lokalenrooster</item>--><!--TODO Implement-->
+        <item>Lokalenrooster</item>
         <item>Leerlingrooster</item>
     </string-array>
-    <!--
     <string-array name="drawer_items_pgtv">
         <item>Roosterwijzigingen</item>
         <item>Algemene mededelingen</item>
     </string-array>
-    TODO IMPLEMENT
-    -->
 </resources>

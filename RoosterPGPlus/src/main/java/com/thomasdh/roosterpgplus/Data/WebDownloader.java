@@ -9,7 +9,7 @@ import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Leraar;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
-import com.thomasdh.roosterpgplus.Settings;
+import com.thomasdh.roosterpgplus.Settings.Settings;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

@@ -16,7 +16,7 @@ import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.R;
-import com.thomasdh.roosterpgplus.Settings;
+import com.thomasdh.roosterpgplus.Settings.Settings;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
@@ -62,7 +62,7 @@ public class Account {
 
     public static void initialize(Context context) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-        if(pref.getString("version", null) != "2.0" && pref.getString("key", null) != null) {
+        if(pref.getString("version", null) != Settings.GCM_APP_VERSION && pref.getString("key", null) != null) {
             isSet = false;
             userType = UserType.NO_ACCOUNT;
             ExceptionHandler.handleException(new Exception("Log opnieuw in of registreer opnieuw, vanwege nieuwe schooljaar"), context, ExceptionHandler.HandleType.SIMPLE);
@@ -106,7 +106,7 @@ public class Account {
 
         isSet = true;
 
-        pref.putString("version", "2.0");
+        pref.putString("version", Settings.GCM_APP_VERSION);
 
         if(base.has("code")) {
             // LERAAR

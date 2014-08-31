@@ -1,5 +1,7 @@
 package com.thomasdh.roosterpgplus;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -7,6 +9,7 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,11 +19,13 @@ import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Fragments.EntityRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.PersoonlijkRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.Models.Week;
+import com.thomasdh.roosterpgplus.Settings.Settings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +36,7 @@ import lombok.Getter;
 import roboguice.activity.RoboActionBarActivity;
 import roboguice.inject.InjectView;
 
-public class MainActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadedListener {
+public class RoosterActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadedListener {
     private static final String ROOSTER_TYPE = "roosterType";
     private static final String WEKEN_STORE = "wekenStore";
 
@@ -42,6 +47,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
     private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
     private ActionBarDrawerToggle actionBarDrawerToggle;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem refreshItem;
+    @Getter(value = AccessLevel.PRIVATE) private static MenuItem searchItem;
 
     @InjectView(R.id.drawerlayout)
     private DrawerLayout drawerLayout;
@@ -74,9 +80,17 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         Account.getInstance(this);
 
         if (savedInstanceState == null) {
-            // Defaults
-            roosterType = PersoonlijkRoosterFragment.class;
-            mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
+            Intent intent = getIntent();
+            if(intent.getAction() == Intent.ACTION_SEARCH) {
+                roosterType = EntityRoosterFragment.class;
+                EntityRoosterFragment searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
+                mainFragment = searchFragment;
+                searchFragment.setEntity(intent.getStringExtra(SearchManager.QUERY));
+            } else {
+                // Defaults
+                roosterType = PersoonlijkRoosterFragment.class;
+                mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
+            }
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, mainFragment)
@@ -91,7 +105,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         ArrayList<String> groups = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_groups)));
         ArrayList<ArrayList<String>> children = new ArrayList<ArrayList<String>>() {{
             add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_roosters))));
-            //add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_pgtv)))); TODO implement
+            add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_pgtv))));
         }};
 
         drawerList.setAdapter(new NavigationDrawerAdapter(this, groups, children));
@@ -100,7 +114,7 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
                 Class<? extends RoosterViewFragment> newType = RoosterViewFragment.types[childPosition];
 
                 // Nieuwe dingen
-                mainFragment = RoosterViewFragment.newInstance(newType, selectedWeek, this);
+                mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek(), this);
                 roosterType = newType;
                 actionBarSpinnerAdapter.setType(newType);
 
@@ -146,6 +160,27 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        if(((Object) mainFragment).getClass() != EntityRoosterFragment.class) {
+            roosterType = EntityRoosterFragment.class;
+            EntityRoosterFragment searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
+            actionBarSpinnerAdapter.setType(roosterType);
+
+            mainFragment = searchFragment;
+            searchFragment.setEntity(intent.getStringExtra(SearchManager.QUERY));
+
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
+        } else {
+            ((EntityRoosterFragment) mainFragment).setEntity(intent.getStringExtra(SearchManager.QUERY));
+            mainFragment.loadRooster();
+        }
+
+        searchItem.collapseActionView();
+        ((SearchView) MenuItemCompat.getActionView(searchItem)).onActionViewCollapsed();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putSerializable(ROOSTER_TYPE, roosterType);
 
@@ -186,8 +221,16 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
         getMenuInflater().inflate(R.menu.main, menu);
         MenuItem refresh = menu.findItem(R.id.menu_item_refresh);
 
+        // Search
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_item_search));
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(true);
+        searchView.setQueryRefinementEnabled(true);
+
         // TODO blijft dit werken?
         refreshItem = refresh;
+        searchItem = menu.findItem(R.id.menu_item_search);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -203,6 +246,8 @@ public class MainActivity extends RoboActionBarActivity implements ActionBar.OnN
             case R.id.menu_item_refresh:
                 mainFragment.loadRooster(true);
                 return true;
+            case R.id.menu_item_search:
+                // TODO small screen dialogshit
         }
         return super.onOptionsItemSelected(item);
     }

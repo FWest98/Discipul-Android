@@ -103,6 +103,7 @@
     <string name="extenddialog_title">Upgrade account</string>
     <string name="settings_user_resetClusterklassenSummary">Herstel jouw rooster naar de standaard</string>
     <string name="settings_user_resetClusterklassenTitle">Reset clusterklassen</string>
+    <string name="action_bar_dropdown_speciaal_rooster"> - Speciaal rooster</string>
 
     <string-array name="settings_notification_check_interval">
         <item>5 minuten</item>
