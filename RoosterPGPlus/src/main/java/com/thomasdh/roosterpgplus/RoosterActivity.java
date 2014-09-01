@@ -135,6 +135,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
+                if(getSelectedWeek() == -1) return;
                 getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
                 getSupportActionBar().setDisplayShowTitleEnabled(false);
                 supportInvalidateOptionsMenu();
@@ -151,10 +152,6 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-        /* Dropdown Navigation */
-        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
         RoosterInfo.getWeken(this, this::addWekenToActionBar); // hier gebeurt de rest
     }
@@ -294,6 +291,9 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         }
         actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, mainFragment.getClass()); // bug in IntelliJ, issue 79680. It compiles, ship it!
         actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, this);
+
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
     }
 
     public void setSelectedWeek(int week) {
