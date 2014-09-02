@@ -99,6 +99,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             roosterType = (Class<? extends RoosterViewFragment>) savedInstanceState.getSerializable(ROOSTER_TYPE);
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
             mainFragment.setRoosterLoadedListener(this);
+            setSelectedWeek(savedInstanceState.getInt("WEEK"));
         }
 
         /* Navigation Drawer */
@@ -180,6 +181,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putSerializable(ROOSTER_TYPE, roosterType);
+        savedInstanceState.putInt("WEEK", getSelectedWeek());
 
         super.onSaveInstanceState(savedInstanceState);
     }

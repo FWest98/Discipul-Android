@@ -29,6 +29,7 @@ public class EntityRoosterFragment extends RoosterViewFragment {
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 2700000;
 
     @Getter @Setter private String entity;
+    private String entityToGet = null;
 
     @Override
     protected boolean canLoadRooster() { return getEntity() != null; }
@@ -69,9 +70,20 @@ public class EntityRoosterFragment extends RoosterViewFragment {
         viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
+        if(savedInstanceState != null) {
+            setEntity(savedInstanceState.getString("ENTITY"));
+        }
+
         loadRooster();
 
         return getRootView();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString("ENTITY", getEntity());
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
