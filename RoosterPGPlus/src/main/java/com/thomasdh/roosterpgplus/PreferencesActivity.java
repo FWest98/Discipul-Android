@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
+import com.thomasdh.roosterpgplus.CustomUI.ListPreferenceMultiSelect;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 

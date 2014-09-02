@@ -16,7 +16,7 @@ import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Helpers.Converter;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
-import com.thomasdh.roosterpgplus.MultipleUrenClickListener;
+import com.thomasdh.roosterpgplus.Adapters.MultipleUrenClickListener;
 import com.thomasdh.roosterpgplus.R;
 
 import org.apache.commons.lang3.StringUtils;
@@ -157,6 +157,7 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
 
                 int reverseCounter = lesViews.size() + 1;
                 int counter = -1;
+                urenContainer.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
                 for (RelativeLayout lesView : lesViews) {
                     reverseCounter--;
                     counter++;
@@ -166,8 +167,8 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
                         uurCounter.setText(new StringBuilder("(").append(reverseCounter).append("/").append(lesViews.size()).append(")"));
 
                         // Padding links/rechts zodat je uren kan zien :D
-                        RelativeLayout.LayoutParams lesLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT); // Voor meerdere uren
-                        lesLayoutParams.setMargins(0, 0, converter.DPtoPX(8 * counter), 0);
+                        RelativeLayout.LayoutParams lesLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                        lesLayoutParams.setMargins(converter.DPtoPX(reverseCounter * 8 - 8), 0, converter.DPtoPX(counter * 8), 0);
                         lesView.setLayoutParams(lesLayoutParams);
                     }
 

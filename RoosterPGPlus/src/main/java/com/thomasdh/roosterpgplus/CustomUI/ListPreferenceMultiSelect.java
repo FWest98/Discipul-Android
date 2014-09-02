@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus;
+package com.thomasdh.roosterpgplus.CustomUI;
 
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -8,6 +8,8 @@ import android.content.res.TypedArray;
 import android.preference.ListPreference;
 import android.util.AttributeSet;
 import android.widget.ListView;
+
+import com.thomasdh.roosterpgplus.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;

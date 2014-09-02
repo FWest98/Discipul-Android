@@ -10,8 +10,8 @@ public class Animations {
     public static void expand(View v) {
         if(v == null) return;
         v.setVisibility(View.VISIBLE);
-        final int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        final int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         v.measure(widthSpec, heightSpec);
         ValueAnimator mAnimator = slideAnimator(v, 0, v.getMeasuredHeight());
         mAnimator.start();

@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus;
+package com.thomasdh.roosterpgplus.Adapters;
 
 import android.content.Context;
 import android.view.View;
@@ -12,45 +12,70 @@ import com.thomasdh.roosterpgplus.Helpers.Converter;
 
 import java.util.ArrayList;
 
-/**
- * Created by Thomas on 20-5-2014.
- */
 public class MultipleUrenClickListener implements View.OnClickListener {
-
-    private boolean animating = false;
     private int timesToGo = 0;
-    private int highestView;
+    private int currentView;
     private final ArrayList<RelativeLayout> allUren;
     private final int shortAnimationTime;
     private final Context context;
 
+    private int maxWidth = -1;
+    private int minWidth;
+
     public MultipleUrenClickListener(ArrayList<RelativeLayout> allUren, Context context) {
-        highestView = 0;
+        currentView = allUren.size();
         this.allUren = allUren;
         this.context = context;
         shortAnimationTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+        minWidth = new Converter(context).DPtoPX(9);
     }
 
     @Override
     public void onClick(View v) {
-        if (animating) {
-            // Wait until the current animation is done
-            timesToGo++;
+        currentView--;
+        if (currentView <= 0) {
+            currentView = allUren.size();
+            expandAll();
         } else {
-            RelativeLayout parentLayout = (RelativeLayout) v;
-
-            highestView--;
-            if (highestView < 0)
-                highestView += allUren.size();
-
-            animateToNextView(parentLayout);
+            animateToNextView();
         }
     }
 
-    void animateToNextView(RelativeLayout parentLayout) {
-        animating = true;
-        View oldView = allUren.get(highestView);
-        fadeAwayOldView(oldView, parentLayout);
+    void animateToNextView() {
+        RelativeLayout view = allUren.get(currentView);
+
+        if(maxWidth == -1) {
+            int spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+            view.measure(spec, spec);
+            maxWidth = new Converter(context).DPtoPX(view.getMeasuredWidth());
+        }
+
+        ValueAnimator valueAnimator = ValueAnimator.ofInt(maxWidth, minWidth);
+        valueAnimator.addUpdateListener(animation -> {
+            int value = (int) animation.getAnimatedValue();
+            RelativeLayout.LayoutParams newLayoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+            newLayoutParams.width = value;
+            view.setLayoutParams(newLayoutParams);
+        });
+        valueAnimator.setDuration(shortAnimationTime / 2 * 3);
+        valueAnimator.start();
+    }
+
+    void expandAll() {
+        for(int i = 1; i < allUren.size(); i++) {
+            RelativeLayout view = allUren.get(i);
+
+            ValueAnimator valueAnimator = ValueAnimator.ofInt(minWidth, maxWidth);
+            valueAnimator.addUpdateListener(animation -> {
+                int value = (int) animation.getAnimatedValue();
+                RelativeLayout.LayoutParams newLayoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+                newLayoutParams.width = value;
+                view.setLayoutParams(newLayoutParams);
+            });
+            valueAnimator.setDuration(shortAnimationTime / 2 * 3);
+            valueAnimator.start();
+        }
     }
 
     void fadeAwayOldView(View oldView, RelativeLayout parentLayout) {
@@ -74,7 +99,7 @@ public class MultipleUrenClickListener implements View.OnClickListener {
     }
 
     void shiftViews(RelativeLayout parentLayout) {
-        for (int ind = highestView + 1; ind < highestView + allUren.size(); ind++) {
+        for (int ind = currentView + 1; ind < currentView + allUren.size(); ind++) {
             int uurIndex = ind % allUren.size();
             parentLayout.bringChildToFront(allUren.get(uurIndex));
 
@@ -91,11 +116,10 @@ public class MultipleUrenClickListener implements View.OnClickListener {
             a.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    animating = false;
-                    timesToGo--;
                     if (timesToGo > 0) {
                         // The user has clicked more!
-                        animateToNextView(parentLayout);
+                        timesToGo--;
+                        animateToNextView();
                     }
                 }
             });
