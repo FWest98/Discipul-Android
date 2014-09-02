@@ -172,7 +172,6 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             JSONArray jsonArray = new JSONArray(s);
 
             for (int i = 0; i < jsonArray.length(); i++) {
-                // TODO maak een klas-class
                 JSONObject klas = jsonArray.getJSONObject(i);
                 klassen.add(klas.getString("klasnaam"));
             }
@@ -332,7 +331,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
                 default: throw new Exception("Onbekende fout, "+status+", "+content);
             }
 
-            return content; // TODO roosterformat
+            return content;
         };
 
         new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);

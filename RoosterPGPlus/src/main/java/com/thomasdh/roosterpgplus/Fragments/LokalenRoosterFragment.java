@@ -28,9 +28,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Created by Floris on 14-7-2014.
- */
+
 @FragmentTitle(title = R.string.action_bar_dropdown_lokalenrooster)
 public class LokalenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
     private static final String CHOSEN_LOKAAL_KEY = "lastChosenLokaal";

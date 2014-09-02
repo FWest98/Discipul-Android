@@ -8,7 +8,7 @@ import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;

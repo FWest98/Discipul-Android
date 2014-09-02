@@ -16,22 +16,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * @author declanshanaghy
- *         http://blog.350nice.com/wp/archives/240
- *         MultiChoice Preference Widget for Android
- * @contributor matiboy
- * Added support for check all/none and custom separator defined in XML.
- * IMPORTANT: The following attributes MUST be defined (probably inside attr.xml) for the code to even compile
- * <declare-styleable name="ListPreferenceMultiSelect">
- * <attr format="string" name="checkAll" />
- * <attr format="string" name="separator" />
- * </declare-styleable>
- * Whether you decide to then use those attributes is up to you.
- */
 public class ListPreferenceMultiSelect extends ListPreference {
     private static final String DEFAULT_SEPARATOR = "OV=I=XseparatorX=I=VO";
-    private static final String LOG_TAG = "ListPreferenceMultiSelect";
     private final String separator;
     private String checkAllKey = null;
     private boolean[] mClickedDialogEntryIndices;
@@ -43,7 +29,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
         if (a != null) {
             checkAllKey = a.getString(R.styleable.ListPreferenceMultiSelect_checkAll);
         }
-        String s = a.getString(R.styleable.ListPreferenceMultiSelect_separator);
+        String s = a != null ? a.getString(R.styleable.ListPreferenceMultiSelect_separator) : null;
         if (s != null) {
             separator = s;
         } else {
@@ -52,10 +38,6 @@ public class ListPreferenceMultiSelect extends ListPreference {
         // Initialize the array of boolean to the same size as number of entries
         CharSequence[] entries = getEntries();
         mClickedDialogEntryIndices = new boolean[entries != null ? entries.length : 0];
-    }
-
-    public ListPreferenceMultiSelect(Context context) {
-        this(context, null);
     }
 
     // Credits to kurellajunior on this post http://snippets.dzone.com/posts/show/91
@@ -67,25 +49,6 @@ public class ListPreferenceMultiSelect extends ListPreference {
         while (oIter.hasNext())
             oBuilder.append(separator).append(oIter.next());
         return oBuilder.toString();
-    }
-
-    /**
-     * @param straw     String to be found
-     * @param haystack  Raw string that can be read direct from preferences
-     * @param separator Separator string. If null, static default separator will be used
-     * @return boolean True if the straw was found in the haystack
-     */
-    public static boolean contains(String straw, String haystack, String separator) {
-        if (separator == null) {
-            separator = DEFAULT_SEPARATOR;
-        }
-        String[] vals = haystack.split(separator);
-        for (String val : vals) {
-            if (val.equals(straw)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 
@@ -152,7 +115,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
         if (vals != null) {
             List<String> valuesList = Arrays.asList(vals);
 //        	for ( int j=0; j<vals.length; j++ ) {
-//    		TODO: Check why the trimming... Can there be some random spaces added somehow? What if we want a value with trailing spaces, is that an issue?
+//
 //        		String val = vals[j].trim();
             for (int i = 0; i < entryValues.length; i++) {
                 CharSequence entry = entryValues[i];
@@ -164,12 +127,11 @@ public class ListPreferenceMultiSelect extends ListPreference {
         }
     }
 
-    // TODO: Would like to keep this static but separator then needs to be put in by hand or use default separator "OV=I=XseparatorX=I=VO"...
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
 //        super.onDialogClosed(positiveResult);
-        ArrayList<String> values = new ArrayList<String>();
+        ArrayList<String> values = new ArrayList<>();
 
         CharSequence[] entryValues = getEntryValues();
         if (positiveResult && entryValues != null) {

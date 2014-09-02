@@ -1,7 +1,5 @@
 package com.thomasdh.roosterpgplus.Adapters;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
@@ -55,30 +53,8 @@ public class AnimatedPagerAdapter extends PagerAdapter {
         }
 
         final FrameLayout parent = (FrameLayout) views.get(position);
-        boolean animationsBeschikbaar = false;
-
-        if (animationsBeschikbaar) {
-            int shortAnimationDuration = context.getResources().getInteger(
-                    android.R.integer.config_shortAnimTime);
-            parent.addView(newView);
-            newView.setAlpha(0f);
-            newView.setVisibility(View.VISIBLE);
-            newView.bringToFront();
-            newView.animate()
-                    .alpha(1f)
-                    .setDuration(shortAnimationDuration)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            if (parent.getChildCount() > 1) {
-                                parent.removeViewAt(0);
-                            }
-                        }
-                    });
-        } else {
-            parent.removeAllViews();
-            parent.addView(newView);
-        }
+        parent.removeAllViews();
+        parent.addView(newView);
     }
 
 }

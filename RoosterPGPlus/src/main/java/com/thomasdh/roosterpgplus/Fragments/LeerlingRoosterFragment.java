@@ -33,9 +33,6 @@ import fj.data.Array;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Created by Floris on 14-7-2014.
- */
 @FragmentTitle(title = R.string.action_bar_dropdown_leerlingrooster)
 public class LeerlingRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
@@ -114,7 +111,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
             public void afterTextChanged(Editable s) {
                 String text = s.toString();
                 Array<Leerling> opties = leerlingen.filter(e -> e.getLlnr().equals(text) || e.getNaam().equalsIgnoreCase(text));
-                if(opties.length() > 0) {
+                if(!opties.isEmpty()) {
                     setLeerling(opties.get(0));
 
                     llToGet = getLeerling().getNaam();
@@ -141,7 +138,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
     public void onKlasSelected(int position) {
         setKlas(getKlassen().get(position));
 
-        String[] leerlingNamen = Array.iterableArray(getKlas().leerlingen).map(s -> s.getNaam()).array(String[].class);
+        String[] leerlingNamen = Array.iterableArray(getKlas().leerlingen).map(Leerling::getNaam).array(String[].class);
         ArrayAdapter<String> leerlingAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, leerlingNamen);
         leerlingAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         leerlingSpinner.setAdapter(leerlingAdapter);

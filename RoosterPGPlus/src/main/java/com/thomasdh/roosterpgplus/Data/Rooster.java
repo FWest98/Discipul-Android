@@ -11,7 +11,7 @@ import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -52,7 +52,7 @@ public class Rooster {
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 try {
                     errorCallback.onAsyncActionComplete(null);
-                } catch (Exception ex) {}
+                } catch (Exception ignored) {}
             }
         });
     }
@@ -60,11 +60,11 @@ public class Rooster {
     private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, AsyncActionCallback errorCallback) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
-            Dao<Lesuur, ?> dao = helper.getDao(Lesuur.class);
+            Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
 
             String searchQuery = URLEncodedUtils.format(query, "utf-8");
             List<Lesuur> lessen = dao.queryForEq("query", searchQuery);
-            int week = lessen.size() > 0 ? lessen.get(0).week : 0;
+            int week = !lessen.isEmpty() ? lessen.get(0).week : 0;
 
             callback.onCallback(lessen, RoosterInfo.getWeekUrenCount(context, week));
         } catch (SQLException e) {
@@ -72,13 +72,13 @@ public class Rooster {
             ExceptionHandler.handleException(new Exception("Opslagfout, er is geen rooster geladen"), context, ExceptionHandler.HandleType.SIMPLE);
             try {
                 errorCallback.onAsyncActionComplete(null);
-            } catch (Exception ex) {}
+            } catch (Exception ignored) {}
 
         } catch (Exception e) {
             Log.e("Callback error", e.getMessage(), e);
             try {
                 errorCallback.onAsyncActionComplete(null);
-            } catch (Exception ex) {}
+            } catch (Exception ignored) {}
         }
     }
 

@@ -26,13 +26,10 @@ import lombok.Getter;
 import lombok.Setter;
 import roboguice.fragment.RoboFragment;
 
-/**
- * Created by Floris on 7-7-2014.
- */
 public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener, RoosterBuilder.lesViewBuilder {
     @Getter public ViewPager viewPager;
     @Getter @Setter private View rootView;
-    public enum LoadType { OFFLINE, ONLINE, NEWONLINE; }
+    public enum LoadType { OFFLINE, ONLINE, NEWONLINE }
 
     @Getter(value = AccessLevel.PACKAGE) private int week;
     @Getter @Setter private int dag = 0;
@@ -58,11 +55,12 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
 
     // Nieuwe instantie van het opgegeven type
     public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week, onRoosterLoadedListener listener) {
-        T fragment = null;
+        T fragment;
         try {
             fragment = type.newInstance();
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
         fragment.setRoosterLoadedListener(listener);
@@ -142,7 +140,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         LoadType loadType = reload ? LoadType.ONLINE : getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), (result, urenCount) -> {
-            if(loadType == LoadType.ONLINE || (loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity()))) {
+            if(loadType == LoadType.ONLINE || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
                 setLoad();
             }
             roosterLoadedListener.onRoosterLoaded();
@@ -160,18 +158,4 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     }
 
     //endregion
-
-    @Deprecated
-    public enum Type {
-        PERSOONLIJK_ROOSTER (0),
-        KLASROOSTER (1),
-        DOCENTENROOSTER (2),
-        LOKALENROOSTER (3),
-        LEERLINGROOSTER (4);
-
-        Type(int id) {
-            this.id = id;
-        }
-        private int id;
-    }
 }

@@ -19,6 +19,6 @@ public class Klas implements Serializable {
     }
 
     public Klas(String naam) {
-        this.klas = naam;
+        klas = naam;
     }
 }

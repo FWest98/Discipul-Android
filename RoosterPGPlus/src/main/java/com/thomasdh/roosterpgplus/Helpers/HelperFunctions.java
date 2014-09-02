@@ -10,9 +10,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.thomasdh.roosterpgplus.Settings.Settings;
 
-/**
- * Created by Floris on 13-7-2014.
- */
+
 public class HelperFunctions {
     public static boolean hasInternetConnection(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

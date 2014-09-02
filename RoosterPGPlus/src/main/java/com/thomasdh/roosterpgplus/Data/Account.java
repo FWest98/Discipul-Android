@@ -17,7 +17,7 @@ import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Settings;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -101,7 +101,7 @@ public class Account {
         name = base.getString("naam");
         pref.putString("naam", name);
 
-        this.isAppAccount = isAppAccount;
+        Account.isAppAccount = isAppAccount;
         pref.putBoolean("appaccount", isAppAccount);
 
         isSet = true;
@@ -350,10 +350,6 @@ public class Account {
     //endregion
     //region Register
 
-    public void register() {
-        register(result -> {});
-    }
-
     public void register(AsyncActionCallback callback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -410,7 +406,7 @@ public class Account {
                 postParameters.add(new BasicNameValuePair("llnr", llnr));
                 postParameters.add(new BasicNameValuePair("email", email));
 
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters); // TODO Alles UTF8
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
                 httpPost.setEntity(entity);
 
                 return client.execute(httpPost);
@@ -728,8 +724,7 @@ public class Account {
                     content += scanner.nextLine();
                 }
 
-                Object data = callbacks.onRequestComplete(content, response.getStatusLine().getStatusCode());
-                return data;
+                return callbacks.onRequestComplete(content, response.getStatusLine().getStatusCode());
             } catch (Exception e) {
                 publishProgress(e);
             }

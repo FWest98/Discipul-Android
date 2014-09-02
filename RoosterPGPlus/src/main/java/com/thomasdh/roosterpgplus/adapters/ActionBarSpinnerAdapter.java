@@ -78,7 +78,9 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
             LayoutInflater vi = (LayoutInflater) context.get().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = vi.inflate(android.R.layout.simple_spinner_dropdown_item, parent, false);
         }
-        ((TextView) convertView).setText(data.get(position));
+        if (convertView != null) {
+            ((TextView) convertView).setText(data.get(position));
+        }
         return convertView;
 
     }

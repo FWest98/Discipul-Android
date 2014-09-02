@@ -7,7 +7,7 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.misc.BaseDaoEnabled;
 import com.j256.ormlite.table.DatabaseTable;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,10 +22,8 @@ import java.util.Date;
 
 import lombok.EqualsAndHashCode;
 
-/**
- * Created by Floris on 3-12-13.
- */
-@EqualsAndHashCode
+
+@EqualsAndHashCode(callSuper = false)
 @DatabaseTable(tableName = "Lessen")
 public class Lesuur extends BaseDaoEnabled implements Serializable {
     private static final long serialVersionUID = 7526472295622776147L;

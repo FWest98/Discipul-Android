@@ -31,7 +31,6 @@ import lombok.Setter;
 @FragmentTitle(title = R.string.action_bar_dropdown_klassenrooster)
 public class KlassenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
     private static final String CHOSEN_KLAS_KEY = "lastChosenKlas";
-    private static final String KLAS_CHOICE = "KLAS_CHOICE";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
 
     private DefaultSpinner klasSpinner;

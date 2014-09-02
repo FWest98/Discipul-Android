@@ -25,11 +25,9 @@ import lombok.Setter;
 
 @FragmentTitle(title = R.string.action_bar_dropdown_speciaal_rooster)
 public class EntityRoosterFragment extends RoosterViewFragment {
-    private static final String LOADS_NAME = "special";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 2700000;
 
     @Getter @Setter private String entity;
-    private String entityToGet = null;
 
     @Override
     protected boolean canLoadRooster() { return getEntity() != null; }
@@ -42,7 +40,7 @@ public class EntityRoosterFragment extends RoosterViewFragment {
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("entity"+getEntity()+getWeek(), getActivity());;
+        Long lastLoad = RoosterInfo.getLoad("entity"+getEntity()+getWeek(), getActivity());
         if(lastLoad == null) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {

@@ -13,14 +13,12 @@ import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.thomasdh.roosterpgplus.CustomUI.ListPreferenceMultiSelect;
 import com.thomasdh.roosterpgplus.Data.Account;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Thomas on 6-12-13.
- */
+
 public class PreferencesActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
@@ -79,7 +77,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             Account.getInstance(this).getSubklassen(true, result -> {
                 ArrayList<Account.Subklas> subklasArray = (ArrayList<Account.Subklas>) result;
 
-                if (subklassenPref != null && subklasArray != null) {
+                if (subklasArray != null) {
                     ArrayList<String> strings = new ArrayList<>();
                     ArrayList<String> namen = new ArrayList<>();
 
@@ -251,9 +249,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
             subklassenPref.setOnPreferenceChangeListener((preference, newValue) -> {
                 ArrayList<String> newSubklassen = (ArrayList<String>) newValue;
-                Account.getInstance(getActivity()).setSubklassen(false, newSubklassen, result -> {
-                    ExceptionHandler.handleException(new Exception("Clusterklassen bijgewerkt!"), getActivity(), ExceptionHandler.HandleType.SIMPLE);
-                });
+                Account.getInstance(getActivity()).setSubklassen(false, newSubklassen, result -> ExceptionHandler.handleException(new Exception("Clusterklassen bijgewerkt!"), getActivity(), ExceptionHandler.HandleType.SIMPLE));
 
                 return true;
             });
@@ -261,7 +257,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             Account.getInstance(getActivity()).getSubklassen(true, result -> {
                 ArrayList<Account.Subklas> subklasArray = (ArrayList<Account.Subklas>) result;
 
-                if (subklassenPref != null && subklasArray != null) {
+                if (subklasArray != null) {
                     ArrayList<String> strings = new ArrayList<>();
                     ArrayList<String> namen = new ArrayList<>();
                     ArrayList<Boolean> enabled = new ArrayList<>();
@@ -275,7 +271,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                     boolean[] enabledNew = new boolean[enabled.size()];
 
                     for(int i = 0; i < enabled.size(); i++) {
-                        enabledNew[i] = enabled.get(i).booleanValue();
+                        enabledNew[i] = enabled.get(i);
                     }
 
                     subklassenPref.setEntries(strings.toArray(new String[strings.size()]), enabledNew);
@@ -312,9 +308,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
             findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
             findPreference("clusterklassen_reload").setOnPreferenceClickListener(preference -> {
-                Account.getInstance(getActivity()).setSubklassen(true, null, result -> {
-                    ExceptionHandler.handleException(new Exception("Clusterklassen opnieuw ingesteld!"), getActivity(), ExceptionHandler.HandleType.SIMPLE);
-                });
+                Account.getInstance(getActivity()).setSubklassen(true, null, result -> ExceptionHandler.handleException(new Exception("Clusterklassen opnieuw ingesteld!"), getActivity(), ExceptionHandler.HandleType.SIMPLE));
 
                 return true;
             });

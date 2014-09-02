@@ -11,9 +11,6 @@ import com.thomasdh.roosterpgplus.R;
 
 import java.util.ArrayList;
 
-/**
- * Created by Thomas on 15-3-14.
- */
 public class NavigationDrawerAdapter extends BaseExpandableListAdapter {
     @Override
     public boolean areAllItemsEnabled(){

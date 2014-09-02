@@ -40,7 +40,6 @@ import roboguice.inject.InjectView;
 
 public class RoosterActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadedListener {
     private static final String ROOSTER_TYPE = "roosterType";
-    private static final String WEKEN_STORE = "wekenStore";
 
     @Getter
     private static int selectedWeek = -1;
@@ -164,7 +163,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
-        if(intent.getAction() != Intent.ACTION_SEARCH) return;
+        if(!intent.getAction().equals(Intent.ACTION_SEARCH)) return;
 
         if(((Object) mainFragment).getClass() != EntityRoosterFragment.class) {
             roosterType = EntityRoosterFragment.class;
@@ -198,7 +197,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     protected void onRestart() {
         super.onRestart();
         if (HelperFunctions.hasInternetConnection(this)) {
-            mainFragment.loadRooster(); // TODO from internet!!!
+            mainFragment.loadRooster(true);
         }
     }
 
@@ -235,7 +234,6 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         searchView.setIconifiedByDefault(true);
         searchView.setQueryRefinementEnabled(true);
 
-        // TODO blijft dit werken?
         refreshItem = refresh;
         searchItem = menu.findItem(R.id.menu_item_search);
         return super.onCreateOptionsMenu(menu);
@@ -253,8 +251,6 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             case R.id.menu_item_refresh:
                 mainFragment.loadRooster(true);
                 return true;
-            case R.id.menu_item_search:
-                // TODO small screen dialogshit
         }
         return super.onOptionsItemSelected(item);
     }

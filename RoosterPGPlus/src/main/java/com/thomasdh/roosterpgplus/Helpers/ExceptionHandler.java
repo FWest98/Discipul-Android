@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus.util;
+package com.thomasdh.roosterpgplus.Helpers;
 
 import android.content.Context;
 import android.util.Log;

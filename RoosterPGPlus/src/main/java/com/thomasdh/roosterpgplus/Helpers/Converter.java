@@ -4,11 +4,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.TypedValue;
 
-/**
- * Created by Thomas on 20-5-2014.
- */
+
 public class Converter {
-    private Context context;
     private Resources resources;
 
     public static float convertDPToPX(float pixel, Context c) {
@@ -17,7 +14,6 @@ public class Converter {
     }
 
     public Converter(Context context) {
-        this.context = context;
         resources = context.getResources();
     }
     public float DPtoPX(float dp) {

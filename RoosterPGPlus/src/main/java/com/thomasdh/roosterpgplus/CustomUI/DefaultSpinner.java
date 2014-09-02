@@ -30,17 +30,17 @@ public class DefaultSpinner extends Spinner {
 
     @Override
     public void setAdapter(SpinnerAdapter orig ) {
-        final SpinnerAdapter adapter = newProxy(orig);
+        SpinnerAdapter adapter = newProxy(orig);
 
         super.setAdapter(adapter);
 
         try {
-            final Method m = AdapterView.class.getDeclaredMethod(
+            Method m = AdapterView.class.getDeclaredMethod(
                     "setNextSelectedPositionInt",int.class);
             m.setAccessible(true);
             m.invoke(this,-1);
 
-            final Method n = AdapterView.class.getDeclaredMethod(
+            Method n = AdapterView.class.getDeclaredMethod(
                     "setSelectedPositionInt",int.class);
             n.setAccessible(true);
             n.invoke(this,-1);
@@ -71,7 +71,7 @@ public class DefaultSpinner extends Spinner {
         protected SpinnerAdapterProxy(SpinnerAdapter obj) {
             this.obj = obj;
             try {
-                this.getView = SpinnerAdapter.class.getMethod(
+                getView = SpinnerAdapter.class.getMethod(
                         "getView",int.class,View.class,ViewGroup.class);
             }
             catch( Exception e ) {
@@ -82,7 +82,7 @@ public class DefaultSpinner extends Spinner {
         public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
             try {
                 return m.equals(getView) &&
-                        (Integer)(args[0])<0 ?
+                        (Integer) args[0] < 0 ?
                         getView((Integer)args[0],(View)args[1],(ViewGroup)args[2]) :
                         m.invoke(obj, args);
             }
@@ -98,7 +98,7 @@ public class DefaultSpinner extends Spinner {
                 throws IllegalAccessException {
 
             if( position<0 ) {
-                final TextView v =
+                TextView v =
                         (TextView) ((LayoutInflater)getContext().getSystemService(
                                 Context.LAYOUT_INFLATER_SERVICE)).inflate(
                                 android.R.layout.simple_spinner_item,parent,false);
