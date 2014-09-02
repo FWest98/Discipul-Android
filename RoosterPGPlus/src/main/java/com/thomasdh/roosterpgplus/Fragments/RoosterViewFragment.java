@@ -147,17 +147,15 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
             }
             roosterLoadedListener.onRoosterLoaded();
             RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), urenCount, getViewPager(), getActivity(), this, this);
-        });
+        }, exception -> roosterLoadedListener.onRoosterLoaded());
     }
 
     public void setInternetConnectionState(boolean hasInternetConnection) {
         TextView warning = (TextView) getRootView().findViewById(R.id.internet_connection_warning);
         if(hasInternetConnection) {
             Animations.collapse(warning);
-            //warning.setVisibility(View.GONE);
         } else {
             Animations.expand(warning);
-            //warning.setVisibility(View.VISIBLE);
         }
     }
 

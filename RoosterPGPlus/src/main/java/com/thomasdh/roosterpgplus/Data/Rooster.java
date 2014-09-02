@@ -8,6 +8,7 @@ import com.j256.ormlite.stmt.DeleteBuilder;
 import com.thomasdh.roosterpgplus.Database.DatabaseHelper;
 import com.thomasdh.roosterpgplus.Database.DatabaseManager;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
+import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.util.ExceptionHandler;
@@ -23,37 +24,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rooster {
-    public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback) {
+    public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback, AsyncActionCallback errorCallback) {
         if(HelperFunctions.hasInternetConnection(context)) {
             if (type == RoosterViewFragment.LoadType.ONLINE) {
-                getRoosterFromInternet(query, false, context, callback);
+                getRoosterFromInternet(query, false, context, callback, errorCallback);
             } else if (type == RoosterViewFragment.LoadType.NEWONLINE) {
-                getRoosterFromInternet(query, true, context, callback);
+                getRoosterFromInternet(query, true, context, callback, errorCallback);
             } else {
-                getRoosterFromDatabase(query, context, callback);
+                getRoosterFromDatabase(query, context, callback, errorCallback);
             }
         } else if(type == RoosterViewFragment.LoadType.OFFLINE || type == RoosterViewFragment.LoadType.NEWONLINE) {
-            getRoosterFromDatabase(query, context, callback);
+            getRoosterFromDatabase(query, context, callback, errorCallback);
         } else {
             ExceptionHandler.handleException(new Exception("Kon rooster niet laden, er is geen internetverbinding"), context, ExceptionHandler.HandleType.SIMPLE);
         }
     }
 
-    private static void getRoosterFromInternet(List<NameValuePair> query, boolean isOffline, Context context, RoosterCallback callback) {
+    private static void getRoosterFromInternet(List<NameValuePair> query, boolean isOffline, Context context, RoosterCallback callback, AsyncActionCallback errorCallback) {
         String url = "rooster?"+ URLEncodedUtils.format(query, "utf-8");
 
         WebDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback), exception -> {
             Log.e("RoosterDownloader", "Er ging iets mis met het ophalen van het rooster", (Exception) exception);
             if (isOffline) {
                 ExceptionHandler.handleException(new Exception("Geen internetverbinding, oude versie van het rooster!"), context, ExceptionHandler.HandleType.SIMPLE);
-                getRoosterFromDatabase(query, context, callback);
+                getRoosterFromDatabase(query, context, callback, errorCallback);
             } else {
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
+                try {
+                    errorCallback.onAsyncActionComplete(null);
+                } catch (Exception ex) {}
             }
         });
     }
 
-    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback) {
+    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, AsyncActionCallback errorCallback) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
             Dao<Lesuur, ?> dao = helper.getDao(Lesuur.class);
@@ -66,8 +70,15 @@ public class Rooster {
         } catch (SQLException e) {
             Log.e("SQL ERROR", e.getMessage(), e);
             ExceptionHandler.handleException(new Exception("Opslagfout, er is geen rooster geladen"), context, ExceptionHandler.HandleType.SIMPLE);
+            try {
+                errorCallback.onAsyncActionComplete(null);
+            } catch (Exception ex) {}
+
         } catch (Exception e) {
             Log.e("Callback error", e.getMessage(), e);
+            try {
+                errorCallback.onAsyncActionComplete(null);
+            } catch (Exception ex) {}
         }
     }
 

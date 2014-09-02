@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -19,6 +20,7 @@ import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Data.SearchRecentsProvider;
 import com.thomasdh.roosterpgplus.Fragments.EntityRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.PersoonlijkRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
@@ -162,6 +164,8 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
+        if(intent.getAction() != Intent.ACTION_SEARCH) return;
+
         if(((Object) mainFragment).getClass() != EntityRoosterFragment.class) {
             roosterType = EntityRoosterFragment.class;
             EntityRoosterFragment searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
@@ -171,6 +175,8 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             searchFragment.setEntity(intent.getStringExtra(SearchManager.QUERY));
 
             getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
+
+            new SearchRecentSuggestions(this, SearchRecentsProvider.AUTHORITY, SearchRecentsProvider.MODE).saveRecentQuery(searchFragment.getEntity(), null);
         } else {
             ((EntityRoosterFragment) mainFragment).setEntity(intent.getStringExtra(SearchManager.QUERY));
             mainFragment.loadRooster();
