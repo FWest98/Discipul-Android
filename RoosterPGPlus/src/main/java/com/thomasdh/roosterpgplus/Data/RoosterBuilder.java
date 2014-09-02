@@ -29,6 +29,8 @@ import java.util.List;
 
 import fj.data.Array;
 
+
+
 public class RoosterBuilder extends AsyncTask<Void, View, Void> {
     private Context context;
     private LayoutInflater inflater;
@@ -200,9 +202,7 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
             lastUpdateTextView.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
             container.addView(lastUpdateTextView);
 
-            if (weekViewNoScroll) {
-                pagerAdapter.setView(container, 0, context);
-            } else if (weekViewVerticScroll) {
+            if (weekViewNoScroll || weekViewVerticScroll) {
                 ScrollView scrollView = new ScrollView(context);
                 scrollView.addView(container);
                 pagerAdapter.setView(scrollView, 0, context);

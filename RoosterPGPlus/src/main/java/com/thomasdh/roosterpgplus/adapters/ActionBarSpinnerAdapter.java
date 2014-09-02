@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
-import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -20,18 +19,18 @@ import lombok.Getter;
 
 public class ActionBarSpinnerAdapter implements SpinnerAdapter {
     @Getter
-    private Class<? extends RoosterViewFragment> type;
+    private Class<?> type;
     private final WeakReference<Context> context;
     private final List<String> data;
     private ArrayList<DataSetObserver> observers = new ArrayList<>();
 
-    public ActionBarSpinnerAdapter(Context context, List<String> data, Class<? extends RoosterViewFragment> type) {
+    public ActionBarSpinnerAdapter(Context context, List<String> data, Class<?> type) {
         this.context = new WeakReference<>(context);
         this.data = data;
         setType(type);
     }
 
-    public void setType (Class<? extends RoosterViewFragment> type) {
+    public void setType (Class<?> type) {
         this.type = type;
         for(DataSetObserver observer : observers) {
             observer.onChanged();

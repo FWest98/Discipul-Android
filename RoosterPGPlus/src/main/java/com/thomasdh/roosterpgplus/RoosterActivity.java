@@ -117,7 +117,9 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 // Nieuwe dingen
                 mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek(), this);
                 roosterType = newType;
-                actionBarSpinnerAdapter.setType(newType);
+
+                if(actionBarSpinnerAdapter != null)
+                    actionBarSpinnerAdapter.setType(newType);
 
                 getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
 
@@ -174,7 +176,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             mainFragment.loadRooster();
         }
 
-        searchItem.collapseActionView();
+        MenuItemCompat.collapseActionView(searchItem);
         ((SearchView) MenuItemCompat.getActionView(searchItem)).onActionViewCollapsed();
     }
 
@@ -291,11 +293,15 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 strings.add("Week " + wekenArray.get(c).week);
             }
         }
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, mainFragment.getClass()); // bug in IntelliJ, issue 79680. It compiles, ship it!
+        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, ((Object) mainFragment).getClass()); // bug in IntelliJ, issue 79680. It compiles, ship it!
         actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, this);
 
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+
+        if(getSelectedWeek() != -1) {
+            actionBar.setSelectedNavigationItem(strings.indexOf("Week "+getSelectedWeek()));
+        }
     }
 
     public void setSelectedWeek(int week) {
