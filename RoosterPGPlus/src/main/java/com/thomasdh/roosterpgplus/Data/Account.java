@@ -154,6 +154,10 @@ public class Account {
     }
 
     public void login(AsyncActionCallback callback) {
+        login(callback, result -> {});
+    }
+
+    public void login(AsyncActionCallback callback, AsyncActionCallback cancelCallback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.logindialog, null);
@@ -181,7 +185,14 @@ public class Account {
         AlertDialog loginDialog = builder.create();
         loginDialog.show();
         loginDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(v -> register(result -> { loginDialog.dismiss(); callback.onAsyncActionComplete(result); }));
-        loginDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v -> loginDialog.dismiss());
+        loginDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v -> {
+            loginDialog.dismiss();
+            try {
+                cancelCallback.onAsyncActionComplete(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         loginDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
             String username = ((EditText) dialogView.findViewById(R.id.logindialogusername)).getText().toString();
             String password = ((EditText) dialogView.findViewById(R.id.logindialogpassword)).getText().toString();

@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.fwest98.showcaseview.ShowcaseView;
+import com.fwest98.showcaseview.targets.ActionViewTarget;
 import com.thomasdh.roosterpgplus.CustomUI.Animations;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
@@ -34,11 +36,12 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     @Getter(value = AccessLevel.PACKAGE) private int week;
     @Getter @Setter private int dag = 0;
 
-    public interface onRoosterLoadedListener {
-        public void onRoosterLoaded();
+    public interface onRoosterLoadStateChangedListener {
+        public void onRoosterLoadEnd();
+        public void onRoosterLoadCancel();
         public void onRoosterLoadStart();
     }
-    @Setter private onRoosterLoadedListener roosterLoadedListener;
+    @Setter onRoosterLoadStateChangedListener roosterLoadStateListener;
 
     //region Types
     public static Class<? extends RoosterViewFragment>[] types = new Class[]{
@@ -54,7 +57,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     //region Creating
 
     // Nieuwe instantie van het opgegeven type
-    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week, onRoosterLoadedListener listener) {
+    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week, onRoosterLoadStateChangedListener listener) {
         T fragment;
         try {
             fragment = type.newInstance();
@@ -63,7 +66,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
             return null;
         }
 
-        fragment.setRoosterLoadedListener(listener);
+        fragment.setRoosterLoadStateListener(listener);
         fragment.setWeek(week, false);
 
         return fragment;
@@ -131,7 +134,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     public void loadRooster(boolean reload) {
         if(!canLoadRooster()) return;
         if(getWeek() == -1) return;
-        roosterLoadedListener.onRoosterLoadStart();
+        roosterLoadStateListener.onRoosterLoadStart();
 
         List<NameValuePair> query = new ArrayList<>();
         query.add(new BasicNameValuePair("week", Integer.toString(getWeek())));
@@ -143,9 +146,20 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
             if(loadType == LoadType.ONLINE || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
                 setLoad();
             }
-            roosterLoadedListener.onRoosterLoaded();
+            roosterLoadStateListener.onRoosterLoadEnd();
             RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), urenCount, getViewPager(), getActivity(), this, this);
-        }, exception -> roosterLoadedListener.onRoosterLoaded());
+        }, exception -> roosterLoadStateListener.onRoosterLoadEnd());
+
+        if(HelperFunctions.showCaseView()) {
+            new ShowcaseView.Builder(getActivity())
+                    .setTarget(new ActionViewTarget(getActivity(), ActionViewTarget.Type.SPINNER))
+                    .setContentTitle(R.string.showcaseview_weekkeuze_title)
+                    .setContentText(R.string.showcaseview_weekkeuze_content)
+                    .doNotBlockTouches()
+                    .singleShot(1)
+                    .setStyle(R.style.ShowCaseTheme)
+                    .build();
+        }
     }
 
     public void setInternetConnectionState(boolean hasInternetConnection) {

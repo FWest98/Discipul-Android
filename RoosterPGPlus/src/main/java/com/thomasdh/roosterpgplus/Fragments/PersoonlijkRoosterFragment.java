@@ -63,7 +63,7 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
         if(!Account.isSet()) {
-            Account.getInstance(getActivity()).login(result -> loadRooster());
+            Account.getInstance(getActivity()).login(result -> loadRooster(), result -> roosterLoadStateListener.onRoosterLoadCancel());
         } else {
             loadRooster();
         }

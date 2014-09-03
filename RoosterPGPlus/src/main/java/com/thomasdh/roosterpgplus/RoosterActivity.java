@@ -16,6 +16,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
 
+import com.fwest98.showcaseview.ShowcaseView;
+import com.fwest98.showcaseview.targets.ViewTarget;
 import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
@@ -38,7 +40,7 @@ import lombok.Getter;
 import roboguice.activity.RoboActionBarActivity;
 import roboguice.inject.InjectView;
 
-public class RoosterActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadedListener {
+public class RoosterActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadStateChangedListener {
     private static final String ROOSTER_TYPE = "roosterType";
 
     @Getter
@@ -99,7 +101,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         } else {
             roosterType = (Class<? extends RoosterViewFragment>) savedInstanceState.getSerializable(ROOSTER_TYPE);
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
-            mainFragment.setRoosterLoadedListener(this);
+            mainFragment.setRoosterLoadStateListener(this);
             setSelectedWeek(savedInstanceState.getInt("WEEK"));
         }
 
@@ -251,18 +253,35 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             case R.id.menu_item_refresh:
                 mainFragment.loadRooster(true);
                 return true;
+            case R.id.menu_item_search:
+                if(HelperFunctions.showCaseView()) {
+                    new ShowcaseView.Builder(this)
+                            .setTarget(new ViewTarget(MenuItemCompat.getActionView(searchItem)))
+                            .setContentTitle(R.string.showcaseview_zoeken_title)
+                            .setContentText(R.string.showcaseview_zoeken_content)
+                            .hideOnTouchOutside()
+                            .singleShot(2)
+                            .setStyle(R.style.ShowCaseTheme)
+                            .build();
+                }
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onRoosterLoaded() {
+    public void onRoosterLoadEnd() {
         setRefreshButtonState(false);
     }
 
     @Override
     public void onRoosterLoadStart() {
         setRefreshButtonState(true);
+    }
+
+    @Override
+    public void onRoosterLoadCancel() {
+        setRefreshButtonState(false);
+        drawerLayout.openDrawer(drawerList);
     }
 
     public void setRefreshButtonState(boolean loading) {

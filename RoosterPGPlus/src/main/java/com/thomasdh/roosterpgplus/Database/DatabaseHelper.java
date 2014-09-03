@@ -19,7 +19,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "roosterpgplus.db";
     private static final int DATABASE_VERSION = 1;
 
-    private Hashtable<String, Dao<?, Integer>> daoHashtable = null;
+    private Hashtable<String, Dao<?, Integer>> daoHashtable = new Hashtable<>();
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION, R.raw.ormlite_config);
