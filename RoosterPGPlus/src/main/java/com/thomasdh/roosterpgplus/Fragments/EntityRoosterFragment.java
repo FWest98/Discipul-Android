@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
+import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
@@ -34,7 +35,7 @@ public class EntityRoosterFragment extends RoosterViewFragment {
 
     @Override
     public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
-        query.add(new BasicNameValuePair("entity", getEntity()));
+        query.add(new BasicNameValuePair("entity", getEntity().replace("ik", Account.getApiKey())));
         return query;
     }
 
