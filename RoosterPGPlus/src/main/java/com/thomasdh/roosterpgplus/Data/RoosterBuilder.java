@@ -13,10 +13,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
+import com.thomasdh.roosterpgplus.Adapters.MultipleUrenClickListener;
 import com.thomasdh.roosterpgplus.Helpers.Converter;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
-import com.thomasdh.roosterpgplus.Adapters.MultipleUrenClickListener;
 import com.thomasdh.roosterpgplus.R;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,32 +28,72 @@ import java.util.Date;
 import java.util.List;
 
 import fj.data.Array;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
-
-
-public class RoosterBuilder extends AsyncTask<Void, View, Void> {
-    private Context context;
-    private LayoutInflater inflater;
+@Accessors(chain = true)
+public class RoosterBuilder extends AsyncTask<Void, Void, View> {
+    @Setter private Context context;
     private ViewPager viewPager;
+    @Setter private int showDag = Calendar.MONDAY;
+    @Setter private boolean showVervangenUren = true;
+    @Setter private long lastLoad;
+    @Setter private int urenCount;
+    @Setter private BuilderFunctions BuilderFunctions = new BuilderFunctions() {
+        @Override
+        public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
+            lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // Background doorzichtig, geen speciale uren
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
-    private RoosterBuilder(LayoutInflater inflater, Context context) {
-        this.context = context;
-        this.inflater = inflater;
+            TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
+            TextView leraarTextView = (TextView) lesView.findViewById(R.id.rooster_leraar);
+            TextView lokaalTextView = (TextView) lesView.findViewById(R.id.rooster_lokaal);
+            TextView tijdenTextView = (TextView) lesView.findViewById(R.id.rooster_tijden);
+
+            vakTextView.setText(lesuur.vak);
+            leraarTextView.setText(StringUtils.join(lesuur.leraren, " & "));
+            lokaalTextView.setText(lesuur.lokaal);
+            tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
+
+            return lesView;
+        }
+    };
+    private Array<Lesuur> lessen;
+
+    //region Builder-things
+
+    public RoosterBuilder(Context context) {
+        setContext(context);
     }
 
+    public RoosterBuilder in(ViewPager viewPager) {
+        this.viewPager = viewPager;
+        return this;
+    }
+
+    public RoosterBuilder build(List<Lesuur> lessen) {
+
+        return this;
+    }
+
+    //endregion
+    //region AsyncThings
+
     @Override
-    protected Void doInBackground(Void... no) {
-        // TODO: RoosterBuild in aparte threads voor snelheid
+    protected View doInBackground(Void... no) {
+
 
         return null;
     }
 
     @Override
-    protected void onProgressUpdate(View... values) {
+    protected void onPostExecute(View view) {
 
     }
 
-    public static void build(List<Lesuur> lessenList, int showDag, boolean showVervangenUren, long lastLoad, int urenCount, ViewPager viewPager, Context context, ViewPager.OnPageChangeListener listener, lesViewBuilder builder) {
+    //endregion
+
+    public static void build(List<Lesuur> lessenList, int showDag, boolean showVervangenUren, long lastLoad, int urenCount, ViewPager viewPager, Context context, ViewPager.OnPageChangeListener listener, BuilderFunctions builder) {
         if (viewPager == null) throw new IllegalArgumentException("Geen viewPager");
         if (viewPager.getAdapter() == null) viewPager.setAdapter(new AnimatedPagerAdapter());
         AnimatedPagerAdapter pagerAdapter = (AnimatedPagerAdapter) viewPager.getAdapter();
@@ -247,11 +287,11 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
         return null;
     }
 
-    private static View makeView(Lesuur lesuur, LayoutInflater inflater, lesViewBuilder builder, int urenCount) {
+    private static View makeView(Lesuur lesuur, LayoutInflater inflater, BuilderFunctions builder, int urenCount) {
         return makeView(Array.array(lesuur), inflater, builder, urenCount);
     }
 
-    private static View makeView(Array<Lesuur> lessen, LayoutInflater inflater, lesViewBuilder builder, int urenCount) {
+    private static View makeView(Array<Lesuur> lessen, LayoutInflater inflater, BuilderFunctions builder, int urenCount) {
         View lesView;
         Converter con = new Converter(inflater.getContext());
 
@@ -301,7 +341,7 @@ public class RoosterBuilder extends AsyncTask<Void, View, Void> {
         return textView;
     }
 
-    public interface lesViewBuilder {
+    public interface BuilderFunctions {
         View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
     }
 }

@@ -28,7 +28,7 @@ import lombok.Getter;
 import lombok.Setter;
 import roboguice.fragment.RoboFragment;
 
-public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener, RoosterBuilder.lesViewBuilder {
+public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener, RoosterBuilder.BuilderFunctions {
     @Getter public ViewPager viewPager;
     @Getter @Setter private View rootView;
     public enum LoadType { OFFLINE, ONLINE, NEWONLINE }
