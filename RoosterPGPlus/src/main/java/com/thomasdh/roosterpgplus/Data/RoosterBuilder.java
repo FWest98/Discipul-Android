@@ -28,17 +28,18 @@ import java.util.Date;
 import java.util.List;
 
 import fj.data.Array;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
 @Accessors(chain = true)
-public class RoosterBuilder extends AsyncTask<Void, Void, View> {
+public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
     @Setter private Context context;
     private ViewPager viewPager;
     @Setter private int showDag = Calendar.MONDAY;
     @Setter private boolean showVervangenUren = true;
-    @Setter private long lastLoad;
-    @Setter private int urenCount;
+    @Setter private long lastLoad = -1;
+    @Setter private int urenCount = -1;
     @Setter private BuilderFunctions BuilderFunctions = new BuilderFunctions() {
         @Override
         public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
@@ -58,37 +59,78 @@ public class RoosterBuilder extends AsyncTask<Void, Void, View> {
             return lesView;
         }
     };
+
     private Array<Lesuur> lessen;
+    private boolean weekView;
 
     //region Builder-things
 
-    public RoosterBuilder(Context context) {
+    public RoosterBuilder(@NonNull Context context) {
         setContext(context);
     }
 
-    public RoosterBuilder in(ViewPager viewPager) {
+    public RoosterBuilder in(@NonNull ViewPager viewPager) {
         this.viewPager = viewPager;
         return this;
     }
 
-    public RoosterBuilder build(List<Lesuur> lessen) {
+    public void build(List<Lesuur> lessen) {
+        build(Array.iterableArray(lessen));
+    }
+    public void build(Array<Lesuur> lessen) {
 
-        return this;
+    }
+    @Override
+    protected Void doInBackground(Void... unused) {
+        if(viewPager == null) throw new IllegalStateException("Geen ViewPager");
+        if(viewPager.getAdapter() == null) viewPager.setAdapter(new AnimatedPagerAdapter());
+
+        if(lessen == null || lessen.length() == 0) {
+            View noRoosterView = LayoutInflater.from(context).inflate(R.layout.rooster_null, null);
+            ((AnimatedPagerAdapter) viewPager.getAdapter()).setView(noRoosterView, 0, context);
+            viewPager.getAdapter().notifyDataSetChanged();
+            return null;
+        }
+
+        return null;
     }
 
     //endregion
     //region AsyncThings
 
-    @Override
-    protected View doInBackground(Void... no) {
+    @Accessors(chain = true)
+    private class BuilderTask extends AsyncTask<Void, Void, View> {
+        @Setter private View parentView;
+        @Setter private int dag = Calendar.MONDAY;
+        @Setter private Array<Lesuur> lessen;
+        @Setter private Calendar dateViewCalendar;
+        @Setter private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");
 
+        @Override
+        protected View doInBackground(Void... no) {
+            LinearLayout linearLayout = (LinearLayout) parentView.findViewById(R.id.rooster_dag_linearlayout);
 
-        return null;
-    }
+            /* Dagtitel */
+            TextView dagNaamTextView = (TextView) parentView.findViewById(R.id.weekdagnaam);
+            TextView dagDatumTextView = (TextView) parentView.findViewById(R.id.weekdagdatum);
 
-    @Override
-    protected void onPostExecute(View view) {
+            dagNaamTextView.setText(getDayOfWeek(dag));
+            int week = dateViewCalendar.get(Calendar.WEEK_OF_YEAR);
+            dateViewCalendar.set(Calendar.DAY_OF_WEEK, dag);
+            dateViewCalendar.set(Calendar.WEEK_OF_YEAR, week);
+            dagDatumTextView.setText(dateFormat.format(dateViewCalendar.getTime()));
 
+            for(int uur = 1; uur <= urenCount; uur++) {
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(View view) {
+
+        }
     }
 
     //endregion

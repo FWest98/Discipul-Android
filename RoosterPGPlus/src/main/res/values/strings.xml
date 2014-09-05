@@ -116,6 +116,7 @@
     <string name="showcaseview_zoeken_content"><![CDATA[Vul hier een klas, docent, leerlingnummer of \'ik\' in en krijg het rooster.\nTip: Met \' & \' kan je roosters combineren]]></string>
 
     <string name="internet_connection_warning">Geen internetverbinding</string>
+    <string name="rooster_null">Geen rooster gevonden!</string>
 
     <string-array name="settings_notification_check_interval">
         <item>5 minuten</item>

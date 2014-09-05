@@ -29,7 +29,7 @@ import lombok.Setter;
 import roboguice.fragment.RoboFragment;
 
 public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener, RoosterBuilder.BuilderFunctions {
-    @Getter public ViewPager viewPager;
+    @Getter protected ViewPager viewPager;
     @Getter @Setter private View rootView;
     public enum LoadType { OFFLINE, ONLINE, NEWONLINE }
 
@@ -147,7 +147,9 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
                 setLoad();
             }
             roosterLoadStateListener.onRoosterLoadEnd();
-            RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), urenCount, getViewPager(), getActivity(), this, this);
+            buildRooster((List<Lesuur>) result, urenCount);
+            //RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), urenCount, getViewPager(), getActivity(), this, this);
+
         }, exception -> roosterLoadStateListener.onRoosterLoadEnd());
 
         if(HelperFunctions.showCaseView()) {
@@ -160,6 +162,17 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
                     .setStyle(R.style.ShowCaseTheme)
                     .build();
         }
+    }
+
+    public void buildRooster(List<Lesuur> lessen, int urenCount) {
+        getViewPager().setOnPageChangeListener(this);
+        new RoosterBuilder(getActivity())
+                .in(getViewPager())
+                .setShowDag(getDag())
+                .setShowVervangenUren(true)
+                .setLastLoad(getLoad())
+                .setUrenCount(urenCount)
+                .build(lessen);
     }
 
     public void setInternetConnectionState(boolean hasInternetConnection) {
