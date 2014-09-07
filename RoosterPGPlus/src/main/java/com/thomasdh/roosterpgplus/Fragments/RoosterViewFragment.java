@@ -167,7 +167,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     }
 
     public RoosterBuilder buildRooster(int urenCount) {
-        getViewPager().setAdapter(new AnimatedPagerAdapter());
+        if(getViewPager().getAdapter() == null) getViewPager().setAdapter(new AnimatedPagerAdapter());
         getViewPager().getAdapter().notifyDataSetChanged();
         getViewPager().setOnPageChangeListener(this);
         return new RoosterBuilder(getActivity())
