@@ -8,10 +8,9 @@ import com.j256.ormlite.stmt.DeleteBuilder;
 import com.thomasdh.roosterpgplus.Database.DatabaseHelper;
 import com.thomasdh.roosterpgplus.Database.DatabaseManager;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
-import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
-import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -24,40 +23,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rooster {
-    public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback, AsyncActionCallback errorCallback) {
+    public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
         if(HelperFunctions.hasInternetConnection(context)) {
             if (type == RoosterViewFragment.LoadType.ONLINE) {
-                getRoosterFromInternet(query, false, context, callback, errorCallback);
+                getRoosterFromInternet(query, false, context, callback, exceptionCallback);
             } else if (type == RoosterViewFragment.LoadType.NEWONLINE) {
-                getRoosterFromInternet(query, true, context, callback, errorCallback);
+                getRoosterFromInternet(query, true, context, callback, exceptionCallback);
+            } else if(type == RoosterViewFragment.LoadType.REFRESH) {
+                getRoosterFromInternet(query, false, context, callback, exceptionCallback);
             } else {
-                getRoosterFromDatabase(query, context, callback, errorCallback);
+                getRoosterFromDatabase(query, context, callback, exceptionCallback);
             }
         } else if(type == RoosterViewFragment.LoadType.OFFLINE || type == RoosterViewFragment.LoadType.NEWONLINE) {
-            getRoosterFromDatabase(query, context, callback, errorCallback);
+            getRoosterFromDatabase(query, context, callback, exceptionCallback);
         } else {
             ExceptionHandler.handleException(new Exception("Kon rooster niet laden, er is geen internetverbinding"), context, ExceptionHandler.HandleType.SIMPLE);
+            exceptionCallback.onError(null);
         }
     }
 
-    private static void getRoosterFromInternet(List<NameValuePair> query, boolean isOffline, Context context, RoosterCallback callback, AsyncActionCallback errorCallback) {
+    private static void getRoosterFromInternet(List<NameValuePair> query, boolean hasRoosterInDatabase, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
         String url = "rooster?"+ URLEncodedUtils.format(query, "utf-8");
 
         WebDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback), exception -> {
             Log.e("RoosterDownloader", "Er ging iets mis met het ophalen van het rooster", (Exception) exception);
-            if (isOffline) {
+            if (hasRoosterInDatabase) {
                 ExceptionHandler.handleException(new Exception("Geen internetverbinding, oude versie van het rooster!"), context, ExceptionHandler.HandleType.SIMPLE);
-                getRoosterFromDatabase(query, context, callback, errorCallback);
+                getRoosterFromDatabase(query, context, callback, exceptionCallback);
             } else {
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
-                try {
-                    errorCallback.onAsyncActionComplete(null);
-                } catch (Exception ignored) {}
+                exceptionCallback.onError(null);
             }
         });
     }
 
-    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, AsyncActionCallback errorCallback) {
+    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
             Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
@@ -70,15 +70,11 @@ public class Rooster {
         } catch (SQLException e) {
             Log.e("SQL ERROR", e.getMessage(), e);
             ExceptionHandler.handleException(new Exception("Opslagfout, er is geen rooster geladen"), context, ExceptionHandler.HandleType.SIMPLE);
-            try {
-                errorCallback.onAsyncActionComplete(null);
-            } catch (Exception ignored) {}
+            exceptionCallback.onError(e);
 
         } catch (Exception e) {
             Log.e("Callback error", e.getMessage(), e);
-            try {
-                errorCallback.onAsyncActionComplete(null);
-            } catch (Exception ignored) {}
+            exceptionCallback.onError(e);
         }
     }
 
@@ -135,5 +131,8 @@ public class Rooster {
 
     public interface RoosterCallback {
         void onCallback(Object data, int urenCount);
+    }
+    public interface ExceptionCallback {
+        void onError(Exception e);
     }
 }

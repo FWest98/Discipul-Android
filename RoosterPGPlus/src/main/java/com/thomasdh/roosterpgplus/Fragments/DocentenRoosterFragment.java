@@ -59,7 +59,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     @Override
     public LoadType getLoadType() {
         Long lastLoad = RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity());
-        if(lastLoad == null) {
+        if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
             return LoadType.NEWONLINE;
@@ -159,6 +159,11 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
 
         return lesView;
+    }
+
+    @Override
+    public boolean showLesuur(Lesuur lesuur) {
+        return true;
     }
 
     @Override

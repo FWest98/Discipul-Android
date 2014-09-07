@@ -137,8 +137,9 @@ public class RoosterInfo {
 
     public static Long getLoad(String itemName, Context context) {
         Hashtable<String, Long> loads = getLoads(context);
-        if(loads == null) return null;
-        return loads.get(itemName);
+        if(loads == null) return Long.valueOf(0);
+        Long result = loads.get(itemName);
+        return result == null ? Long.valueOf(0) : result;
     }
 
     public static Hashtable<String, Long> getLoads(Context context) {

@@ -42,7 +42,7 @@ public class EntityRoosterFragment extends RoosterViewFragment {
     @Override
     public LoadType getLoadType() {
         Long lastLoad = RoosterInfo.getLoad("entity"+getEntity()+getWeek(), getActivity());
-        if(lastLoad == null) {
+        if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
             return LoadType.NEWONLINE;
@@ -104,5 +104,10 @@ public class EntityRoosterFragment extends RoosterViewFragment {
         tijdenTextView.setText(times);
 
         return lesView;
+    }
+
+    @Override
+    public boolean showLesuur(Lesuur lesuur) {
+        return true;
     }
 }

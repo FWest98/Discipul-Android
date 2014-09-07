@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.fwest98.showcaseview.ShowcaseView;
 import com.fwest98.showcaseview.targets.ActionViewTarget;
+import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.Animations;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
@@ -31,7 +32,7 @@ import roboguice.fragment.RoboFragment;
 public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener, RoosterBuilder.BuilderFunctions {
     @Getter protected ViewPager viewPager;
     @Getter @Setter private View rootView;
-    public enum LoadType { OFFLINE, ONLINE, NEWONLINE }
+    public enum LoadType { OFFLINE, ONLINE, NEWONLINE, REFRESH }
 
     @Getter(value = AccessLevel.PACKAGE) private int week;
     @Getter @Setter private int dag = 0;
@@ -140,17 +141,20 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         query.add(new BasicNameValuePair("week", Integer.toString(getWeek())));
         query = getURLQuery(query);
 
-        LoadType loadType = reload ? LoadType.ONLINE : getLoadType();
+        LoadType loadType = reload ? LoadType.REFRESH : getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), (result, urenCount) -> {
-            if(loadType == LoadType.ONLINE || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
+            if(loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
                 setLoad();
             }
             roosterLoadStateListener.onRoosterLoadEnd();
             buildRooster((List<Lesuur>) result, urenCount);
-            //RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), urenCount, getViewPager(), getActivity(), this, this);
-
-        }, exception -> roosterLoadStateListener.onRoosterLoadEnd());
+        }, exception -> {
+            roosterLoadStateListener.onRoosterLoadEnd();
+            if(loadType != LoadType.REFRESH) {
+                buildRooster(null, 0);
+            }
+        });
 
         if(HelperFunctions.showCaseView()) {
             new ShowcaseView.Builder(getActivity())
@@ -165,6 +169,8 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     }
 
     public void buildRooster(List<Lesuur> lessen, int urenCount) {
+        getViewPager().setAdapter(new AnimatedPagerAdapter());
+        getViewPager().getAdapter().notifyDataSetChanged();
         getViewPager().setOnPageChangeListener(this);
         new RoosterBuilder(getActivity())
                 .in(getViewPager())

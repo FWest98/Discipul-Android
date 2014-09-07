@@ -54,8 +54,8 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getActivity());
-        if(lastLoad == null) {
+        Long lastLoad = getLoad();
+        if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
             return LoadType.NEWONLINE;
@@ -129,5 +129,10 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
         tijdenTextView.setText(times);
 
         return lesView;
+    }
+
+    @Override
+    public boolean showLesuur(Lesuur lesuur) {
+        return true;
     }
 }

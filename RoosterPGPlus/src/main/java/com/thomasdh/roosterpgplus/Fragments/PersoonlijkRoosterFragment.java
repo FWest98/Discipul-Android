@@ -45,7 +45,7 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
     @Override
     public LoadType getLoadType() {
         Long lastLoad = RoosterInfo.getLoad(LOADS_NAME+getWeek(), getActivity());
-        if(lastLoad == null) {
+        if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
             return LoadType.NEWONLINE;
@@ -92,5 +92,10 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
         tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
 
         return lesView;
+    }
+
+    @Override
+    public boolean showLesuur(Lesuur lesuur) {
+        return true;
     }
 }

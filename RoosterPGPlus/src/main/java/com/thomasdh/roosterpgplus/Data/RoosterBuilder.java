@@ -40,7 +40,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
     @Setter private boolean showVervangenUren = true;
     @Setter private long lastLoad = -1;
     @Setter private int urenCount = -1;
-    @Setter private BuilderFunctions BuilderFunctions = new BuilderFunctions() {
+    @Setter private BuilderFunctions builderFunctions = new BuilderFunctions() {
         @Override
         public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
             lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // Background doorzichtig, geen speciale uren
@@ -58,10 +58,21 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
             return lesView;
         }
+
+        @Override
+        public boolean showLesuur(Lesuur lesuur) {
+            return true;
+        }
     };
 
     private Array<Lesuur> lessen;
     private boolean weekView;
+    private Converter converter;
+    private AnimatedPagerAdapter adapter;
+    private ArrayList<View> dagViews = new ArrayList<>();
+
+    private LinearLayout weekLinearLayout = null;
+
 
     //region Builder-things
 
@@ -75,40 +86,143 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
     }
 
     public void build(List<Lesuur> lessen) {
+        if(lessen == null) lessen = new ArrayList<>();
         build(Array.iterableArray(lessen));
     }
     public void build(Array<Lesuur> lessen) {
-
+        this.lessen = lessen;
+        execute();
     }
+
     @Override
     protected Void doInBackground(Void... unused) {
         if(viewPager == null) throw new IllegalStateException("Geen ViewPager");
-        if(viewPager.getAdapter() == null) viewPager.setAdapter(new AnimatedPagerAdapter());
+        if(viewPager.getAdapter() == null) throw new IllegalArgumentException("Geen ViewPagerAdapter");
+        adapter = (AnimatedPagerAdapter) viewPager.getAdapter();
 
         if(lessen == null || lessen.length() == 0) {
-            View noRoosterView = LayoutInflater.from(context).inflate(R.layout.rooster_null, null);
-            ((AnimatedPagerAdapter) viewPager.getAdapter()).setView(noRoosterView, 0, context);
-            viewPager.getAdapter().notifyDataSetChanged();
             return null;
         }
 
+        if(urenCount == -1) {
+            urenCount = lessen.foldLeft((a, b) -> b.uur > a ? b.uur : a, 0);
+        }
+
+        context.getResources().getDrawable(R.drawable.diagonal_stripes_optioneeluur).setAlpha(100);
+        converter = new Converter(context);
+
+        boolean isWide = context.getResources().getBoolean(R.bool.isWideWeekview);
+        boolean isHigh = context.getResources().getBoolean(R.bool.isHighWeekview);
+        weekView = isWide || isHigh;
+
+        int week = lessen.get(0).week;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        Calendar now = Calendar.getInstance();
+
+        if (now.get(Calendar.WEEK_OF_YEAR) > 30 && week <= 30) { // Najaar en wil voorjaar, volgend jaar
+            calendar.set(Calendar.YEAR, now.get(Calendar.YEAR) + 1);
+        } else if (now.get(Calendar.WEEK_OF_YEAR) <= 30 && week > 30) { // Voorjaar en wil najaar, vorig jaar
+            calendar.set(Calendar.YEAR, now.get(Calendar.YEAR) - 1);
+        } else {
+            calendar.set(Calendar.YEAR, now.get(Calendar.YEAR));
+        }
+        calendar.set(Calendar.WEEK_OF_YEAR, week);
+
+        if(weekView) {
+            weekLinearLayout = new LinearLayout(context);
+            weekLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0f));
+            int padding = converter.DPtoPX(10);
+            weekLinearLayout.setPadding(padding, 0, padding, 0);
+        }
+
+        for(int i = 2; i < 7; i++) {
+            final int dag = i;
+
+            View dagView = LayoutInflater.from(context).inflate(R.layout.rooster_dag, null);
+
+            dagView = new DagBuilder()
+                    .setParentView(dagView)
+                    .setDag(dag)
+                    .setLessen(lessen.filter(s -> s.dag == dag - 1))
+                    .setDateViewCalendar(calendar)
+                    .build();
+
+            if(weekView) {
+                weekLinearLayout.addView(dagView);
+            } else {
+                dagViews.add(dagView);
+            }
+        }
+
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void s) {
+        if(lessen == null || lessen.length() == 0) {
+            View noRoosterView = LayoutInflater.from(context).inflate(R.layout.rooster_null, null);
+            adapter.setView(noRoosterView, 0, context);
+            viewPager.getAdapter().notifyDataSetChanged();
+
+            return;
+        }
+
+        boolean isWide = context.getResources().getBoolean(R.bool.isWideWeekview);
+        boolean isHigh = context.getResources().getBoolean(R.bool.isHighWeekview);
+        boolean weekViewNoScroll = isWide && isHigh;
+        boolean weekViewHorizScroll = isHigh;
+        boolean weekViewVerticScroll = isWide;
+
+        if (weekView) {
+            LinearLayout container = new LinearLayout(context);
+            container.setOrientation(LinearLayout.VERTICAL);
+            container.addView(weekLinearLayout);
+
+            TextView lastUpdateTextView = getUpdateText(lastLoad, context);
+            lastUpdateTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            int pxPadding = converter.DPtoPX(10);
+            lastUpdateTextView.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
+            container.addView(lastUpdateTextView);
+
+            if (weekViewNoScroll || weekViewVerticScroll) {
+                ScrollView scrollView = new ScrollView(context);
+                scrollView.addView(container);
+                adapter.setView(scrollView, 0, context);
+            } else if (weekViewHorizScroll) {
+                HorizontalScrollView scrollView = new HorizontalScrollView(context);
+                scrollView.addView(container);
+                adapter.setView(scrollView, 0, context);
+            }
+        } else {
+            for(int i = 0; i < dagViews.size(); i++) {
+                adapter.setView(dagViews.get(i), i, context);
+            }
+        }
+
+        adapter.notifyDataSetChanged();
+
+        if (!weekView) {
+            // Ga naar de juiste dag
+            viewPager.setCurrentItem(showDag);
+        }
     }
 
     //endregion
     //region AsyncThings
 
     @Accessors(chain = true)
-    private class BuilderTask extends AsyncTask<Void, Void, View> {
+    private class DagBuilder {
         @Setter private View parentView;
         @Setter private int dag = Calendar.MONDAY;
         @Setter private Array<Lesuur> lessen;
         @Setter private Calendar dateViewCalendar;
         @Setter private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");
 
-        @Override
-        protected View doInBackground(Void... no) {
-            LinearLayout linearLayout = (LinearLayout) parentView.findViewById(R.id.rooster_dag_linearlayout);
+        private LinearLayout linearLayout;
+
+        public View build() {
+            linearLayout = (LinearLayout) parentView.findViewById(R.id.rooster_dag_linearlayout);
 
             /* Dagtitel */
             TextView dagNaamTextView = (TextView) parentView.findViewById(R.id.weekdagnaam);
@@ -120,16 +234,84 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             dateViewCalendar.set(Calendar.WEEK_OF_YEAR, week);
             dagDatumTextView.setText(dateFormat.format(dateViewCalendar.getTime()));
 
-            for(int uur = 1; uur <= urenCount; uur++) {
+            for(int i = 1; i <= urenCount; i++) {
+                final int uur = i;
+                Array<Lesuur> lessenInUur = lessen.filter(s -> s.uur == uur);
+                ArrayList<RelativeLayout> lesViews = new ArrayList<>();
+                RelativeLayout urenContainer = null;
 
+                if(lessenInUur == null || lessenInUur.length() == 0) { // Geen lessen -> vrij
+                    View lesView = LayoutInflater.from(context).inflate(R.layout.rooster_tussenuur, null);
+                    lesView.setMinimumHeight(converter.DPtoPX(79));
+                    if(uur == urenCount) {
+                        lesView.setBackgroundResource(R.drawable.basic_rect);
+                        lesView.setPadding(0,0,0,converter.DPtoPX(1));
+                    }
+                    linearLayout.addView(lesView);
+
+                    continue;
+                }
+
+                Array<Lesuur> vervallenLessen = lessenInUur.filter(s -> s.vervallen);
+                Array<Lesuur> normalLessen = lessenInUur.filter(s -> !s.vervallen);
+
+                boolean multipleViews = (vervallenLessen.isNotEmpty() && normalLessen.isNotEmpty()) || normalLessen.length() > 1;
+                if(multipleViews) {
+                    urenContainer = new RelativeLayout(context);
+                    urenContainer.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                }
+
+                if(vervallenLessen.isNotEmpty() && (normalLessen.isEmpty() || normalLessen.isNotEmpty() && showVervangenUren)) { // Vervallen uren verwerken
+                    lesViews.add((RelativeLayout) makeView(vervallenLessen, LayoutInflater.from(context), builderFunctions, urenCount));
+                }
+
+                if(normalLessen.isNotEmpty()) {
+                    for(Lesuur les : normalLessen) {
+                        lesViews.add((RelativeLayout) makeView(les, LayoutInflater.from(context), builderFunctions, urenCount));
+                    }
+                }
+
+                int reverseCounter = lesViews.size() + 1;
+                int counter = -1;
+                for (RelativeLayout lesView : lesViews) {
+                    reverseCounter--;
+                    counter++;
+                    if (multipleViews) {
+                        TextView uurCounter = (TextView) lesView.findViewById(R.id.layerCounter);
+                        uurCounter.setVisibility(View.VISIBLE);
+                        uurCounter.setText(new StringBuilder("(").append(reverseCounter).append("/").append(lesViews.size()).append(")"));
+
+                        // Padding links/rechts zodat je uren kan zien :D
+                        RelativeLayout.LayoutParams lesLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                        lesLayoutParams.setMargins(converter.DPtoPX(reverseCounter * 8 - 8), 0, converter.DPtoPX(counter * 8), 0);
+                        lesView.setLayoutParams(lesLayoutParams);
+                    }
+
+                    if(multipleViews) {
+                        urenContainer.addView(lesView);
+                    } else {
+                        linearLayout.addView(lesView);
+                    }
+                }
+
+                if(multipleViews) {
+                    urenContainer.setOnClickListener(new MultipleUrenClickListener(lesViews, context));
+                    linearLayout.addView(urenContainer);
+                }
             }
 
-            return null;
-        }
+            if(weekView) {
+                int pxPadding = converter.DPtoPX(3);
+                linearLayout.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
+                linearLayout.setMinimumWidth(converter.DPtoPX(250));
+                parentView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            } else {
+                int pxPadding = converter.DPtoPX(10);
+                linearLayout.addView(getUpdateText(lastLoad, context));
+                linearLayout.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
+            }
 
-        @Override
-        protected void onPostExecute(View view) {
-
+            return parentView;
         }
     }
 
@@ -385,5 +567,6 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
     public interface BuilderFunctions {
         View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
+        boolean showLesuur(Lesuur lesuur);
     }
 }

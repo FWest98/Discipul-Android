@@ -56,5 +56,4 @@ public class AnimatedPagerAdapter extends PagerAdapter {
         parent.removeAllViews();
         parent.addView(newView);
     }
-
 }

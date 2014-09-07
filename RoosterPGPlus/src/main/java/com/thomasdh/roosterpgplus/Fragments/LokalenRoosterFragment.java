@@ -97,7 +97,7 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
     @Override
     public LoadType getLoadType() {
         Long lastLoad = RoosterInfo.getLoad("lokaal"+getLokaal()+getWeek(), getActivity());
-        if(lastLoad == null) {
+        if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
             return LoadType.NEWONLINE;
@@ -132,6 +132,11 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
         tijdenTextView.setText(times);
 
         return lesView;
+    }
+
+    @Override
+    public boolean showLesuur(Lesuur lesuur) {
+        return true;
     }
 
     //endregion
