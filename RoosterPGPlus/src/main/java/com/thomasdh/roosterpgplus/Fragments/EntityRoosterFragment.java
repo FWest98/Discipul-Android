@@ -5,6 +5,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
@@ -24,7 +25,8 @@ import lombok.Setter;
 public class EntityRoosterFragment extends RoosterViewFragment {
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 2700000;
 
-    @Getter @Setter private String entity;
+    @Getter @Setter
+    private String entity;
 
     //region Lifecycle
 
@@ -32,7 +34,7 @@ public class EntityRoosterFragment extends RoosterViewFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 
-        setRootView(inflater.inflate(R.layout.fragment_main, container, false));
+        setRootView(inflater.inflate(R.layout.fragment_main_entity, container, false));
         viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
@@ -85,6 +87,16 @@ public class EntityRoosterFragment extends RoosterViewFragment {
     public void setLoad() {
         RoosterInfo.setLoad("entity"+getEntity()+getWeek(), System.currentTimeMillis(), getActivity());
     }
+
+    //endregion
+    //region Rooster
+
+    @Override
+    public void loadRooster(boolean reload) {
+        if(getRootView() != null) ((TextView) getRootView().findViewById(R.id.rooster_entity_desc)).setText("Rooster voor: " + getEntity());
+        super.loadRooster(reload);
+    }
+
 
     //endregion
 }

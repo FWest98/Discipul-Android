@@ -47,7 +47,7 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
     //region Statemanagement
 
     @Override
-    public boolean canLoadRooster() { return Account.isSet(); }
+    public boolean canLoadRooster() { return Account.isSet() && getViewPager() != null; }
 
     @Override
     public List<NameValuePair> getURLQuery(List<NameValuePair> query) {

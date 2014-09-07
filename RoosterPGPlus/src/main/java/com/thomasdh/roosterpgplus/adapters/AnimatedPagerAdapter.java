@@ -1,6 +1,5 @@
 package com.thomasdh.roosterpgplus.Adapters;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
@@ -44,7 +43,6 @@ public class AnimatedPagerAdapter extends PagerAdapter {
         container.removeView((View) object);
     }
 
-    @TargetApi(12)
     public void setView(View newView, int position, Context context) {
         if (views.size() <= position) {
             FrameLayout parent = new FrameLayout(context);
@@ -52,7 +50,7 @@ public class AnimatedPagerAdapter extends PagerAdapter {
             views.add(parent);
         }
 
-        final FrameLayout parent = (FrameLayout) views.get(position);
+        FrameLayout parent = (FrameLayout) views.get(position);
         parent.removeAllViews();
         parent.addView(newView);
     }
