@@ -60,10 +60,6 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             return lesView;
         }
 
-        @Override
-        public boolean isValidForEntity(Lesuur lesuur) {
-            return true;
-        }
     };
 
     private Array<Lesuur> lessen;
@@ -180,7 +176,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             container.setOrientation(LinearLayout.VERTICAL);
             container.addView(weekLinearLayout);
 
-            TextView lastUpdateTextView = getUpdateText(lastLoad, context);
+            TextView lastUpdateTextView = getUpdateText(lastLoad);
             lastUpdateTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             int pxPadding = converter.DPtoPX(10);
             lastUpdateTextView.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
@@ -309,7 +305,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                 parentView.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
             } else {
                 int pxPadding = converter.DPtoPX(10);
-                linearLayout.addView(getUpdateText(lastLoad, context));
+                linearLayout.addView(getUpdateText(lastLoad));
                 linearLayout.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
             }
 
@@ -357,6 +353,8 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             TextView vervallenTextView = (TextView) lesView.findViewById(R.id.vervallen_tekst);
             if (lessen.length() > 1) {
                 vervallenTextView.setText(StringUtils.join(lessen.map(s -> s.vak).toList(), " & ") + " vallen uit");
+            } else if(lessen.get(0).verplaatsing) {
+                vervallenTextView.setText(lessen.get(0).vak + " is verplaatst naar " + lessen.get(0).lokaal);
             } else {
                 vervallenTextView.setText(lessen.get(0).vak + " valt uit");
             }
@@ -365,10 +363,6 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             throw new IllegalArgumentException("Meerdere lessen");
         } else {
             Lesuur lesuur = lessen.get(0);
-
-            if(!builderFunctions.isValidForEntity(lesuur)) {
-                return null;
-            }
 
             if (lesuur.verandering) {
                 lesView = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
@@ -392,7 +386,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
         return lesView;
     }
 
-    private static TextView getUpdateText(long lastLoad, Context context) {
+    private TextView getUpdateText(long lastLoad) {
         TextView textView = new TextView(context);
         Date lastUpdate = new Date(lastLoad);
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -408,6 +402,5 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
     public interface BuilderFunctions {
         View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
-        boolean isValidForEntity(Lesuur lesuur);
     }
 }

@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
@@ -18,14 +17,11 @@ import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Klas;
 import com.thomasdh.roosterpgplus.Models.Leerling;
-import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -158,7 +154,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
 
 
     //endregion
-    //region Rooster
+    //region Statemanagement
 
     @Override
     public boolean canLoadRooster() { return getLeerling() != null; }
@@ -187,29 +183,6 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
     @Override
     public void setLoad() {
         RoosterInfo.setLoad("leerling"+getLeerling().getLlnr()+getWeek(), System.currentTimeMillis(), getActivity());
-    }
-
-    @Override
-    public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
-        lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0);
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-
-        TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
-        TextView leraarTextView = (TextView) lesView.findViewById(R.id.rooster_leraar);
-        TextView lokaalTextView = (TextView) lesView.findViewById(R.id.rooster_lokaal);
-        TextView tijdenTextView = (TextView) lesView.findViewById(R.id.rooster_tijden);
-
-        vakTextView.setText(lesuur.vak);
-        leraarTextView.setText(StringUtils.join(lesuur.leraren, " & "));
-        lokaalTextView.setText(lesuur.lokaal);
-        tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
-
-        return lesView;
-    }
-
-    @Override
-    public boolean isValidForEntity(Lesuur lesuur) {
-        return true;
     }
 
     //endregion

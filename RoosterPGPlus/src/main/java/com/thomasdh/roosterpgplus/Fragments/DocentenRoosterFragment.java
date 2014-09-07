@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
+import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Leraar;
@@ -30,7 +31,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @FragmentTitle(title = R.string.action_bar_dropdown_docentenrooster)
-public class DocentenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
+public class DocentenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener, RoosterBuilder.BuilderFunctions {
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
 
     @Getter @Setter private Vak vak;
@@ -40,6 +41,97 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
 
     private DefaultSpinner leraarSpinner;
     private DefaultSpinner vakSpinner;
+
+    //region Lifecycle
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+
+        setRootView(inflater.inflate(R.layout.fragment_main_docenten, container, false));
+        viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
+        viewPager.setAdapter(new AnimatedPagerAdapter());
+
+        leraarSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_naam);
+        vakSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_vak);
+
+        if(savedInstanceState == null) {
+            RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s));
+        } else {
+            setVak((Vak) savedInstanceState.getSerializable("VAK"));
+            setLeraar(savedInstanceState.getString("LERAAR"));
+            RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s, getLeraar(), getVak()));
+        }
+
+        return getRootView();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString("LERAAR", leraar);
+        outState.putSerializable("VAK", vak);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    //region Spinners
+
+    public void onLerarenLoaded(ArrayList<Vak> result) {
+        onLerarenLoaded(result, null, null);
+    }
+
+    public void onLerarenLoaded(ArrayList<Vak> result, String Sleraar, Vak Svak) {
+        if(result == null) return;
+        setVakken(result);
+
+        ArrayList<String> vakNamen = new ArrayList<>();
+        for(Vak vak : vakken) { vakNamen.add(vak.getNaam()); }
+
+        ArrayAdapter<String> vakAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, vakNamen.toArray(new String[vakNamen.size()]));
+        vakAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        vakSpinner.setAdapter(vakAdapter);
+        vakSpinner.setOnItemSelectedListener(this);
+        leraarSpinner.setOnItemSelectedListener(this);
+
+        vakSpinner.setSelection(vakAdapter.getPosition(Svak.getNaam()));
+        leraarToGet = Sleraar;
+    }
+
+    public void onVakSelected(int position) {
+        setVak(vakken.get(position));
+
+        ArrayList<String> leraarNamen = new ArrayList<>();
+        for(Leraar leraar : getVak().leraren) { leraarNamen.add(leraar.naam); }
+
+        ArrayAdapter<String> leraarAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, leraarNamen.toArray(new String[leraarNamen.size()]));
+        leraarAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        leraarSpinner.setAdapter(leraarAdapter);
+
+        if(leraarToGet != null) {
+            leraarSpinner.setSelection(leraarAdapter.getPosition(leraarToGet));
+            leraarToGet = null;
+        }
+    }
+
+    public void onLeraarSelected(int position) {
+        setLeraar(getVak().getLeraren().get(position).getCode());
+        loadRooster();
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if(parent.equals(vakSpinner)) {
+            onVakSelected(position);
+        } else if(parent.equals(leraarSpinner)) {
+            onLeraarSelected(position);
+        }
+    }
+
+    @Override public void onNothingSelected(AdapterView<?> parent) {}
+
+    //endregion
+    //endregion
+    //region Statemanagement
 
     @Override
     public boolean canLoadRooster() { return getLeraar() != null; }
@@ -68,80 +160,15 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-
-        setRootView(inflater.inflate(R.layout.fragment_main_docenten, container, false));
-        viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
-        viewPager.setAdapter(new AnimatedPagerAdapter());
-
-        leraarSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_naam);
-        vakSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_vak);
-
-        if(savedInstanceState == null) {
-            RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s));
-        } else {
-            setVak((Vak) savedInstanceState.getSerializable("VAK"));
-            setLeraar(savedInstanceState.getString("LERAAR"));
-            RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s, getLeraar(), getVak()));
-        }
-
-        return getRootView();
-    }
-
-    public void onLerarenLoaded(ArrayList<Vak> result) {
-        onLerarenLoaded(result, null, null);
-    }
-
-    public void onLerarenLoaded(ArrayList<Vak> result, String Sleraar, Vak Svak) {
-        if(result == null) return;
-        setVakken(result);
-
-        ArrayList<String> vakNamen = new ArrayList<>();
-        for(Vak vak : vakken) { vakNamen.add(vak.getNaam()); }
-
-        ArrayAdapter<String> vakAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, vakNamen.toArray(new String[vakNamen.size()]));
-        vakAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        vakSpinner.setAdapter(vakAdapter);
-        vakSpinner.setOnItemSelectedListener(this);
-        leraarSpinner.setOnItemSelectedListener(this);
-
-        vakSpinner.setSelection(vakAdapter.getPosition(Svak.getNaam()));
-        leraarToGet = Sleraar;
-    }
+    //endregion
+    //region Rooster
 
     @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if(parent.equals(vakSpinner)) {
-            onVakSelected(position);
-        } else if(parent.equals(leraarSpinner)) {
-            onLeraarSelected(position);
-        }
+    public RoosterBuilder buildRooster(int urenCount) {
+        RoosterBuilder builder = super.buildRooster(urenCount);
+        return builder.setShowVervangenUren(false)
+                .setBuilderFunctions(this);
     }
-
-    public void onVakSelected(int position) {
-        setVak(vakken.get(position));
-
-        ArrayList<String> leraarNamen = new ArrayList<>();
-        for(Leraar leraar : getVak().leraren) { leraarNamen.add(leraar.naam); }
-
-        ArrayAdapter<String> leraarAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, leraarNamen.toArray(new String[leraarNamen.size()]));
-        leraarAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        leraarSpinner.setAdapter(leraarAdapter);
-
-        if(leraarToGet != null) {
-            leraarSpinner.setSelection(leraarAdapter.getPosition(leraarToGet));
-            leraarToGet = null;
-        }
-    }
-
-    public void onLeraarSelected(int position) {
-        setLeraar(getVak().getLeraren().get(position).getCode());
-        loadRooster();
-    }
-
-    @Override public void onNothingSelected(AdapterView<?> parent) {}
 
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
@@ -161,16 +188,5 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         return lesView;
     }
 
-    @Override
-    public boolean isValidForEntity(Lesuur lesuur) {
-        return true;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putString("LERAAR", leraar);
-        outState.putSerializable("VAK", vak);
-
-        super.onSaveInstanceState(outState);
-    }
+    //endregion
 }

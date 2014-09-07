@@ -29,7 +29,7 @@ import lombok.Getter;
 import lombok.Setter;
 import roboguice.fragment.RoboFragment;
 
-public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener, RoosterBuilder.BuilderFunctions {
+public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener {
     @Getter protected ViewPager viewPager;
     @Getter @Setter private View rootView;
     public enum LoadType { OFFLINE, ONLINE, NEWONLINE, REFRESH }
@@ -125,10 +125,6 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     public abstract LoadType getLoadType();
     public abstract long getLoad();
     public abstract void setLoad();
-    public boolean getShowVervangenUren() { return true; }
-
-    // LesViewBuilder
-    public abstract View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
 
     public void loadRooster() {
         loadRooster(false);
@@ -150,11 +146,11 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
                 setLoad();
             }
             roosterLoadStateListener.onRoosterLoadEnd();
-            buildRooster((List<Lesuur>) result, urenCount);
+            buildRooster(urenCount).build((List<Lesuur>) result);
         }, exception -> {
             roosterLoadStateListener.onRoosterLoadEnd();
             if(loadType != LoadType.REFRESH) {
-                buildRooster(null, 0);
+                buildRooster(0).build((List<Lesuur>) null);
             }
         });
 
@@ -170,17 +166,16 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         }
     }
 
-    public void buildRooster(List<Lesuur> lessen, int urenCount) {
+    public RoosterBuilder buildRooster(int urenCount) {
         getViewPager().setAdapter(new AnimatedPagerAdapter());
         getViewPager().getAdapter().notifyDataSetChanged();
         getViewPager().setOnPageChangeListener(this);
-        new RoosterBuilder(getActivity())
+        return new RoosterBuilder(getActivity())
                 .in(getViewPager())
                 .setShowDag(getDag())
                 .setShowVervangenUren(true)
                 .setLastLoad(getLoad())
-                .setUrenCount(urenCount)
-                .build(lessen);
+                .setUrenCount(urenCount);
     }
 
     public void setInternetConnectionState(boolean hasInternetConnection) {

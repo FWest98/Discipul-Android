@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
+import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
@@ -30,7 +31,7 @@ import lombok.Setter;
 
 
 @FragmentTitle(title = R.string.action_bar_dropdown_lokalenrooster)
-public class LokalenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
+public class LokalenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener, RoosterBuilder.BuilderFunctions {
     private static final String CHOSEN_LOKAAL_KEY = "lastChosenLokaal";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
 
@@ -83,7 +84,7 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
     public void onNothingSelected(AdapterView<?> parent) {}
 
     //endregion
-    //region RoosterLoads
+    //region Statemanagement
 
     @Override
     public boolean canLoadRooster() { return getLokaal() != null; }
@@ -114,6 +115,15 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
         RoosterInfo.setLoad("lokaal"+getLokaal()+getWeek(), System.currentTimeMillis(), getActivity());
     }
 
+    //endregion
+    //region Rooster
+
+    @Override
+    public RoosterBuilder buildRooster(int urenCount) {
+        return super.buildRooster(urenCount)
+                .setBuilderFunctions(this);
+    }
+
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
         lesView.findViewById(R.id.optioneel_container).setBackgroundResource(0);
@@ -132,11 +142,6 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
         tijdenTextView.setText(times);
 
         return lesView;
-    }
-
-    @Override
-    public boolean isValidForEntity(Lesuur lesuur) {
-        return true;
     }
 
     //endregion
