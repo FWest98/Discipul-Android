@@ -57,7 +57,6 @@
             android:textColor="#FF0000"
             android:textSize="15sp" />
 
-
         <TextView
             android:id="@+id/rooster_tijden"
             android:layout_width="match_parent"
@@ -67,6 +66,16 @@
             android:text="@string/rooster_tijden"
             android:textColor="#FF0000"
             android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/rooster_notes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/rooster_lokaal"
+            android:layout_marginRight="3dp"
+            android:textColor="#FF0000"
+            android:layout_marginTop="3dp"/>
     </RelativeLayout>
 
 </RelativeLayout>

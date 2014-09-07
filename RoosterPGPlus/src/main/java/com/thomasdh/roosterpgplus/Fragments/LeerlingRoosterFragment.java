@@ -208,7 +208,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
     }
 
     @Override
-    public boolean showLesuur(Lesuur lesuur) {
+    public boolean isValidForEntity(Lesuur lesuur) {
         return true;
     }
 

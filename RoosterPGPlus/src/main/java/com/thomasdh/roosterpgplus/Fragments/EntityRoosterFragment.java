@@ -107,7 +107,7 @@ public class EntityRoosterFragment extends RoosterViewFragment {
     }
 
     @Override
-    public boolean showLesuur(Lesuur lesuur) {
+    public boolean isValidForEntity(Lesuur lesuur) {
         return true;
     }
 }

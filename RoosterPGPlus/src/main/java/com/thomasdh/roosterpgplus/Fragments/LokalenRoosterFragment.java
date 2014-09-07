@@ -135,7 +135,7 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
     }
 
     @Override
-    public boolean showLesuur(Lesuur lesuur) {
+    public boolean isValidForEntity(Lesuur lesuur) {
         return true;
     }
 

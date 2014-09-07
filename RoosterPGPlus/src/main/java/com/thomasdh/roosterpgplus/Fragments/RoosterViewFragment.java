@@ -44,6 +44,8 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     }
     @Setter onRoosterLoadStateChangedListener roosterLoadStateListener;
 
+    private boolean hadInternetConnection = true;
+
     //region Types
     public static Class<? extends RoosterViewFragment>[] types = new Class[]{
             PersoonlijkRoosterFragment.class,
@@ -183,6 +185,10 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
 
     public void setInternetConnectionState(boolean hasInternetConnection) {
         TextView warning = (TextView) getRootView().findViewById(R.id.internet_connection_warning);
+        if(!hadInternetConnection && hasInternetConnection) {
+            loadRooster(true);
+        }
+        hadInternetConnection = hasInternetConnection;
         if(hasInternetConnection) {
             Animations.collapse(warning);
         } else {
