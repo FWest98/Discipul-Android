@@ -27,6 +27,4 @@
             android:targetClass="com.thomasdh.roosterpgplus.PreferencesActivity"
             android:targetPackage="com.thomasdh.roosterpgplus" />
     </Preference>
-
-
 </PreferenceScreen>

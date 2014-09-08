@@ -52,6 +52,8 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         Account.initialize(this);
 
         // Voor android versies vóór 3.0
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) return;
+
         String action = getIntent().getAction();
         if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_info);
