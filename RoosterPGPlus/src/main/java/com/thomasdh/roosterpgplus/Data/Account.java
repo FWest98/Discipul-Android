@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -13,11 +14,11 @@ import android.widget.EditText;
 import android.widget.TabHost;
 
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Settings;
-import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -51,6 +52,7 @@ public class Account {
 
     private Context context;
     private WebRequestCallbacks callbacks;
+    private static int currentVersion = 0;
 
     private static Account instance;
 
@@ -62,10 +64,24 @@ public class Account {
 
     public static void initialize(Context context) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-        if(pref.getString("version", null) != Settings.GCM_APP_VERSION && pref.getString("key", null) != null) {
-            isSet = false;
-            userType = UserType.NO_ACCOUNT;
-            ExceptionHandler.handleException(new Exception("Log opnieuw in of registreer opnieuw, vanwege nieuwe schooljaar"), context, ExceptionHandler.HandleType.SIMPLE);
+        currentVersion = 0;
+        int oldVersion = 0;
+        try {
+            currentVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e("Account", e.getMessage(), e);
+        }
+        if((oldVersion = pref.getInt("oldVersion", currentVersion)) != currentVersion) {
+            // Er was een updatesel
+            int[] breakingVersions = context.getResources().getIntArray(R.array.breaking_account_versions);
+            for(int version : breakingVersions) {
+                if(currentVersion >= version && oldVersion < version) { // breaking changes
+                    isSet = false;
+                    userType = UserType.NO_ACCOUNT;
+                    ExceptionHandler.handleException(new Exception("Wijzigingen in de app vereisen opnieuw inloggen"), context, ExceptionHandler.HandleType.SIMPLE);
+                    return;
+                }
+            }
         }
         String key;
         if((key = pref.getString("key", null)) == null) {
@@ -106,7 +122,7 @@ public class Account {
 
         isSet = true;
 
-        pref.putString("version", Settings.GCM_APP_VERSION);
+        pref.putInt("oldVersion", currentVersion);
 
         if(base.has("code")) {
             // LERAAR

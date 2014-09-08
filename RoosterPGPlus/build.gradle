@@ -31,7 +31,9 @@ android {
 }
 
 dependencies {
-    compile 'org.roboguice:roboguice:3.0-alpha-2'
+    compile('org.roboguice:roboguice:3.0-alpha-2') {
+        exclude module: 'asm'
+    }
     provided 'org.projectlombok:lombok:1.14.4'
     compile fileTree(dir: 'libs', include: '*.jar')
     // You must install or update the Support Repository through the SDK manager to use this dependency.

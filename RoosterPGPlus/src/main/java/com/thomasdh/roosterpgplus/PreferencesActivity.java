@@ -1,9 +1,11 @@
 package com.thomasdh.roosterpgplus;
 
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.view.MenuItem;
@@ -61,6 +63,29 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_user);
 
+            if(!Account.isSet()) {
+                findPreference("subklassen").setEnabled(false);
+                findPreference("clusterklassen_reload").setEnabled(false);
+                findPreference("account_upgraden").setEnabled(false);
+                Preference logIn = findPreference("log_in");
+                Preference details = findPreference("mijn_account");
+
+                logIn.setOnPreferenceClickListener(preference -> {
+                    Account.getInstance(this).login(callback -> {
+                        Intent intent = getIntent();
+                        finish();
+                        startActivity(intent);
+                    });
+                    return true;
+                });
+                logIn.setTitle("Log in");
+                logIn.setSummary("Je bent nog niet ingelogd");
+
+                details.setTitle("Je bent nog niet ingelogd");
+                details.setSummary(null);
+                return;
+            }
+
             // Initialize subklassen
             ListPreferenceMultiSelect subklassenPref = (ListPreferenceMultiSelect) findPreference("subklassen");
             subklassenPref.setEnabled(!Account.isAppAccount());
@@ -91,6 +116,8 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                 }
             });
 
+            subklassenPref.setEnabled(!Account.isAppAccount());
+
             // Create user and fill in account information
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
             String summary;
@@ -103,7 +130,11 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
             // Configure login button
             findPreference("log_in").setOnPreferenceClickListener(preference -> {
-                Account.getInstance(this).login();
+                Account.getInstance(this).login(callback -> {
+                    Intent intent = getIntent();
+                    finish();
+                    startActivity(intent);
+                });
 
                 return true;
             });
@@ -244,6 +275,25 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_user);
 
+            if(!Account.isSet()) {
+                findPreference("subklassen").setEnabled(false);
+                findPreference("clusterklassen_reload").setEnabled(false);
+                findPreference("account_upgraden").setEnabled(false);
+                Preference logIn = findPreference("log_in");
+                Preference details = findPreference("mijn_account");
+
+                logIn.setOnPreferenceClickListener(preference -> {
+                    Account.getInstance(getActivity()).login(callback -> getActivity().recreate());
+                    return true;
+                });
+                logIn.setTitle("Log in");
+                logIn.setSummary("Je bent nog niet ingelogd");
+
+                details.setTitle("Je bent nog niet ingelogd");
+                details.setSummary(null);
+                return;
+            }
+
             // Initialize subklassen
             ListPreferenceMultiSelect subklassenPref = (ListPreferenceMultiSelect) findPreference("subklassen");
 
@@ -281,6 +331,8 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                 }
             });
 
+            subklassenPref.setEnabled(!Account.isAppAccount());
+
             // Create user and fill in account information
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
             String summary;
@@ -293,7 +345,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
             // Configure login button
             findPreference("log_in").setOnPreferenceClickListener(preference -> {
-                Account.getInstance(getActivity()).login();
+                Account.getInstance(getActivity()).login(callback -> getActivity().recreate());
 
                 return true;
             });
