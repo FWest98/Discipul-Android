@@ -60,7 +60,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
 
     private RoosterViewFragment mainFragment;
     private Class<? extends RoosterViewFragment> roosterType;
-    private boolean isRooster;
+    private boolean isRooster = true;
 
     @Override
     protected void onStop() {
@@ -104,7 +104,12 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             roosterType = (Class<? extends RoosterViewFragment>) savedInstanceState.getSerializable(ROOSTER_TYPE);
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
             mainFragment.setRoosterLoadStateListener(this);
+            isRooster = roosterType != PGTVRoosterFragment.class;
             setSelectedWeek(savedInstanceState.getInt("WEEK"));
+            if(!isRooster) {
+                ((PGTVRoosterFragment) mainFragment).setType((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE"));
+                getSupportActionBar().setTitle("PGTV - " +((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE")).toDesc());
+            }
         }
 
         /* Navigation Drawer */
@@ -131,20 +136,28 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
 
                 drawerLayout.closeDrawer(drawerList);
             } else {
-                Class<? extends RoosterViewFragment> newType;
-                if(childPosition == 0) {
-                    newType = PGTVRoosterFragment.class;
-                } else {
-                    return true;
-                }
+                Class<? extends RoosterViewFragment> newType = PGTVRoosterFragment.class;
 
-                mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek(), this);
+                PGTVRoosterFragment fragment = RoosterViewFragment.newInstance(PGTVRoosterFragment.class, getSelectedWeek(), this);
+
+                switch (childPosition) {
+                    case 0:
+                        fragment.setType(PGTVRoosterFragment.PGTVType.ROOSTER);
+                        break;
+                    case 1:
+                        fragment.setType(PGTVRoosterFragment.PGTVType.MEDEDELINGEN);
+                        break;
+                    default:
+                        break;
+                }
+                mainFragment = fragment;
                 roosterType = newType;
 
                 getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
                 isRooster = false;
 
                 drawerLayout.closeDrawer(drawerList);
+                actionBar.setTitle("PGTV - "+fragment.getType().toDesc());
             }
             return true;
         });
@@ -158,14 +171,18 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
                 if(getSelectedWeek() == -1) return;
-                if(!isRooster) return;
-                getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-                getSupportActionBar().setDisplayShowTitleEnabled(false);
+                if(isRooster) {
+                    getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+                    getSupportActionBar().setDisplayShowTitleEnabled(false);
+                } else {
+                    getSupportActionBar().setTitle("PGTV - "+((PGTVRoosterFragment) mainFragment).getType().toDesc());
+                }
                 supportInvalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View view) {
                 super.onDrawerOpened(view);
+                getSupportActionBar().setTitle(R.string.app_name);
                 getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
                 getSupportActionBar().setDisplayShowTitleEnabled(true);
                 supportInvalidateOptionsMenu();
@@ -208,6 +225,9 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putSerializable(ROOSTER_TYPE, roosterType);
         savedInstanceState.putInt("WEEK", getSelectedWeek());
+        if(!isRooster) {
+            savedInstanceState.putSerializable("PGTVTYPE", ((PGTVRoosterFragment) mainFragment).getType());
+        }
 
         super.onSaveInstanceState(savedInstanceState);
     }
@@ -331,11 +351,13 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 strings.add("Week " + wekenArray.get(c).week);
             }
         }
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, ((Object) mainFragment).getClass()); // bug in IntelliJ, issue 79680. It compiles, ship it!
+        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, ((Object) mainFragment).getClass());
         actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, this);
 
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+        if(isRooster) {
+            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+        }
 
         if(getSelectedWeek() != -1) {
             actionBar.setSelectedNavigationItem(strings.indexOf("Week "+getSelectedWeek()));

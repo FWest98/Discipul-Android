@@ -130,5 +130,7 @@
 
     <string name="title_activity_pgtv">PGTVActivity</string>
     <string name="hello_world">Hello world!</string>
+    <string name="pgtv_null">Geen gegevens gevonden!</string>
+    <string name="PGTV_Title">PGTV</string>
 
 </resources>

@@ -7,6 +7,7 @@ import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Models.Klas;
 import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Leraar;
+import com.thomasdh.roosterpgplus.Models.PGTVPage;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
 import com.thomasdh.roosterpgplus.Settings.Settings;
@@ -335,6 +336,42 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
         };
 
         new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
+    }
+
+    /* PGTV downloader */
+    public static void getPGTVRooster(String query, AsyncActionCallback successCallback, AsyncActionCallback errorCallback) {
+        String url = "pgtv/"+query;
+
+        AsyncCallback callback = r -> {
+            HttpResponse response = (HttpResponse) r;
+            int status = response.getStatusLine().getStatusCode();
+
+            String content = "";
+            Scanner sc = new Scanner(response.getEntity().getContent());
+            while(sc.hasNext()) { content += sc.nextLine(); }
+
+            switch (status) {
+                case 200: break;
+                case 503: throw new Exception("PGTV niet bereikbaar. Probeer het later nog eens");
+                default: throw new Exception("Onbekende fout, "+status+", "+content);
+            }
+
+            if("".equals(content)) throw new Exception("PGTV is leeg");
+            ArrayList<PGTVPage> pgtv = new ArrayList<>();
+            JSONArray data = new JSONArray(content);
+
+            for(int i = 0; i < data.length(); i++) {
+                JSONObject JSONdag = data.getJSONObject(i);
+                pgtv.add(new PGTVPage(
+                        JSONdag.getString("title"),
+                        JSONdag.getString("desc")
+                ));
+            }
+
+            return pgtv;
+        };
+
+        new WebDownloader(callback, successCallback, errorCallback).execute(url);
     }
 
 
