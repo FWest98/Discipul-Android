@@ -53,7 +53,8 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
             DocentenRoosterFragment.class,
             LokalenRoosterFragment.class,
             LeerlingRoosterFragment.class,
-            EntityRoosterFragment.class
+            EntityRoosterFragment.class,
+            PGTVRoosterFragment.class
     };
 
     //endregion

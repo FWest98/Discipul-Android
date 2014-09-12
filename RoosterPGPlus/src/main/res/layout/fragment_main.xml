@@ -11,8 +11,7 @@
         android:id="@+id/rooster_viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"
-        android:animateLayoutChanges="true"/>
+        android:layout_weight="2" />
 
     <TextView
         android:layout_width="match_parent"

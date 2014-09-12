@@ -24,6 +24,7 @@ import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Data.SearchRecentsProvider;
 import com.thomasdh.roosterpgplus.Fragments.EntityRoosterFragment;
+import com.thomasdh.roosterpgplus.Fragments.PGTVRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.PersoonlijkRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
@@ -59,6 +60,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
 
     private RoosterViewFragment mainFragment;
     private Class<? extends RoosterViewFragment> roosterType;
+    private boolean isRooster;
 
     @Override
     protected void onStop() {
@@ -78,7 +80,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         /* Setup */
         //databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
         //GoogleAnalytics.getInstance(this).setDryRun(true);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_rooster);
         actionBar = getSupportActionBar();
         Account.getInstance(this);
 
@@ -125,10 +127,24 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                     actionBarSpinnerAdapter.setType(newType);
 
                 getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
+                isRooster = true;
 
                 drawerLayout.closeDrawer(drawerList);
             } else {
-                // TODO: iets voor PGTV
+                Class<? extends RoosterViewFragment> newType;
+                if(childPosition == 0) {
+                    newType = PGTVRoosterFragment.class;
+                } else {
+                    return true;
+                }
+
+                mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek(), this);
+                roosterType = newType;
+
+                getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
+                isRooster = false;
+
+                drawerLayout.closeDrawer(drawerList);
             }
             return true;
         });
@@ -142,6 +158,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
                 if(getSelectedWeek() == -1) return;
+                if(!isRooster) return;
                 getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
                 getSupportActionBar().setDisplayShowTitleEnabled(false);
                 supportInvalidateOptionsMenu();
