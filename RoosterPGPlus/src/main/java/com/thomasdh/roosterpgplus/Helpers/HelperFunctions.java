@@ -1,15 +1,9 @@
 package com.thomasdh.roosterpgplus.Helpers;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.util.Log;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.thomasdh.roosterpgplus.Settings.Settings;
 
 
 public class HelperFunctions {
@@ -23,7 +17,7 @@ public class HelperFunctions {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH;
     }
 
-    public boolean checkPlayServices(Context context) {
+    /*public boolean checkPlayServices(Context context) {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
         if (resultCode != ConnectionResult.SUCCESS) {
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
@@ -34,5 +28,5 @@ public class HelperFunctions {
             return false;
         }
         return true;
-    }
+    }*/
 }
