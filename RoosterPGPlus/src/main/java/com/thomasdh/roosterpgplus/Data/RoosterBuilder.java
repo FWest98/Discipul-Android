@@ -41,25 +41,21 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
     @Setter private boolean showVervangenUren = true;
     @Setter private long lastLoad = -1;
     @Setter private int urenCount = -1;
-    @Setter private BuilderFunctions builderFunctions = new BuilderFunctions() {
-        @Override
-        public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
-            lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // Background doorzichtig, geen speciale uren
-            SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+    @Setter private BuilderFunctions builderFunctions = (lesuur, lesView, inflater) -> {
+        lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // Background doorzichtig, geen speciale uren
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
-            TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
-            TextView leraarTextView = (TextView) lesView.findViewById(R.id.rooster_leraar);
-            TextView lokaalTextView = (TextView) lesView.findViewById(R.id.rooster_lokaal);
-            TextView tijdenTextView = (TextView) lesView.findViewById(R.id.rooster_tijden);
+        TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
+        TextView leraarTextView = (TextView) lesView.findViewById(R.id.rooster_leraar);
+        TextView lokaalTextView = (TextView) lesView.findViewById(R.id.rooster_lokaal);
+        TextView tijdenTextView = (TextView) lesView.findViewById(R.id.rooster_tijden);
 
-            vakTextView.setText(lesuur.vak);
-            leraarTextView.setText(StringUtils.join(lesuur.leraren, " & "));
-            lokaalTextView.setText(lesuur.lokaal);
-            tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
+        vakTextView.setText(lesuur.vak);
+        leraarTextView.setText(StringUtils.join(lesuur.leraren, " & "));
+        lokaalTextView.setText(lesuur.lokaal);
+        tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
 
-            return lesView;
-        }
-
+        return lesView;
     };
 
     private Array<Lesuur> lessen;

@@ -155,43 +155,62 @@ public class Rooster {
         }
     }
 
-    public static Lesuur getNextLesuur(Context context) {
+    public static void getNextLesuur(Context context, NextUurCallback callback) {
         Calendar now = Calendar.getInstance();
-        int currentWeek = now.get(Calendar.WEEK_OF_YEAR);
-        int weekToGet = RoosterInfo.getCurrentWeek(context);
-        int currentDay = now.get(Calendar.DAY_OF_WEEK);
+        final int currentWeek = now.get(Calendar.WEEK_OF_YEAR);
+        final int weekToGet = RoosterInfo.getCurrentWeek(context);
+        final int currentDay = now.get(Calendar.DAY_OF_WEEK);
+        int newDay;
         if(currentWeek != weekToGet) {
             // Het is weekend, dus maandag is de dag en een correctie voor de DB
-            currentDay = Calendar.MONDAY;
+            newDay = Calendar.MONDAY;
+
+            DateTime timeToGet = DateTime.now()
+                    .withTime(0, 0, 0, 0);
+
+            getNextLesuurInDay(context, weekToGet, newDay, timeToGet, callback);
         } else {
             // Het is geen weekend, we kijken of er vandaag nog een les komt (zo nee, op naar morgen!)
-            Lesuur nextLes = getNextLesuurInDay(context, weekToGet, currentDay, new DateTime(now));
-            if(nextLes == null) { // geen lessen meer
-                currentDay++;
-            } else {
-                // We weten de volgende les zowaar... DONE
-                return nextLes;
-            }
+            getNextLesuurInDay(context, weekToGet, currentDay, new DateTime(now), lesuur -> {
+
+                if (lesuur == null) { // geen lessen meer
+                    int updatedDay = currentDay + 1;
+                    int updatedWeek = currentWeek;
+                    if (updatedDay == Calendar.SATURDAY) {
+                        updatedDay = Calendar.MONDAY;
+                        updatedWeek++;
+                    }
+
+                    DateTime timeToGet = DateTime.now()
+                            .withTime(0, 0, 0, 0);
+
+                    getNextLesuurInDay(context, updatedWeek, updatedDay, timeToGet, callback);
+                } else {
+                    // We weten de volgende les zowaar... DONE
+                    callback.onCallback(lesuur);
+                }
+            });
         }
-
-        Calendar timeToGet = now;
-        timeToGet.set(Calendar.HOUR, 0);
-        timeToGet.set(Calendar.MINUTE, 0);
-        timeToGet.set(Calendar.SECOND, 0);
-
-        return getNextLesuurInDay(context, weekToGet, currentDay, new DateTime(timeToGet));
     }
 
-    private static Lesuur getNextLesuurInDay(Context context, int week, int day, DateTime time) {
+    private static void getNextLesuurInDay(Context context, int week, int day, DateTime time, NextUurCallback callback) {
         Account.initialize(context);
-        Lesuur baseLesuur = new Lesuur();
-        baseLesuur.uur = 10000; // Vast niet meer uren op een dag...
-        DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
 
         List<NameValuePair> query = new ArrayList<>();
         query.add(new BasicNameValuePair("week", Integer.toString(week)));
         query.add(new BasicNameValuePair("key", Account.getApiKey()));
 
+        if (HelperFunctions.hasInternetConnection(context)) {
+            // Herladen van het rooster FTW
+            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)));
+        } else {
+            callback.onCallback(getNextLesuurInDayCallback(context, day, time, query));
+        }
+    }
+    private static Lesuur getNextLesuurInDayCallback(Context context, int day, DateTime time, List<NameValuePair> query) {
+        Lesuur baseLesuur = new Lesuur();
+        baseLesuur.uur = 10000; // Vast niet meer uren op een dag...
+        DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
             Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
@@ -199,7 +218,7 @@ public class Rooster {
             String searchQuery = URLEncodedUtils.format(query, "utf-8");
             Array<Lesuur> lessenThisWeek = Array.iterableArray(dao.queryForEq("query", searchQuery));
             Array<Lesuur> lessenThisDay = lessenThisWeek.filter(s -> s.dag == day - 1 && !s.vervallen); // DBcorrectie
-            Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart), time) >= 0);
+            Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart).plusMinutes(5), time) >= 0);
             if(futureLessen.length() == 0) {
                 return null;
             }
@@ -218,6 +237,9 @@ public class Rooster {
     }
     public interface ExceptionCallback {
         void onError(Exception e);
+    }
+    public interface NextUurCallback {
+        void onCallback(Lesuur lesuur);
     }
     private static String getDayOfWeek(int dag) {
         switch (dag) {

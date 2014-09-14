@@ -50,6 +50,13 @@
             </intent-filter>
         </receiver>
         <receiver android:name=".Notifications.NextUurNotificationActionReceiver" />
+        <receiver android:name=".WidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/appwidget" />
+        </receiver>
 
         <!--
         <receiver android:name=".Notifications.GCMBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">

@@ -3,8 +3,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
-    android:background="@drawable/basic_rect_nobottom"
-    android:id="@+id/rooster_uur_linearlayout">
+    android:background="@drawable/basic_rect"
+    android:id="@+id/rooster_uur_linearlayout"
+    android:layout_margin="8dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -14,18 +15,7 @@
         android:paddingRight="10dp"
         android:paddingTop="3dp"
 
-        android:background="@drawable/diagonal_stripes_optioneeluur"
-
         android:id="@+id/optioneel_container">
-
-        <TextView
-            android:id="@+id/layerCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_margin="5dp"
-            android:layout_marginRight="2dp"
-            android:visibility="gone" />
 
         <TextView
             android:id="@+id/rooster_vak"
@@ -33,6 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="3dp"
             android:text="@string/rooster_vak"
+            android:textColor="#FF0000"
             android:textSize="20sp" />
 
         <TextView
@@ -42,6 +33,7 @@
             android:layout_below="@id/rooster_vak"
             android:layout_marginLeft="3dp"
             android:text="@string/rooster_lokaal"
+            android:textColor="#FF0000"
             android:textSize="15sp" />
 
         <TextView
@@ -52,8 +44,8 @@
             android:layout_below="@id/rooster_vak"
             android:layout_marginRight="3dp"
             android:text="@string/rooster_leraar"
+            android:textColor="#FF0000"
             android:textSize="15sp" />
-
 
         <TextView
             android:id="@+id/rooster_tijden"
@@ -62,6 +54,7 @@
             android:layout_below="@id/rooster_lokaal"
             android:layout_margin="3dp"
             android:text="@string/rooster_tijden"
+            android:textColor="#FF0000"
             android:textSize="15sp" />
 
         <TextView
@@ -71,7 +64,8 @@
             android:layout_alignParentRight="true"
             android:layout_below="@id/rooster_lokaal"
             android:layout_marginRight="3dp"
-            android:layout_marginTop="3dp"
-            android:textColor="#FF0000"/>
+            android:textColor="#FF0000"
+            android:layout_marginTop="3dp"/>
     </RelativeLayout>
+
 </RelativeLayout>

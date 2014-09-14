@@ -8,7 +8,6 @@ import android.preference.PreferenceManager;
 
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.Rooster;
-import com.thomasdh.roosterpgplus.Models.Lesuur;
 
 import org.joda.time.DateTime;
 
@@ -27,25 +26,27 @@ public class NextUurNotifications {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         /* First, get the next hour */
-        Lesuur nextLes = Rooster.getNextLesuur(context);
+        Rooster.getNextLesuur(context, nextLes -> {
+            if (nextLes == null) return;
 
-        /* Dan de notificatietijd bepalen */
-        long notificationDelay = delay == 0 ? Long.parseLong(PreferenceManager.getDefaultSharedPreferences(context).getString("notificationFirstShow", "3600000")) : delay;
-        DateTime notificationDate = DateTime.now()
-                .withWeekOfWeekyear(nextLes.week)
-                .withDayOfWeek(nextLes.dag)
-                .withTime(
-                nextLes.lesStart.getHours(),
-                nextLes.lesStart.getMinutes(),
-                nextLes.lesStart.getSeconds(),
-                0
-        );
-        long notificationTime = notificationDate.toDate().getTime() - notificationDelay;
+            /* Dan de notificatietijd bepalen */
+            long notificationDelay = delay == 0 ? Long.parseLong(PreferenceManager.getDefaultSharedPreferences(context).getString("notificationFirstShow", "3600000")) : delay;
+            DateTime notificationDate = DateTime.now()
+                    .withWeekOfWeekyear(nextLes.week)
+                    .withDayOfWeek(nextLes.dag)
+                    .withTime(
+                            nextLes.lesStart.getHours(),
+                            nextLes.lesStart.getMinutes(),
+                            nextLes.lesStart.getSeconds(),
+                            0
+                    );
+            long notificationTime = notificationDate.toDate().getTime() - notificationDelay;
 
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, notificationTime, pendingIntent);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, notificationTime, pendingIntent);
 
-        currentIntent = pendingIntent;
+            currentIntent = pendingIntent;
+        });
     }
 
     public static void disableNotifications(Context context) {

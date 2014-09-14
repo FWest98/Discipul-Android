@@ -14,7 +14,10 @@ public class NextUurNotificationActionReceiver extends BroadcastReceiver {
     private static int notificationID = 0;
     @Override
     public void onReceive(Context context, Intent intent) {
-        Lesuur nextLesuur = Rooster.getNextLesuur(context);
+        Rooster.getNextLesuur(context, lesuur -> createNotification(context, lesuur));
+    }
+
+    private void createNotification(Context context, Lesuur nextLesuur) {
         String info = Rooster.getNextLesuurText(nextLesuur);
         String title = nextLesuur == null ? "Volgende les" : "Volgende les: "+nextLesuur.vak;
 
