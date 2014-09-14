@@ -14,15 +14,25 @@ import com.thomasdh.roosterpgplus.Models.Lesuur;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeComparator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import fj.data.Array;
+
 public class Rooster {
+    //region Rooster
+
     public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
         if(HelperFunctions.hasInternetConnection(context)) {
             if (type == RoosterViewFragment.LoadType.ONLINE) {
@@ -129,10 +139,104 @@ public class Rooster {
         }
     }
 
+    //endregion
+    //region Next uur
+
+    public static String getNextLesuurText(Lesuur nextLesuur) {
+        if(nextLesuur == null) {
+            return "Geen les gevonden";
+        } else {
+            DateFormat format = new SimpleDateFormat("HH:mm");
+            return String.format("De volgende les is %1$s, %2$s het %3$se uur en start om %4$s",
+                    nextLesuur.vak,
+                    getDayOfWeek(nextLesuur.dag + 1),
+                    nextLesuur.uur,
+                    format.format(nextLesuur.lesStart));
+        }
+    }
+
+    public static Lesuur getNextLesuur(Context context) {
+        Calendar now = Calendar.getInstance();
+        int currentWeek = now.get(Calendar.WEEK_OF_YEAR);
+        int weekToGet = RoosterInfo.getCurrentWeek(context);
+        int currentDay = now.get(Calendar.DAY_OF_WEEK);
+        if(currentWeek != weekToGet) {
+            // Het is weekend, dus maandag is de dag en een correctie voor de DB
+            currentDay = Calendar.MONDAY;
+        } else {
+            // Het is geen weekend, we kijken of er vandaag nog een les komt (zo nee, op naar morgen!)
+            Lesuur nextLes = getNextLesuurInDay(context, weekToGet, currentDay, new DateTime(now));
+            if(nextLes == null) { // geen lessen meer
+                currentDay++;
+            } else {
+                // We weten de volgende les zowaar... DONE
+                return nextLes;
+            }
+        }
+
+        Calendar timeToGet = now;
+        timeToGet.set(Calendar.HOUR, 0);
+        timeToGet.set(Calendar.MINUTE, 0);
+        timeToGet.set(Calendar.SECOND, 0);
+
+        return getNextLesuurInDay(context, weekToGet, currentDay, new DateTime(timeToGet));
+    }
+
+    private static Lesuur getNextLesuurInDay(Context context, int week, int day, DateTime time) {
+        Account.initialize(context);
+        Lesuur baseLesuur = new Lesuur();
+        baseLesuur.uur = 10000; // Vast niet meer uren op een dag...
+        DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
+
+        List<NameValuePair> query = new ArrayList<>();
+        query.add(new BasicNameValuePair("week", Integer.toString(week)));
+        query.add(new BasicNameValuePair("key", Account.getApiKey()));
+
+        DatabaseHelper helper = DatabaseManager.getHelper(context);
+        try {
+            Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
+
+            String searchQuery = URLEncodedUtils.format(query, "utf-8");
+            Array<Lesuur> lessenThisWeek = Array.iterableArray(dao.queryForEq("query", searchQuery));
+            Array<Lesuur> lessenThisDay = lessenThisWeek.filter(s -> s.dag == day - 1 && !s.vervallen); // DBcorrectie
+            Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart), time) >= 0);
+            if(futureLessen.length() == 0) {
+                return null;
+            }
+            Lesuur nextLes = futureLessen.foldLeft((newLes, oldLes) -> newLes.uur < oldLes.uur ? newLes : oldLes, baseLesuur);
+            return nextLes;
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
+    //endregion
+
+
     public interface RoosterCallback {
         void onCallback(Object data, int urenCount);
     }
     public interface ExceptionCallback {
         void onError(Exception e);
+    }
+    private static String getDayOfWeek(int dag) {
+        switch (dag) {
+            case Calendar.SUNDAY:
+                return "zondag";
+            case Calendar.MONDAY:
+                return "maandag";
+            case Calendar.TUESDAY:
+                return "dinsdag";
+            case Calendar.WEDNESDAY:
+                return "woensdag";
+            case Calendar.THURSDAY:
+                return "donderdag";
+            case Calendar.FRIDAY:
+                return "vrijdag";
+            case Calendar.SATURDAY:
+                return "zaterdag";
+
+        }
+        return null;
     }
 }

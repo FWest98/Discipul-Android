@@ -4,17 +4,20 @@ import android.content.Context;
 import android.util.Log;
 
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
-import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Hashtable;
+
+import fj.data.Array;
 
 /**
  * Ophalen van roosterinfo uit opslag of van internet
@@ -58,6 +61,15 @@ public class RoosterInfo {
         if(weken == null) weken = new Hashtable<>();
         weken.put(week, urenCount);
         saveInStorage(WEKEN_UREN_FILENAME, context, weken);
+    }
+
+    public static int getCurrentWeek(Context context) {
+        ArrayList<Week> weken = RoosterInfo.<ArrayList<Week>>getFromStorage(WEKEN_FILENAME, context);
+        Array<Integer> weekNummers = Array.iterableArray(weken).map(s -> s.week);
+        Integer currentWeek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        if(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) currentWeek++;
+        Integer definitiveWeek = currentWeek;
+        return weekNummers.filter(s -> s >= definitiveWeek).foldLeft((a, b) -> a < b ? a : b, 100);
     }
 
     //endregion

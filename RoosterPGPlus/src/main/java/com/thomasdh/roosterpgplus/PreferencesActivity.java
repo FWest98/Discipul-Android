@@ -16,6 +16,8 @@ import com.google.analytics.tracking.android.MapBuilder;
 import com.thomasdh.roosterpgplus.CustomUI.ListPreferenceMultiSelect;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Notifications.NextUurNotificationActionReceiver;
+import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,6 +162,23 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             addPreferencesFromResource(R.xml.preferences_overig);
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$AchtergrondFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_achtergrond);
+
+            findPreference("notificaties").setOnPreferenceChangeListener((preference, newValue) -> {
+                boolean choice = (boolean) newValue;
+                if(choice) {
+                    new NextUurNotifications(getApplicationContext()); // Setup
+                } else {
+                    NextUurNotificationActionReceiver.disableNotifications(getApplicationContext());
+                }
+                return true;
+            });
+
+            findPreference("notificationFirstShow").setOnPreferenceChangeListener((preference, newValue) -> {
+                NextUurNotificationActionReceiver.disableNotifications(getApplicationContext());
+                new NextUurNotifications(getApplicationContext()); // Update alles
+                return true;
+            });
+
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
         }
@@ -251,6 +270,22 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_achtergrond);
+
+            findPreference("notificaties").setOnPreferenceChangeListener((preference, newValue) -> {
+                boolean choice = (boolean) newValue;
+                if(choice) {
+                    new NextUurNotifications(getActivity(), 0, true); // Setup
+                } else {
+                    NextUurNotificationActionReceiver.disableNotifications(getActivity());
+                }
+                return true;
+            });
+
+            findPreference("notificationFirstShow").setOnPreferenceChangeListener((preference, newValue) -> {
+                NextUurNotificationActionReceiver.disableNotifications(getActivity());
+                new NextUurNotifications(getActivity(), Long.parseLong((String) newValue), true); // Update alles
+                return true;
+            });
         }
     }
 

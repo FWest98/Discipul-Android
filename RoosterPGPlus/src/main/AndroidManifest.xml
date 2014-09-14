@@ -49,6 +49,7 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".Notifications.NextUurNotificationActionReceiver" />
 
         <!--
         <receiver android:name=".Notifications.GCMBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">

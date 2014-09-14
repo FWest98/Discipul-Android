@@ -30,6 +30,7 @@ import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.Models.Week;
+import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
 import com.thomasdh.roosterpgplus.Settings.Settings;
 
 import java.util.ArrayList;
@@ -84,6 +85,8 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         actionBar = getSupportActionBar();
         Account.getInstance(this);
 
+        new NextUurNotifications(this);
+
         if (savedInstanceState == null) {
             Intent intent = getIntent();
             if(intent.getAction() == Intent.ACTION_SEARCH) {
@@ -108,7 +111,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             setSelectedWeek(savedInstanceState.getInt("WEEK"));
             if(!isRooster) {
                 ((PGTVRoosterFragment) mainFragment).setType((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE"));
-                getSupportActionBar().setTitle("PGTV - " +((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE")).toDesc());
+                getSupportActionBar().setTitle("PGTV - " + ((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE")).toDesc());
             }
         }
 

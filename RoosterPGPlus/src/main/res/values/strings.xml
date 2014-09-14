@@ -90,16 +90,16 @@
     <string name="settings_other_title">Overig</string>
     <string name="settings_info_title">Info</string>
     <string name="settings_notifications_title">Notificaties</string>
-    <string name="settings_notifications_summary">Notificaties zijn nog niet beschikbaar</string>
-    <string name="settings_notificationsInterval_summary">De tijd tussen vernieuwen van notificaties</string>
-    <string name="settings_notificationInterval_title">Controlefrequentie</string>
+    <string name="settings_notifications_summary">Meldingen die de volgende les aangeven</string>
+    <string name="settings_notificationsInterval_summary">Hoeveel minuten voor aanvang van de les de melding getoond moet worden</string>
+    <string name="settings_notificationInterval_title">Weergavetijd</string>
     <string name="settings_user_clusterklassen_title">Clusterklassen</string>
     <string name="settings_user_clusterklassen_summary">Kies de clusterklassen die in jouw rooster missen</string>
     <string name="settings_user_upgrade_summary">Voltooi je registratie voor volledige personalisatie</string>
     <string name="settings_user_upgrade_title">Registratie voltooien</string>
     <string name="settings_user_relogin_summary">Log in als een andere gebruiker</string>
     <string name="settings_user_relogin_title">Andere gebruiker</string>
-    <string name="settings_user_resetClusterklassenSummary">Herstel jouw rooster naar de standaard</string>
+    <string name="settings_user_resetClusterklassenSummary">Herstel je clusterklassen naar het origineel</string>
     <string name="settings_user_resetClusterklassenTitle">Reset clusterklassen</string>
 
     <!-- Showcaseviews -->
@@ -111,21 +111,21 @@
     <string name="internet_connection_warning">Geen internetverbinding</string>
     <string name="rooster_null">Geen rooster gevonden!</string>
 
-    <string-array name="settings_notification_check_interval">
+    <string-array name="settings_notification_firstShow">
         <item>5 minuten</item>
         <item>10 minuten</item>
+        <item>15 minuten</item>
         <item>30 minuten</item>
         <item>1 uur</item>
         <item>2 uur</item>
-        <item>6 uur</item>
     </string-array>
-    <string-array name="settings_notification_check_interval_values">
+    <string-array name="settings_notification_firstShow_values">
         <item>300000</item>
         <item>600000</item>
+        <item>900000</item>
         <item>1800000</item>
         <item>3600000</item>
         <item>7200000</item>
-        <item>21600000</item>
     </string-array>
 
     <string name="title_activity_pgtv">PGTVActivity</string>

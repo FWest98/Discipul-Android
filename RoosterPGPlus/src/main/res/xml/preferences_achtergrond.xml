@@ -3,18 +3,18 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <CheckBoxPreference
-        android:defaultValue="false"
-        android:enabled="false"
+        android:defaultValue="true"
+        android:enabled="true"
         android:key="notificaties"
         android:summary="@string/settings_notifications_summary"
         android:title="@string/settings_notifications_title" />
 
     <ListPreference
-        android:defaultValue="1800000"
-        android:enabled="false"
-        android:entries="@array/settings_notification_check_interval"
-        android:entryValues="@array/settings_notification_check_interval_values"
-        android:key="notificatieInterval"
+        android:defaultValue="3600000"
+        android:enabled="true"
+        android:entries="@array/settings_notification_firstShow"
+        android:entryValues="@array/settings_notification_firstShow_values"
+        android:key="notificationFirstShow"
         android:summary="@string/settings_notificationsInterval_summary"
         android:title="@string/settings_notificationInterval_title" />
 
