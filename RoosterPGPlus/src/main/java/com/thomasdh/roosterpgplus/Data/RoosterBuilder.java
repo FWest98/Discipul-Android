@@ -235,7 +235,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
                 if(lessenInUur == null || lessenInUur.length() == 0) { // Geen lessen -> vrij
                     View lesView = LayoutInflater.from(context).inflate(R.layout.rooster_tussenuur, null);
-                    lesView.setMinimumHeight(converter.DPtoPX(79));
+                    lesView.setMinimumHeight(converter.SPtoPX(89));
                     if(uur == urenCount) {
                         lesView.setBackgroundResource(R.drawable.basic_rect);
                         lesView.setPadding(0,0,0,converter.DPtoPX(1));
@@ -344,7 +344,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             lessen = lessen.filter(lesuur -> lesuur.vervallen);
 
             lesView = inflater.inflate(R.layout.rooster_vervallen_uur, null);
-            lesView.setMinimumHeight(converter.DPtoPX(80));
+            lesView.setMinimumHeight(converter.SPtoPX(90));
 
             TextView vervallenTextView = (TextView) lesView.findViewById(R.id.vervallen_tekst);
             if (lessen.length() > 1) {
@@ -378,7 +378,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             lesView.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
         }
 
-        lesView.setMinimumHeight(converter.DPtoPX(80));
+        lesView.setMinimumHeight(converter.SPtoPX(90));
         return lesView;
     }
 
