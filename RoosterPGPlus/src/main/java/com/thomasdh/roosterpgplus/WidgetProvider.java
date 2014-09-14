@@ -1,8 +1,10 @@
 package com.thomasdh.roosterpgplus;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.widget.RemoteViews;
 
@@ -49,6 +51,10 @@ public class WidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.rooster_leraar, StringUtils.join(nextLes.leraren, " & "));
         views.setTextViewText(R.id.rooster_lokaal, nextLes.lokaal);
         views.setTextViewText(R.id.rooster_tijden, format.format(nextLes.lesStart) + " - " + format.format(nextLes.lesEind));
+
+        Intent intent = new Intent(context, RoosterActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        views.setOnClickPendingIntent(R.id.rooster_uur_linearlayout, pendingIntent);
 
         appWidgetManager.updateAppWidget(widgetID, views);
     }

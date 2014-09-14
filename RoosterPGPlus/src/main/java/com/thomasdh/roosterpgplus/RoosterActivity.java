@@ -202,7 +202,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
-        if(!intent.getAction().equals(Intent.ACTION_SEARCH)) return;
+        if(!Intent.ACTION_SEARCH.equals(intent.getAction())) return;
 
         if(((Object) mainFragment).getClass() != EntityRoosterFragment.class) {
             roosterType = EntityRoosterFragment.class;
