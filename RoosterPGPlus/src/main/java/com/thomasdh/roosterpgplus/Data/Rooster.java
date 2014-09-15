@@ -147,19 +147,20 @@ public class Rooster {
             return "Geen les gevonden";
         } else {
             DateFormat format = new SimpleDateFormat("HH:mm");
-            return String.format("De volgende les is %1$s, %2$s het %3$se uur en start om %4$s",
+            return String.format("De volgende les is %1$s, %2$s het %3$se uur in %4$s en start om %5$s",
                     nextLesuur.vak,
                     getDayOfWeek(nextLesuur.dag + 1),
                     nextLesuur.uur,
+                    nextLesuur.lokaal,
                     format.format(nextLesuur.lesStart));
         }
     }
 
     public static void getNextLesuur(Context context, NextUurCallback callback) {
         Calendar now = Calendar.getInstance();
-        final int currentWeek = now.get(Calendar.WEEK_OF_YEAR);
-        final int weekToGet = RoosterInfo.getCurrentWeek(context);
-        final int currentDay = now.get(Calendar.DAY_OF_WEEK);
+        int currentWeek = now.get(Calendar.WEEK_OF_YEAR);
+        int weekToGet = RoosterInfo.getCurrentWeek(context);
+        int currentDay = now.get(Calendar.DAY_OF_WEEK);
         int newDay;
         if(currentWeek != weekToGet) {
             // Het is weekend, dus maandag is de dag en een correctie voor de DB
@@ -219,11 +220,10 @@ public class Rooster {
             Array<Lesuur> lessenThisWeek = Array.iterableArray(dao.queryForEq("query", searchQuery));
             Array<Lesuur> lessenThisDay = lessenThisWeek.filter(s -> s.dag == day - 1 && !s.vervallen); // DBcorrectie
             Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart).plusMinutes(5), time) >= 0);
-            if(futureLessen.length() == 0) {
+            if(futureLessen.isEmpty()) {
                 return null;
             }
-            Lesuur nextLes = futureLessen.foldLeft((newLes, oldLes) -> newLes.uur < oldLes.uur ? newLes : oldLes, baseLesuur);
-            return nextLes;
+            return futureLessen.foldLeft((newLes, oldLes) -> newLes.uur < oldLes.uur ? newLes : oldLes, baseLesuur);
         } catch (SQLException e) {
             return null;
         }

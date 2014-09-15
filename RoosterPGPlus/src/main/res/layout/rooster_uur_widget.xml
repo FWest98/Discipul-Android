@@ -16,6 +16,13 @@
 
         android:id="@+id/optioneel_container">
 
+        <ImageView
+            android:layout_width="20sp"
+            android:layout_height="20sp"
+            android:id="@+id/widget_refresh"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/ic_action_refresh" />
+
         <TextView
             android:id="@+id/rooster_vak"
             android:layout_width="match_parent"
