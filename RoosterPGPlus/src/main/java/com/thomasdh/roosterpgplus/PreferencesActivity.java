@@ -221,17 +221,6 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     }
 
     @Override
-    protected void onStart() {
-        /*EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
-        tracker.set(Fields.SCREEN_NAME, "Instellingen");
-        tracker.send(MapBuilder
-                .createAppView()
-                .build()
-        );*/
-        super.onStart();
-    }
-
-    @Override
     public boolean hasHeaders() {
         return true;
     }

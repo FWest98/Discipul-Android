@@ -11,6 +11,7 @@ import lombok.Data;
 public class Week implements Serializable {
     private static final long serialVersionUID = 102947213471347253L;
     public final int week;
+    @SuppressWarnings("FieldCanBeLocal")
     private final boolean vakantieweek;
 
     public Week(int week, boolean vakantieweek) {

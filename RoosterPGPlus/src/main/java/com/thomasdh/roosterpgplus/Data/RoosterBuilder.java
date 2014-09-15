@@ -93,7 +93,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
         if(viewPager.getAdapter() == null) throw new IllegalArgumentException("Geen ViewPagerAdapter");
         adapter = (AnimatedPagerAdapter) viewPager.getAdapter();
 
-        if(lessen == null || lessen.length() == 0) {
+        if(lessen == null || lessen.isEmpty()) {
             return null;
         }
 
@@ -130,7 +130,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
         }
 
         for(int i = 2; i < 7; i++) {
-            final int dag = i;
+            int dag = i;
 
             View dagView = LayoutInflater.from(context).inflate(R.layout.rooster_dag, null);
 
@@ -153,7 +153,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void s) {
-        if(lessen == null || lessen.length() == 0) {
+        if(lessen == null || lessen.isEmpty()) {
             View noRoosterView = LayoutInflater.from(context).inflate(R.layout.rooster_null, null);
             adapter.setView(noRoosterView, 0, context);
             viewPager.getAdapter().notifyDataSetChanged();
@@ -164,8 +164,6 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
         boolean isWide = context.getResources().getBoolean(R.bool.isWideWeekview);
         boolean isHigh = context.getResources().getBoolean(R.bool.isHighWeekview);
         boolean weekViewNoScroll = isWide && isHigh;
-        boolean weekViewHorizScroll = isHigh;
-        boolean weekViewVerticScroll = isWide;
 
         if (weekView) {
             LinearLayout container = new LinearLayout(context);
@@ -178,11 +176,11 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             lastUpdateTextView.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
             container.addView(lastUpdateTextView);
 
-            if (weekViewNoScroll || weekViewVerticScroll) {
+            if (weekViewNoScroll || isWide) {
                 ScrollView scrollView = new ScrollView(context);
                 scrollView.addView(container);
                 adapter.setView(scrollView, 0, context);
-            } else if (weekViewHorizScroll) {
+            } else if (isHigh) {
                 HorizontalScrollView scrollView = new HorizontalScrollView(context);
                 scrollView.addView(container);
                 adapter.setView(scrollView, 0, context);
@@ -228,12 +226,12 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             dagDatumTextView.setText(dateFormat.format(dateViewCalendar.getTime()));
 
             for(int i = 1; i <= urenCount; i++) {
-                final int uur = i;
+                int uur = i;
                 Array<Lesuur> lessenInUur = lessen.filter(s -> s.uur == uur);
                 ArrayList<RelativeLayout> lesViews = new ArrayList<>();
                 RelativeLayout urenContainer = null;
 
-                if(lessenInUur == null || lessenInUur.length() == 0) { // Geen lessen -> vrij
+                if(lessenInUur == null || lessenInUur.isEmpty()) { // Geen lessen -> vrij
                     View lesView = LayoutInflater.from(context).inflate(R.layout.rooster_tussenuur, null);
                     lesView.setMinimumHeight(converter.SPtoPX(89));
                     if(uur == urenCount) {

@@ -8,6 +8,7 @@ import lombok.Data;
 /**
 * Created by Floris on 12-7-2014.
 */
+@SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration"})
 @Data
 public class Vak implements Serializable {
     private static final long serialVersionUID = 102947213471347263L;

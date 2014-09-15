@@ -3,7 +3,7 @@
 
     <string name="app_name">RoosterPG+</string>
     <string name="action_settings">Instellingen</string>
-    <string name="placeholder_text"></string>
+    <string name="placeholder_text"/>
 
     <!-- Action Bar -->
     <string name="action_bar_button_refresh">Herlaad</string>
@@ -42,13 +42,13 @@
     <string name="rooster_klas_desc">Kies een klas: </string>
     <string name="rooster_lokaal_desc">Kies een lokaal: </string>
     <string name="rooster_leerling_desc">Kies een leerling: </string>
-    <string name="rooster_leerling_leerlingNummer_hint">... of vul een leerlingnummer of naam in</string>
-    <string name="rooster_klas_klasSpinner_placeholder">Klas...</string>
-    <string name="rooster_docenten_vakspinner_placeholder">Vak...</string>
-    <string name="rooster_docenten_docentspinner_placeholder">Docent...</string>
-    <string name="rooster_lokaal_lokaalSpinner_placeholder">Lokaal...</string>
-    <string name="rooster_leerling_klasSpinner_placeholder">Klas...</string>
-    <string name="rooster_leerling_leerlingSpinner_placeholder">Leerling...</string>
+    <string name="rooster_leerling_leerlingNummer_hint">… of vul een leerlingnummer of naam in</string>
+    <string name="rooster_klas_klasSpinner_placeholder">Klas…</string>
+    <string name="rooster_docenten_vakspinner_placeholder">Vak…</string>
+    <string name="rooster_docenten_docentspinner_placeholder">Docent…</string>
+    <string name="rooster_lokaal_lokaalSpinner_placeholder">Lokaal…</string>
+    <string name="rooster_leerling_klasSpinner_placeholder">Klas…</string>
+    <string name="rooster_leerling_leerlingSpinner_placeholder">Leerling…</string>
 
     <!-- Logindialog -->
     <string name="logindialog_title">Log in</string>

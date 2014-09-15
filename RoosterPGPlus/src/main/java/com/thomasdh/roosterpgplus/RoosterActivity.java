@@ -64,17 +64,6 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     private boolean isRooster = true;
 
     @Override
-    protected void onStop() {
-        /*Tracker easyTracker = EasyTracker.getInstance(this);
-        easyTracker.set(Fields.SCREEN_NAME, null);
-        easyTracker.send(MapBuilder
-                        .createAppView()
-                        .build()
-        );*/
-        super.onStop();
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -324,7 +313,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         drawerLayout.openDrawer(drawerList);
     }
 
-    public void setRefreshButtonState(boolean loading) {
+    void setRefreshButtonState(boolean loading) {
         MenuItem refreshItem = getRefreshItem();
         if(refreshItem != null) {
             if(loading) {
@@ -351,6 +340,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         } else {
             for (int c = 0; c < Settings.WEEKS_IN_SPINNER && c < wekenArray.size(); c++) {
+                if(wekenArray.get(c).isVakantieweek()) continue;
                 strings.add("Week " + wekenArray.get(c).week);
             }
         }
@@ -367,7 +357,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         }
     }
 
-    public void setSelectedWeek(int week) {
+    void setSelectedWeek(int week) {
         selectedWeek = week;
         mainFragment.setWeek(week);
     }

@@ -5,6 +5,7 @@ import android.content.SearchRecentSuggestionsProvider;
 import android.database.Cursor;
 import android.database.CursorWrapper;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 public class SearchRecentsProvider extends SearchRecentSuggestionsProvider {
     public static final String AUTHORITY = "com.thomasdh.roosterpgplus.Data.SearchRecentsProvider";
@@ -16,7 +17,7 @@ public class SearchRecentsProvider extends SearchRecentSuggestionsProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         class Wrapper extends CursorWrapper {
             Wrapper(Cursor c) {
                 super(c);

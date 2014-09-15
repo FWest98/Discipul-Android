@@ -15,7 +15,6 @@ public class MultipleUrenClickListener implements View.OnClickListener {
     private int currentView;
     private final ArrayList<RelativeLayout> allUren;
     private final int shortAnimationTime;
-    private final Context context;
 
     private int maxWidth = -1;
     private int minWidth;
@@ -23,15 +22,15 @@ public class MultipleUrenClickListener implements View.OnClickListener {
     public MultipleUrenClickListener(ArrayList<RelativeLayout> allUren, Context context) {
         currentView = allUren.size();
         this.allUren = allUren;
-        this.context = context;
         shortAnimationTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         minWidth = new Converter(context).DPtoPX(9);
         allUren.get(currentView - 1).getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @SuppressWarnings("deprecation")
             @Override
             public void onGlobalLayout() {
                 maxWidth = allUren.get(currentView - 1).getWidth();
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     allUren.get(currentView - 1).getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     allUren.get(currentView - 1).getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 } else {

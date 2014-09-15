@@ -30,7 +30,8 @@ import lombok.Setter;
 import roboguice.fragment.RoboFragment;
 
 public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener {
-    @Getter protected ViewPager viewPager;
+    @Getter
+    ViewPager viewPager;
     @Getter @Setter private View rootView;
     public enum LoadType { OFFLINE, ONLINE, NEWONLINE, REFRESH }
 
@@ -122,10 +123,10 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     //region Roosters
 
     protected abstract boolean canLoadRooster();
-    public abstract List<NameValuePair> getURLQuery(List<NameValuePair> query);
-    public abstract LoadType getLoadType();
-    public abstract long getLoad();
-    public abstract void setLoad();
+    protected abstract List<NameValuePair> getURLQuery(List<NameValuePair> query);
+    protected abstract LoadType getLoadType();
+    protected abstract long getLoad();
+    protected abstract void setLoad();
 
     public void loadRooster() {
         loadRooster(false);
@@ -167,7 +168,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         }
     }
 
-    public RoosterBuilder buildRooster(int urenCount) {
+    RoosterBuilder buildRooster(int urenCount) {
         if(getViewPager().getAdapter() == null) getViewPager().setAdapter(new AnimatedPagerAdapter());
         getViewPager().getAdapter().notifyDataSetChanged();
         getViewPager().setOnPageChangeListener(this);

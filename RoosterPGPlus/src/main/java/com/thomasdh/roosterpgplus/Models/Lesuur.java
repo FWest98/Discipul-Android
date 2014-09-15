@@ -101,7 +101,7 @@ public class Lesuur extends BaseDaoEnabled implements Serializable {
 
             this.query =  query;
         } catch (JSONException e) {
-            ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", Lesuur.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
+            ExceptionHandler.handleException(e, context, ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
 

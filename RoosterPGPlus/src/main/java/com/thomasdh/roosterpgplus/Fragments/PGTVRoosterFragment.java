@@ -103,7 +103,7 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
             if(getViewPager().getAdapter() == null) getViewPager().setAdapter(new AnimatedPagerAdapter());
             getViewPager().setOnPageChangeListener(null);
 
-            if(data == null || data.size() == 0) {
+            if(data == null || data.isEmpty()) {
                 View noContentView = LayoutInflater.from(getActivity()).inflate(R.layout.pgtv_null, null);
                 ((AnimatedPagerAdapter) getViewPager().getAdapter()).setView(noContentView, 0, getActivity());
                 getViewPager().getAdapter().notifyDataSetChanged();

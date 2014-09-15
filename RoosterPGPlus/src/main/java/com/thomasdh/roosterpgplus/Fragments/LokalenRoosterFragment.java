@@ -56,7 +56,7 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
         return getRootView();
     }
 
-    public void onLokalenLoaded(Object lok) {
+    void onLokalenLoaded(Object lok) {
         if(lok == null) return;
         ArrayList<String> lokalen = (ArrayList<String>) lok;
 

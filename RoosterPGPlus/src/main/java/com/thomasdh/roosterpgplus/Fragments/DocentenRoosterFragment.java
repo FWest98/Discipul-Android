@@ -30,6 +30,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 @FragmentTitle(title = R.string.action_bar_dropdown_docentenrooster)
 public class DocentenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener, RoosterBuilder.BuilderFunctions {
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
@@ -76,11 +77,11 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
 
     //region Spinners
 
-    public void onLerarenLoaded(ArrayList<Vak> result) {
+    void onLerarenLoaded(ArrayList<Vak> result) {
         onLerarenLoaded(result, null, null);
     }
 
-    public void onLerarenLoaded(ArrayList<Vak> result, String Sleraar, Vak Svak) {
+    void onLerarenLoaded(ArrayList<Vak> result, String Sleraar, Vak Svak) {
         if(result == null) return;
         setVakken(result);
 
@@ -97,7 +98,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         leraarToGet = Sleraar;
     }
 
-    public void onVakSelected(int position) {
+    void onVakSelected(int position) {
         setVak(vakken.get(position));
 
         ArrayList<String> leraarNamen = new ArrayList<>();
@@ -113,7 +114,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         }
     }
 
-    public void onLeraarSelected(int position) {
+    void onLeraarSelected(int position) {
         setLeraar(getVak().getLeraren().get(position).getCode());
         loadRooster();
     }

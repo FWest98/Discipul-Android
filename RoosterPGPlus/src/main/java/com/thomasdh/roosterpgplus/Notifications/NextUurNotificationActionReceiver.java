@@ -15,8 +15,8 @@ import com.thomasdh.roosterpgplus.R;
 import org.joda.time.DateTime;
 
 public class NextUurNotificationActionReceiver extends BroadcastReceiver {
-    public static int notificationID = 0;
-    public static final String NOTIFICATION = "com.thomasdh.roosterpgplus.Notifications.NOTIFICATION";
+    private static int notificationID = 0;
+    private static final String NOTIFICATION = "com.thomasdh.roosterpgplus.Notifications.NOTIFICATION";
 
     @Override
     public void onReceive(Context context, Intent intent) {
