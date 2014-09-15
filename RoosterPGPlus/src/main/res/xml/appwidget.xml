@@ -3,7 +3,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="180sp"
     android:minHeight="90sp"
-    android:updatePeriodMillis="3600000"
+    android:updatePeriodMillis="900000"
     android:initialLayout="@layout/rooster_null"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen|keyguard"/>

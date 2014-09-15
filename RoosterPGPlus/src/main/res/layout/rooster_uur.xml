@@ -22,6 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
+            android:singleLine="true"
             android:visibility="gone" />
 
         <TextView
@@ -29,6 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4sp"
+            android:singleLine="true"
             android:text="@string/rooster_vak"
             android:textSize="@dimen/rooster_uur_vak_fontSize" />
 
@@ -37,6 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/rooster_vak"
+            android:singleLine="true"
             android:text="@string/rooster_lokaal"
             android:layout_marginBottom="4sp"
             android:textSize="15sp" />
@@ -47,6 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_below="@id/rooster_vak"
+            android:singleLine="true"
             android:text="@string/rooster_leraar"
             android:textSize="15sp" />
 
@@ -55,6 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/rooster_lokaal"
+            android:singleLine="true"
             android:text="@string/rooster_tijden"
             android:textSize="15sp" />
 
@@ -64,6 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_below="@id/rooster_lokaal"
+            android:singleLine="true"
             android:textColor="#FF0000"/>
     </RelativeLayout>
 </RelativeLayout>

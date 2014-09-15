@@ -22,11 +22,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
+            android:singleLine="true"
             android:visibility="gone" />
 
         <TextView
             android:id="@+id/rooster_vak"
             android:layout_width="match_parent"
+            android:singleLine="true"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4sp"
             android:text="@string/rooster_vak"
@@ -37,6 +39,7 @@
             android:id="@+id/rooster_lokaal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:singleLine="true"
             android:layout_below="@id/rooster_vak"
             android:layout_marginBottom="4sp"
             android:text="@string/rooster_lokaal"
@@ -49,6 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_below="@id/rooster_vak"
+            android:singleLine="true"
             android:text="@string/rooster_leraar"
             android:textColor="#FF0000"
             android:textSize="15sp" />
@@ -57,6 +61,7 @@
             android:id="@+id/rooster_tijden"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:singleLine="true"
             android:layout_below="@id/rooster_lokaal"
             android:text="@string/rooster_tijden"
             android:textColor="#FF0000"
@@ -66,6 +71,7 @@
             android:id="@+id/rooster_notes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:singleLine="true"
             android:layout_alignParentRight="true"
             android:layout_below="@id/rooster_lokaal"
             android:textColor="#FF0000"/>

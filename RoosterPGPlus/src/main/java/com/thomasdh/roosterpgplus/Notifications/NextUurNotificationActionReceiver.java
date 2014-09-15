@@ -15,7 +15,7 @@ import com.thomasdh.roosterpgplus.R;
 import org.joda.time.DateTime;
 
 public class NextUurNotificationActionReceiver extends BroadcastReceiver {
-    private static int notificationID = 0;
+    public static int notificationID = 0;
     public static final String NOTIFICATION = "com.thomasdh.roosterpgplus.Notifications.NOTIFICATION";
 
     @Override
@@ -57,7 +57,7 @@ public class NextUurNotificationActionReceiver extends BroadcastReceiver {
 
         Intent intent = new Intent(context, NextUurNotificationActionReceiver.class);
         intent.setAction(NOTIFICATION);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         manager.set(AlarmManager.RTC_WAKEUP, notificationDate.getMillis(), pendingIntent);

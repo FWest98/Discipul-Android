@@ -42,8 +42,13 @@ public class WidgetProvider extends AppWidgetProvider {
 
         if(nextLes.verplaatsing) {
             views.setTextColor(R.id.rooster_lokaal, Color.parseColor("#FF0000"));
-        } else if(nextLes.isNew) {
+        } else {
+            views.setTextColor(R.id.rooster_lokaal, Color.parseColor("#000000"));
+        }
+        if(nextLes.isNew) {
             views.setTextViewText(R.id.rooster_notes, "Nieuwe les");
+        } else {
+            views.setTextViewText(R.id.rooster_notes, "");
         }
 
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
@@ -54,12 +59,14 @@ public class WidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.rooster_tijden, format.format(nextLes.lesStart) + " - " + format.format(nextLes.lesEind));
 
         Intent intent = new Intent(context, RoosterActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.rooster_uur_linearlayout, pendingIntent);
 
         Intent refreshIntent = new Intent(context, WidgetProvider.class);
         refreshIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        PendingIntent refreshPendingIntent = PendingIntent.getActivity(context, 0, refreshIntent, 0);
+        refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{widgetID});
+
+        PendingIntent refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.widget_refresh, refreshPendingIntent);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

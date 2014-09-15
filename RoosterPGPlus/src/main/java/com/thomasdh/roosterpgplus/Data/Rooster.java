@@ -203,30 +203,35 @@ public class Rooster {
 
         if (HelperFunctions.hasInternetConnection(context)) {
             // Herladen van het rooster FTW
-            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)));
+            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data))), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)));
         } else {
             callback.onCallback(getNextLesuurInDayCallback(context, day, time, query));
         }
     }
     private static Lesuur getNextLesuurInDayCallback(Context context, int day, DateTime time, List<NameValuePair> query) {
-        Lesuur baseLesuur = new Lesuur();
-        baseLesuur.uur = 10000; // Vast niet meer uren op een dag...
-        DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
             Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
 
             String searchQuery = URLEncodedUtils.format(query, "utf-8");
             Array<Lesuur> lessenThisWeek = Array.iterableArray(dao.queryForEq("query", searchQuery));
-            Array<Lesuur> lessenThisDay = lessenThisWeek.filter(s -> s.dag == day - 1 && !s.vervallen); // DBcorrectie
-            Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart).plusMinutes(5), time) >= 0);
-            if(futureLessen.isEmpty()) {
-                return null;
-            }
-            return futureLessen.foldLeft((newLes, oldLes) -> newLes.uur < oldLes.uur ? newLes : oldLes, baseLesuur);
+            return getNextLesuurInDayCallback(day, time, lessenThisWeek);
         } catch (SQLException e) {
             return null;
         }
+    }
+
+    private static Lesuur getNextLesuurInDayCallback(int day, DateTime time, Array<Lesuur> lessenThisWeek) {
+        Lesuur baseLesuur = new Lesuur();
+        baseLesuur.uur = 10000; // Vast niet meer uren op een dag...
+        DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
+
+        Array<Lesuur> lessenThisDay = lessenThisWeek.filter(s -> s.dag == day - 1 && !s.vervallen); // DBcorrectie
+        Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart).plusMinutes(5), time) >= 0);
+        if(futureLessen.isEmpty()) {
+            return null;
+        }
+        return futureLessen.foldLeft((newLes, oldLes) -> newLes.uur < oldLes.uur ? newLes : oldLes, baseLesuur);
     }
 
     //endregion

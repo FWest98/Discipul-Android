@@ -1,6 +1,7 @@
 package com.thomasdh.roosterpgplus.Notifications;
 
 import android.app.AlarmManager;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +18,7 @@ public class NextUurNotifications {
     public NextUurNotifications(Context context) {
         this(context, 0, false);
     }
+    @SuppressWarnings("deprecation")
     public NextUurNotifications(Context context, long delay, boolean force) {
         if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean("notificaties", true) && !force) return; // Notificaties uit
         Account.initialize(context);
@@ -41,6 +43,11 @@ public class NextUurNotifications {
                             0
                     );
             long notificationTime = notificationDate.toDate().getTime() - notificationDelay;
+            if(notificationTime >= System.currentTimeMillis()) {
+                // Remove current notifications
+                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancelAll();
+            }
 
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             alarmManager.set(AlarmManager.RTC_WAKEUP, notificationTime, pendingIntent);
