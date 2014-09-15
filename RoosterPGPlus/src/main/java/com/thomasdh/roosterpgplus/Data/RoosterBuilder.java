@@ -248,12 +248,6 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                 Array<Lesuur> vervallenLessen = lessenInUur.filter(s -> s.vervallen);
                 Array<Lesuur> normalLessen = lessenInUur.filter(s -> !s.vervallen);
 
-                boolean multipleViews = (vervallenLessen.isNotEmpty() && normalLessen.isNotEmpty()) || normalLessen.length() > 1;
-                if(multipleViews) {
-                    urenContainer = new RelativeLayout(context);
-                    urenContainer.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                }
-
                 if(vervallenLessen.isNotEmpty() && (normalLessen.isEmpty() || normalLessen.isNotEmpty() && showVervangenUren)) { // Vervallen uren verwerken
                     lesViews.add((RelativeLayout) makeView(vervallenLessen));
                 }
@@ -263,6 +257,12 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                         RelativeLayout lesLayout = (RelativeLayout) makeView(les);
                         if(lesLayout != null) lesViews.add(lesLayout);
                     }
+                }
+
+                boolean multipleViews = lesViews.size() > 1;
+                if(multipleViews) {
+                    urenContainer = new RelativeLayout(context);
+                    urenContainer.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 }
 
                 int reverseCounter = lesViews.size() + 1;
