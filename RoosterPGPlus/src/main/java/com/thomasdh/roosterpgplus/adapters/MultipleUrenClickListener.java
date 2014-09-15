@@ -1,7 +1,9 @@
 package com.thomasdh.roosterpgplus.Adapters;
 
 import android.content.Context;
+import android.os.Build;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
 import com.nineoldandroids.animation.ValueAnimator;
@@ -25,6 +27,18 @@ public class MultipleUrenClickListener implements View.OnClickListener {
         shortAnimationTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         minWidth = new Converter(context).DPtoPX(9);
+        allUren.get(currentView - 1).getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                maxWidth = allUren.get(currentView - 1).getWidth();
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    allUren.get(currentView - 1).getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    allUren.get(currentView - 1).getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                } else {
+                    allUren.get(currentView - 1).getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
+            }
+        });
     }
 
     @Override
@@ -40,12 +54,6 @@ public class MultipleUrenClickListener implements View.OnClickListener {
 
     private void animateToNextView() {
         RelativeLayout view = allUren.get(currentView);
-
-        if(maxWidth == -1) {
-            int spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-            view.measure(spec, spec);
-            maxWidth = new Converter(context).DPtoPX(view.getMeasuredWidth());
-        }
 
         ValueAnimator valueAnimator = ValueAnimator.ofInt(maxWidth, minWidth);
         valueAnimator.addUpdateListener(animation -> {
