@@ -25,7 +25,7 @@ public class NextUurNotifications {
         if(Account.getApiKey() == null) return; // Geen meldingen te tonen
 
         Intent intent = new Intent(context, NextUurNotificationActionReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         /* First, get the next hour */
         Rooster.getNextLesuur(context, nextLes -> {

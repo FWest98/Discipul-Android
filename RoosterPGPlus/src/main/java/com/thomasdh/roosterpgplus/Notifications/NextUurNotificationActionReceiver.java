@@ -60,7 +60,7 @@ public class NextUurNotificationActionReceiver extends BroadcastReceiver {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        manager.set(AlarmManager.RTC_WAKEUP, notificationDate.getMillis(), pendingIntent);
+        manager.set(AlarmManager.RTC_WAKEUP, notificationDate.toDate().getTime(), pendingIntent);
     }
 
     public static void disableNotifications(Context context) {
