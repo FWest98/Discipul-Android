@@ -61,14 +61,6 @@ public class NextUurNotificationActionReceiver extends BroadcastReceiver {
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         manager.set(AlarmManager.RTC_WAKEUP, notificationDate.toDate().getTime(), pendingIntent);
-
-        NotificationCompat.Builder extraBuilder = new NotificationCompat.Builder(context)
-                .setContentTitle("Extra")
-                .setContentText(notificationDate.toString())
-                .setSmallIcon(R.drawable.ic_notification)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-        notificationManager.notify(1, extraBuilder.build());
     }
 
     public static void disableNotifications(Context context) {

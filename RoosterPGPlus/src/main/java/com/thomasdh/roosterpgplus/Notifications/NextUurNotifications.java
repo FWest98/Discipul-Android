@@ -6,11 +6,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
 
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.Rooster;
-import com.thomasdh.roosterpgplus.R;
 
 import org.joda.time.DateTime;
 
@@ -55,13 +53,6 @@ public class NextUurNotifications {
             alarmManager.set(AlarmManager.RTC_WAKEUP, notificationTime, pendingIntent);
 
             currentIntent = pendingIntent;
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-                    .setContentTitle("Nieuw")
-                    .setContentText(new DateTime(notificationTime).toString())
-                    .setSmallIcon(R.drawable.ic_notification)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-            ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(2, builder.build());
         });
     }
 
