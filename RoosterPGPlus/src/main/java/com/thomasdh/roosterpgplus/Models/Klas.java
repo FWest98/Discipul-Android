@@ -3,6 +3,7 @@ package com.thomasdh.roosterpgplus.Models;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+@SuppressWarnings("UnusedDeclaration")
 public class Klas implements Serializable {
     private static final long serialVersionUID = 102947212471347250L;
     public String klas;

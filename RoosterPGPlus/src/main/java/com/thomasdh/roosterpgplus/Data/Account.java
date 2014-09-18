@@ -39,6 +39,7 @@ import java.util.Scanner;
 
 import lombok.Getter;
 
+@SuppressWarnings("UnusedDeclaration")
 public class Account {
     @Getter private static boolean isSet;
     @Getter private static String name;
@@ -66,7 +67,7 @@ public class Account {
     public static void initialize(Context context) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
         currentVersion = 0;
-        int oldVersion = 0;
+        int oldVersion;
         try {
             currentVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
         } catch (PackageManager.NameNotFoundException e) {
@@ -168,10 +169,6 @@ public class Account {
     //endregion
 
     //region Login
-
-    public void login() {
-        login(result -> {});
-    }
 
     public void login(AsyncActionCallback callback) {
         login(callback, result -> {});

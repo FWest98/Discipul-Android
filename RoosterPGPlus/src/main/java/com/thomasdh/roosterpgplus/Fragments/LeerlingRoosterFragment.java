@@ -75,7 +75,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
         super.onSaveInstanceState(outState);
     }
 
-    public void onLeerlingenLoaded(ArrayList<Klas> result) {
+    void onLeerlingenLoaded(ArrayList<Klas> result) {
         setKlassen(Array.iterableArray(result));
         if(getKlassen() == null) return;
 
@@ -131,7 +131,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
         }
     }
 
-    public void onKlasSelected(int position) {
+    void onKlasSelected(int position) {
         setKlas(getKlassen().get(position));
 
         String[] leerlingNamen = Array.iterableArray(getKlas().leerlingen).map(Leerling::getNaam).array(String[].class);
@@ -145,7 +145,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
         }
     }
 
-    public void onLeerlingSelected(int position) {
+    void onLeerlingSelected(int position) {
         setLeerling(getKlas().leerlingen.get(position));
         loadRooster();
     }

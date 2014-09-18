@@ -147,19 +147,20 @@ public class Rooster {
             return "Geen les gevonden";
         } else {
             DateFormat format = new SimpleDateFormat("HH:mm");
-            return String.format("De volgende les is %1$s, %2$s het %3$se uur en start om %4$s",
+            return String.format("De volgende les is %1$s, %2$s het %3$se uur in %4$s en start om %5$s",
                     nextLesuur.vak,
                     getDayOfWeek(nextLesuur.dag + 1),
                     nextLesuur.uur,
+                    nextLesuur.lokaal,
                     format.format(nextLesuur.lesStart));
         }
     }
 
     public static void getNextLesuur(Context context, NextUurCallback callback) {
         Calendar now = Calendar.getInstance();
-        final int currentWeek = now.get(Calendar.WEEK_OF_YEAR);
-        final int weekToGet = RoosterInfo.getCurrentWeek(context);
-        final int currentDay = now.get(Calendar.DAY_OF_WEEK);
+        int currentWeek = now.get(Calendar.WEEK_OF_YEAR);
+        int weekToGet = RoosterInfo.getCurrentWeek(context);
+        int currentDay = now.get(Calendar.DAY_OF_WEEK);
         int newDay;
         if(currentWeek != weekToGet) {
             // Het is weekend, dus maandag is de dag en een correctie voor de DB
@@ -202,31 +203,35 @@ public class Rooster {
 
         if (HelperFunctions.hasInternetConnection(context)) {
             // Herladen van het rooster FTW
-            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)));
+            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data))), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)));
         } else {
             callback.onCallback(getNextLesuurInDayCallback(context, day, time, query));
         }
     }
     private static Lesuur getNextLesuurInDayCallback(Context context, int day, DateTime time, List<NameValuePair> query) {
-        Lesuur baseLesuur = new Lesuur();
-        baseLesuur.uur = 10000; // Vast niet meer uren op een dag...
-        DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
             Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
 
             String searchQuery = URLEncodedUtils.format(query, "utf-8");
             Array<Lesuur> lessenThisWeek = Array.iterableArray(dao.queryForEq("query", searchQuery));
-            Array<Lesuur> lessenThisDay = lessenThisWeek.filter(s -> s.dag == day - 1 && !s.vervallen); // DBcorrectie
-            Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart).plusMinutes(5), time) >= 0);
-            if(futureLessen.length() == 0) {
-                return null;
-            }
-            Lesuur nextLes = futureLessen.foldLeft((newLes, oldLes) -> newLes.uur < oldLes.uur ? newLes : oldLes, baseLesuur);
-            return nextLes;
+            return getNextLesuurInDayCallback(day, time, lessenThisWeek);
         } catch (SQLException e) {
             return null;
         }
+    }
+
+    private static Lesuur getNextLesuurInDayCallback(int day, DateTime time, Array<Lesuur> lessenThisWeek) {
+        Lesuur baseLesuur = new Lesuur();
+        baseLesuur.uur = 10000; // Vast niet meer uren op een dag...
+        DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
+
+        Array<Lesuur> lessenThisDay = lessenThisWeek.filter(s -> s.dag == day - 1 && !s.vervallen); // DBcorrectie
+        Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart).plusMinutes(5), time) >= 0);
+        if(futureLessen.isEmpty()) {
+            return null;
+        }
+        return futureLessen.foldLeft((newLes, oldLes) -> newLes.uur < oldLes.uur ? newLes : oldLes, baseLesuur);
     }
 
     //endregion

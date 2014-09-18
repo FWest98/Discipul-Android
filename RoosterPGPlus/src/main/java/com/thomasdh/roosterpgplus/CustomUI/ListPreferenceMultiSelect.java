@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.preference.ListPreference;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.widget.ListView;
 
@@ -65,7 +66,7 @@ public class ListPreferenceMultiSelect extends ListPreference {
     }
 
     @Override
-    protected void onPrepareDialogBuilder(Builder builder) {
+    protected void onPrepareDialogBuilder(@NonNull Builder builder) {
         CharSequence[] entries = getEntries();
         CharSequence[] entryValues = getEntryValues();
         if (entries == null || entryValues == null || entries.length != entryValues.length) {

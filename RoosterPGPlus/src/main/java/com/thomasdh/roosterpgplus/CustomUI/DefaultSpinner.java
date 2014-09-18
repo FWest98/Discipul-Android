@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+@SuppressWarnings("UnusedDeclaration")
 public class DefaultSpinner extends Spinner {
 
     public DefaultSpinner(Context context) {

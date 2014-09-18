@@ -57,7 +57,7 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
     //region Spinners
 
-    public void onKlassenLoaded(ArrayList<String> klassen) {
+    void onKlassenLoaded(ArrayList<String> klassen) {
 
         if(klassen == null) return;
 
@@ -105,8 +105,8 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = getLoad();
-        if(lastLoad == null || lastLoad == 0) {
+        long lastLoad = getLoad();
+        if(lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
             return LoadType.NEWONLINE;

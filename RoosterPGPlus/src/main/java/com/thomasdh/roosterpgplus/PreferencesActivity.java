@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+@SuppressWarnings("deprecation")
 public class PreferencesActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
@@ -163,19 +164,24 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$AchtergrondFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_achtergrond);
 
-            findPreference("notificaties").setOnPreferenceChangeListener((preference, newValue) -> {
+            Preference mainSetting = findPreference("notificaties");
+            Preference notificationFirstShow = findPreference("notificationFirstShow");
+
+            mainSetting.setOnPreferenceChangeListener((preference, newValue) -> {
                 boolean choice = (boolean) newValue;
-                if(choice) {
-                    new NextUurNotifications(getApplicationContext()); // Setup
+                if (choice) {
+                    notificationFirstShow.setEnabled(true);
+                    new NextUurNotifications(this, 0, true); // Setup
                 } else {
-                    NextUurNotificationActionReceiver.disableNotifications(getApplicationContext());
+                    notificationFirstShow.setEnabled(false);
+                    NextUurNotificationActionReceiver.disableNotifications(this);
                 }
                 return true;
             });
 
-            findPreference("notificationFirstShow").setOnPreferenceChangeListener((preference, newValue) -> {
-                NextUurNotificationActionReceiver.disableNotifications(getApplicationContext());
-                new NextUurNotifications(getApplicationContext()); // Update alles
+            notificationFirstShow.setOnPreferenceChangeListener((preference, newValue) -> {
+                NextUurNotificationActionReceiver.disableNotifications(this);
+                new NextUurNotifications(this, Long.parseLong((String) newValue), true); // Update alles
                 return true;
             });
 
@@ -220,17 +226,6 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     }
 
     @Override
-    protected void onStart() {
-        /*EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
-        tracker.set(Fields.SCREEN_NAME, "Instellingen");
-        tracker.send(MapBuilder
-                .createAppView()
-                .build()
-        );*/
-        super.onStart();
-    }
-
-    @Override
     public boolean hasHeaders() {
         return true;
     }
@@ -271,17 +266,22 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_achtergrond);
 
-            findPreference("notificaties").setOnPreferenceChangeListener((preference, newValue) -> {
+            Preference mainSetting = findPreference("notificaties");
+            Preference notificationFirstShow = findPreference("notificationFirstShow");
+
+            mainSetting.setOnPreferenceChangeListener((preference, newValue) -> {
                 boolean choice = (boolean) newValue;
-                if(choice) {
+                if (choice) {
+                    notificationFirstShow.setEnabled(true);
                     new NextUurNotifications(getActivity(), 0, true); // Setup
                 } else {
+                    notificationFirstShow.setEnabled(false);
                     NextUurNotificationActionReceiver.disableNotifications(getActivity());
                 }
                 return true;
             });
 
-            findPreference("notificationFirstShow").setOnPreferenceChangeListener((preference, newValue) -> {
+            notificationFirstShow.setOnPreferenceChangeListener((preference, newValue) -> {
                 NextUurNotificationActionReceiver.disableNotifications(getActivity());
                 new NextUurNotifications(getActivity(), Long.parseLong((String) newValue), true); // Update alles
                 return true;
