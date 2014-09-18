@@ -30,5 +30,4 @@
         android:text="@string/action_bar_dropdown_persoonlijk_rooster"
         android:textColor="#888"
         android:textSize="12sp" />
-
 </RelativeLayout>

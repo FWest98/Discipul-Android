@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
+import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
@@ -29,41 +30,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 @FragmentTitle(title = R.string.action_bar_dropdown_klassenrooster)
-public class KlassenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
+public class KlassenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener, RoosterBuilder.BuilderFunctions {
     private static final String CHOSEN_KLAS_KEY = "lastChosenKlas";
-    private static final String KLAS_CHOICE = "KLAS_CHOICE";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
 
     private DefaultSpinner klasSpinner;
 
     @Getter @Setter private String klas;
 
-    @Override
-    public boolean canLoadRooster() { return getKlas() != null; }
-
-    @Override
-    public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
-        query.add(new BasicNameValuePair("klas", getKlas()));
-        return query;
-    }
-
-    @Override
-    public long getLoad() { return RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getActivity()); }
-
-    @Override
-    public void setLoad() { RoosterInfo.setLoad("klas" + getKlas() + getWeek(), System.currentTimeMillis(), getActivity()); }
-
-    @Override
-    public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getActivity());
-        if(lastLoad == null) {
-            return LoadType.ONLINE;
-        } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
-            return LoadType.NEWONLINE;
-        } else {
-            return LoadType.OFFLINE;
-        }
-    }
+    //region Lifecycle
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -80,7 +55,9 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
         return getRootView();
     }
 
-    public void onKlassenLoaded(ArrayList<String> klassen) {
+    //region Spinners
+
+    void onKlassenLoaded(ArrayList<String> klassen) {
 
         if(klassen == null) return;
 
@@ -107,6 +84,47 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     @Override
     public void onNothingSelected(AdapterView<?> parent) { }
 
+    //endregion
+    //endregion
+    //region Statemanagement
+
+    @Override
+    public boolean canLoadRooster() { return getKlas() != null; }
+
+    @Override
+    public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
+        query.add(new BasicNameValuePair("klas", getKlas()));
+        return query;
+    }
+
+    @Override
+    public long getLoad() { return RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getActivity()); }
+
+    @Override
+    public void setLoad() { RoosterInfo.setLoad("klas" + getKlas() + getWeek(), System.currentTimeMillis(), getActivity()); }
+
+    @Override
+    public LoadType getLoadType() {
+        long lastLoad = getLoad();
+        if(lastLoad == 0) {
+            return LoadType.ONLINE;
+        } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
+            return LoadType.NEWONLINE;
+        } else {
+            return LoadType.OFFLINE;
+        }
+    }
+
+    //endregion
+    //region Rooster
+
+
+    @Override
+    public RoosterBuilder buildRooster(int urenCount) {
+        return super.buildRooster(urenCount)
+                .setBuilderFunctions(this);
+    }
+
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
         if(lesuur.klassen.contains(getKlas())) { // niet optioneel
@@ -131,4 +149,6 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
         return lesView;
     }
+
+    //endregion
 }

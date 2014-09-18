@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
@@ -18,14 +17,11 @@ import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Klas;
 import com.thomasdh.roosterpgplus.Models.Leerling;
-import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +29,6 @@ import fj.data.Array;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Created by Floris on 14-7-2014.
- */
 @FragmentTitle(title = R.string.action_bar_dropdown_leerlingrooster)
 public class LeerlingRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
@@ -82,7 +75,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
         super.onSaveInstanceState(outState);
     }
 
-    public void onLeerlingenLoaded(ArrayList<Klas> result) {
+    void onLeerlingenLoaded(ArrayList<Klas> result) {
         setKlassen(Array.iterableArray(result));
         if(getKlassen() == null) return;
 
@@ -114,7 +107,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
             public void afterTextChanged(Editable s) {
                 String text = s.toString();
                 Array<Leerling> opties = leerlingen.filter(e -> e.getLlnr().equals(text) || e.getNaam().equalsIgnoreCase(text));
-                if(opties.length() > 0) {
+                if(!opties.isEmpty()) {
                     setLeerling(opties.get(0));
 
                     llToGet = getLeerling().getNaam();
@@ -138,10 +131,10 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
         }
     }
 
-    public void onKlasSelected(int position) {
+    void onKlasSelected(int position) {
         setKlas(getKlassen().get(position));
 
-        String[] leerlingNamen = Array.iterableArray(getKlas().leerlingen).map(s -> s.getNaam()).array(String[].class);
+        String[] leerlingNamen = Array.iterableArray(getKlas().leerlingen).map(Leerling::getNaam).array(String[].class);
         ArrayAdapter<String> leerlingAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, leerlingNamen);
         leerlingAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         leerlingSpinner.setAdapter(leerlingAdapter);
@@ -152,7 +145,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
         }
     }
 
-    public void onLeerlingSelected(int position) {
+    void onLeerlingSelected(int position) {
         setLeerling(getKlas().leerlingen.get(position));
         loadRooster();
     }
@@ -161,7 +154,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
 
 
     //endregion
-    //region Rooster
+    //region Statemanagement
 
     @Override
     public boolean canLoadRooster() { return getLeerling() != null; }
@@ -175,7 +168,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
     @Override
     public LoadType getLoadType() {
         Long lastLoad = RoosterInfo.getLoad("leerling"+getLeerling().getLlnr()+getWeek(), getActivity());
-        if(lastLoad == null) {
+        if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
             return LoadType.NEWONLINE;
@@ -190,24 +183,6 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
     @Override
     public void setLoad() {
         RoosterInfo.setLoad("leerling"+getLeerling().getLlnr()+getWeek(), System.currentTimeMillis(), getActivity());
-    }
-
-    @Override
-    public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
-        lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0);
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-
-        TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
-        TextView leraarTextView = (TextView) lesView.findViewById(R.id.rooster_leraar);
-        TextView lokaalTextView = (TextView) lesView.findViewById(R.id.rooster_lokaal);
-        TextView tijdenTextView = (TextView) lesView.findViewById(R.id.rooster_tijden);
-
-        vakTextView.setText(lesuur.vak);
-        leraarTextView.setText(StringUtils.join(lesuur.leraren, " & "));
-        lokaalTextView.setText(lesuur.lokaal);
-        tijdenTextView.setText(format.format(lesuur.lesStart) + " - " + format.format(lesuur.lesEind));
-
-        return lesView;
     }
 
     //endregion

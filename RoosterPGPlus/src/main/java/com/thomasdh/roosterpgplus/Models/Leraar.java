@@ -4,9 +4,7 @@ import java.io.Serializable;
 
 import lombok.Data;
 
-/**
- * Created by Floris on 12-7-2014.
- */
+
 @Data
 public class Leraar implements Serializable {
     private static final long serialVersionUID = 102947212471347253L;

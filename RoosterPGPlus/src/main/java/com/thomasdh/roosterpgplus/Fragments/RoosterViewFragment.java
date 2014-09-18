@@ -7,6 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.fwest98.showcaseview.ShowcaseView;
+import com.fwest98.showcaseview.targets.ActionViewTarget;
+import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.Animations;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
@@ -26,45 +29,49 @@ import lombok.Getter;
 import lombok.Setter;
 import roboguice.fragment.RoboFragment;
 
-/**
- * Created by Floris on 7-7-2014.
- */
-public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener, RoosterBuilder.lesViewBuilder {
-    @Getter public ViewPager viewPager;
+public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener {
+    @Getter
+    ViewPager viewPager;
     @Getter @Setter private View rootView;
-    public enum LoadType { OFFLINE, ONLINE, NEWONLINE; }
+    public enum LoadType { OFFLINE, ONLINE, NEWONLINE, REFRESH }
 
     @Getter(value = AccessLevel.PACKAGE) private int week;
     @Getter @Setter private int dag = 0;
 
-    public interface onRoosterLoadedListener {
-        public void onRoosterLoaded();
+    public interface onRoosterLoadStateChangedListener {
+        public void onRoosterLoadEnd();
+        public void onRoosterLoadCancel();
         public void onRoosterLoadStart();
     }
-    @Setter private onRoosterLoadedListener roosterLoadedListener;
+    @Setter onRoosterLoadStateChangedListener roosterLoadStateListener;
+
+    private boolean hadInternetConnection = true;
 
     //region Types
     public static Class<? extends RoosterViewFragment>[] types = new Class[]{
             PersoonlijkRoosterFragment.class,
             KlassenRoosterFragment.class,
             DocentenRoosterFragment.class,
+            LokalenRoosterFragment.class,
             LeerlingRoosterFragment.class,
-            LokalenRoosterFragment.class
+            EntityRoosterFragment.class,
+            PGTVRoosterFragment.class
     };
 
     //endregion
     //region Creating
 
     // Nieuwe instantie van het opgegeven type
-    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week, onRoosterLoadedListener listener) {
-        T fragment = null;
+    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week, onRoosterLoadStateChangedListener listener) {
+        T fragment;
         try {
             fragment = type.newInstance();
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
-        fragment.setRoosterLoadedListener(listener);
+        fragment.setRoosterLoadStateListener(listener);
         fragment.setWeek(week, false);
 
         return fragment;
@@ -94,7 +101,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     public void setWeek(int week, boolean loadRooster) {
         this.week = week;
         if(week == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
-            setDag(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+            setDag(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
         } else {
             setDag(0);
         }
@@ -116,14 +123,10 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     //region Roosters
 
     protected abstract boolean canLoadRooster();
-    public abstract List<NameValuePair> getURLQuery(List<NameValuePair> query);
-    public abstract LoadType getLoadType();
-    public abstract long getLoad();
-    public abstract void setLoad();
-    public boolean getShowVervangenUren() { return true; }
-
-    // LesViewBuilder
-    public abstract View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
+    protected abstract List<NameValuePair> getURLQuery(List<NameValuePair> query);
+    protected abstract LoadType getLoadType();
+    protected abstract long getLoad();
+    protected abstract void setLoad();
 
     public void loadRooster() {
         loadRooster(false);
@@ -132,47 +135,63 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     public void loadRooster(boolean reload) {
         if(!canLoadRooster()) return;
         if(getWeek() == -1) return;
-        roosterLoadedListener.onRoosterLoadStart();
+        roosterLoadStateListener.onRoosterLoadStart();
 
         List<NameValuePair> query = new ArrayList<>();
         query.add(new BasicNameValuePair("week", Integer.toString(getWeek())));
         query = getURLQuery(query);
 
-        LoadType loadType = reload ? LoadType.ONLINE : getLoadType();
+        LoadType loadType = reload ? LoadType.REFRESH : getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), (result, urenCount) -> {
-            if(loadType == LoadType.ONLINE || (loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity()))) {
+            if(loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
                 setLoad();
             }
-            roosterLoadedListener.onRoosterLoaded();
-            RoosterBuilder.build((List<Lesuur>) result, getDag(), getShowVervangenUren(), getLoad(), urenCount, getViewPager(), getActivity(), this, this);
+            roosterLoadStateListener.onRoosterLoadEnd();
+            buildRooster(urenCount).build((List<Lesuur>) result);
+        }, exception -> {
+            roosterLoadStateListener.onRoosterLoadEnd();
+            if(loadType != LoadType.REFRESH) {
+                buildRooster(0).build((List<Lesuur>) null);
+            }
         });
+
+        if(HelperFunctions.showCaseView()) {
+            new ShowcaseView.Builder(getActivity())
+                    .setTarget(new ActionViewTarget(getActivity(), ActionViewTarget.Type.SPINNER))
+                    .setContentTitle(R.string.showcaseview_weekkeuze_title)
+                    .setContentText(R.string.showcaseview_weekkeuze_content)
+                    .doNotBlockTouches()
+                    .singleShot(1)
+                    .setStyle(R.style.ShowCaseTheme)
+                    .build();
+        }
+    }
+
+    RoosterBuilder buildRooster(int urenCount) {
+        if(getViewPager().getAdapter() == null) getViewPager().setAdapter(new AnimatedPagerAdapter());
+        getViewPager().getAdapter().notifyDataSetChanged();
+        getViewPager().setOnPageChangeListener(this);
+        return new RoosterBuilder(getActivity())
+                .in(getViewPager())
+                .setShowDag(getDag())
+                .setShowVervangenUren(true)
+                .setLastLoad(getLoad())
+                .setUrenCount(urenCount);
     }
 
     public void setInternetConnectionState(boolean hasInternetConnection) {
         TextView warning = (TextView) getRootView().findViewById(R.id.internet_connection_warning);
+        if(!hadInternetConnection && hasInternetConnection) {
+            loadRooster(true);
+        }
+        hadInternetConnection = hasInternetConnection;
         if(hasInternetConnection) {
             Animations.collapse(warning);
-            //warning.setVisibility(View.GONE);
         } else {
             Animations.expand(warning);
-            //warning.setVisibility(View.VISIBLE);
         }
     }
 
     //endregion
-
-    @Deprecated
-    public enum Type {
-        PERSOONLIJK_ROOSTER (0),
-        KLASROOSTER (1),
-        DOCENTENROOSTER (2),
-        LOKALENROOSTER (3),
-        LEERLINGROOSTER (4);
-
-        Type(int id) {
-            this.id = id;
-        }
-        private int id;
-    }
 }

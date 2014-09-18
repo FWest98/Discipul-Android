@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
+import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Leraar;
@@ -29,8 +30,9 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 @FragmentTitle(title = R.string.action_bar_dropdown_docentenrooster)
-public class DocentenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener {
+public class DocentenRoosterFragment extends RoosterViewFragment implements AdapterView.OnItemSelectedListener, RoosterBuilder.BuilderFunctions {
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
 
     @Getter @Setter private Vak vak;
@@ -41,32 +43,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     private DefaultSpinner leraarSpinner;
     private DefaultSpinner vakSpinner;
 
-    @Override
-    public boolean canLoadRooster() { return getLeraar() != null; }
-
-    @Override
-    public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
-        query.add(new BasicNameValuePair("docent", getLeraar()));
-        return query;
-    }
-
-    @Override
-    public long getLoad() { return RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity()); }
-
-    @Override
-    public void setLoad() { RoosterInfo.setLoad("docent" + getLeraar() + getWeek(), System.currentTimeMillis(), getActivity()); }
-
-    @Override
-    public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity());
-        if(lastLoad == null) {
-            return LoadType.ONLINE;
-        } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
-            return LoadType.NEWONLINE;
-        } else {
-            return LoadType.OFFLINE;
-        }
-    }
+    //region Lifecycle
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,11 +67,21 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         return getRootView();
     }
 
-    public void onLerarenLoaded(ArrayList<Vak> result) {
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString("LERAAR", leraar);
+        outState.putSerializable("VAK", vak);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    //region Spinners
+
+    void onLerarenLoaded(ArrayList<Vak> result) {
         onLerarenLoaded(result, null, null);
     }
 
-    public void onLerarenLoaded(ArrayList<Vak> result, String Sleraar, Vak Svak) {
+    void onLerarenLoaded(ArrayList<Vak> result, String Sleraar, Vak Svak) {
         if(result == null) return;
         setVakken(result);
 
@@ -111,16 +98,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         leraarToGet = Sleraar;
     }
 
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if(parent.equals(vakSpinner)) {
-            onVakSelected(position);
-        } else if(parent.equals(leraarSpinner)) {
-            onLeraarSelected(position);
-        }
-    }
-
-    public void onVakSelected(int position) {
+    void onVakSelected(int position) {
         setVak(vakken.get(position));
 
         ArrayList<String> leraarNamen = new ArrayList<>();
@@ -136,12 +114,62 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         }
     }
 
-    public void onLeraarSelected(int position) {
+    void onLeraarSelected(int position) {
         setLeraar(getVak().getLeraren().get(position).getCode());
         loadRooster();
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if(parent.equals(vakSpinner)) {
+            onVakSelected(position);
+        } else if(parent.equals(leraarSpinner)) {
+            onLeraarSelected(position);
+        }
+    }
+
     @Override public void onNothingSelected(AdapterView<?> parent) {}
+
+    //endregion
+    //endregion
+    //region Statemanagement
+
+    @Override
+    public boolean canLoadRooster() { return getLeraar() != null; }
+
+    @Override
+    public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
+        query.add(new BasicNameValuePair("docent", getLeraar()));
+        return query;
+    }
+
+    @Override
+    public long getLoad() { return RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity()); }
+
+    @Override
+    public void setLoad() { RoosterInfo.setLoad("docent" + getLeraar() + getWeek(), System.currentTimeMillis(), getActivity()); }
+
+    @Override
+    public LoadType getLoadType() {
+        Long lastLoad = RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity());
+        if(lastLoad == null || lastLoad == 0) {
+            return LoadType.ONLINE;
+        } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
+            return LoadType.NEWONLINE;
+        } else {
+            return LoadType.OFFLINE;
+        }
+    }
+
+    //endregion
+    //region Rooster
+
+    @Override
+    public RoosterBuilder buildRooster(int urenCount) {
+        RoosterBuilder builder = super.buildRooster(urenCount);
+        return builder.setShowVervangenUren(false)
+                .setBuilderFunctions(this);
+    }
 
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
@@ -161,11 +189,5 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         return lesView;
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putString("LERAAR", leraar);
-        outState.putSerializable("VAK", vak);
-
-        super.onSaveInstanceState(outState);
-    }
+    //endregion
 }

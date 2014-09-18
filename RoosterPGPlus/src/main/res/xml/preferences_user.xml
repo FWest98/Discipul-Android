@@ -15,7 +15,7 @@
         android:summary="@string/settings_user_upgrade_summary"
         android:title="@string/settings_user_upgrade_title" />
 
-    <com.thomasdh.roosterpgplus.ListPreferenceMultiSelect
+    <com.thomasdh.roosterpgplus.CustomUI.ListPreferenceMultiSelect
         android:defaultValue="#ALL#"
         android:dialogTitle="Subklassen"
         android:key="subklassen"

@@ -3,7 +3,7 @@
 
     <string name="app_name">RoosterPG+</string>
     <string name="action_settings">Instellingen</string>
-    <string name="placeholder_text" />
+    <string name="placeholder_text"/>
 
     <!-- Action Bar -->
     <string name="action_bar_button_refresh">Herlaad</string>
@@ -13,6 +13,8 @@
     <string name="action_bar_dropdown_docentenrooster"> - Docentenrooster</string>
     <string name="action_bar_dropdown_lokalenrooster">- Lokalenrooster</string>
     <string name="action_bar_dropdown_leerlingrooster">- Leerlingrooster</string>
+    <string name="action_bar_dropdown_speciaal_rooster"> - Speciaal rooster</string>
+    <string name="search_hint">Zoek roosters</string>
 
     <!-- Drawer -->
     <string name="drawer_close">Sluit menu</string>
@@ -24,7 +26,6 @@
     <string name="drawer_item_leerlingrooster">Leerlingrooster</string>
     <string name="drawer_item_roosterwijzigingen">Roosterwijzigingen</string>
     <string name="drawer_algemene_mededelingen">Algemene mededelingen</string>
-
     <string name="drawer_group_rooster">Roosters</string>
     <string name="drawer_group_pgtv">PGTV</string>
 
@@ -37,20 +38,17 @@
     <string name="rooster_leraar">Leraar</string>
     <string name="rooster_vervallen">Vervallen</string>
     <string name="rooster_tijden">Tijden</string>
-
     <string name="rooster_docenten_desc">Kies een vak en daarna een docent: </string>
     <string name="rooster_klas_desc">Kies een klas: </string>
     <string name="rooster_lokaal_desc">Kies een lokaal: </string>
     <string name="rooster_leerling_desc">Kies een leerling: </string>
-
-    <string name="rooster_leerling_leerlingNummer_hint">... of vul een leerlingnummer of naam in</string>
-
-    <string name="rooster_klas_klasSpinner_placeholder">Klas...</string>
-    <string name="rooster_docenten_vakspinner_placeholder">Vak...</string>
-    <string name="rooster_docenten_docentspinner_placeholder">Docent...</string>
-    <string name="rooster_lokaal_lokaalSpinner_placeholder">Lokaal...</string>
-    <string name="rooster_leerling_klasSpinner_placeholder">Klas...</string>
-    <string name="rooster_leerling_leerlingSpinner_placeholder">Leerling...</string>
+    <string name="rooster_leerling_leerlingNummer_hint">… of vul een leerlingnummer of naam in</string>
+    <string name="rooster_klas_klasSpinner_placeholder">Klas…</string>
+    <string name="rooster_docenten_vakspinner_placeholder">Vak…</string>
+    <string name="rooster_docenten_docentspinner_placeholder">Docent…</string>
+    <string name="rooster_lokaal_lokaalSpinner_placeholder">Lokaal…</string>
+    <string name="rooster_leerling_klasSpinner_placeholder">Klas…</string>
+    <string name="rooster_leerling_leerlingSpinner_placeholder">Leerling…</string>
 
     <!-- Logindialog -->
     <string name="logindialog_title">Log in</string>
@@ -58,6 +56,7 @@
     <string name="logindialog_tabs_llnr">Leerlingnummer</string>
     <string name="logindialog_loginbutton">Log in</string>
     <string name="logindialog_cancelbutton">Annuleer</string>
+    <string name="logindialog_registerbutton">Registreer</string>
     <string name="logindialog_userpass_desc">Log in met een bestaand RoosterPG+-account</string>
     <string name="logindialog_username_hint">Gebruikersnaam</string>
     <string name="logindialog_password_hint">Wachtwoord</string>
@@ -68,7 +67,6 @@
     <string name="logindialog_warning_submitButton">Alsnog aanmaken</string>
     <string name="logindialog_warning_cancelButton">Inloggen</string>
 
-
     <!-- Registerdialog -->
     <string name="registerdialog_leerling_text">Registreer je als leerling</string>
     <string name="registerdialog_leerling_tab">Leerling</string>
@@ -78,9 +76,13 @@
     <string name="registerdialog_cancelbutton">Annuleer</string>
     <string name="registerdialog_email_hint">Emailadres (optioneel)</string>
     <string name="registerdialog_repass_hint">Wachtwoord (bevestiging)</string>
+    <string name="registerdialog_title">Registreer</string>
+
+    <!-- Extenddialog -->
     <string name="extenddialog_text">Upgrade je leerlingaccount</string>
     <string name="extenddialog_extendbutton">Upgrade</string>
     <string name="extenddialog_isExtended">Dit account is al geüpgraded!</string>
+    <string name="extenddialog_title">Upgrade account</string>
 
     <!-- Settings -->
     <string name="settings_user_title">Gebruiker</string>
@@ -88,39 +90,47 @@
     <string name="settings_other_title">Overig</string>
     <string name="settings_info_title">Info</string>
     <string name="settings_notifications_title">Notificaties</string>
-    <string name="settings_notifications_summary">Notificaties zijn nog niet beschikbaar</string>
-    <string name="settings_notificationsInterval_summary">De tijd tussen vernieuwen van notificaties</string>
-    <string name="settings_notificationInterval_title">Controlefrequentie</string>
+    <string name="settings_notifications_summary">Meldingen die de volgende les aangeven</string>
+    <string name="settings_notificationsInterval_summary">Hoeveel minuten voor aanvang van de les de melding getoond moet worden</string>
+    <string name="settings_notificationInterval_title">Weergavetijd</string>
     <string name="settings_user_clusterklassen_title">Clusterklassen</string>
     <string name="settings_user_clusterklassen_summary">Kies de clusterklassen die in jouw rooster missen</string>
     <string name="settings_user_upgrade_summary">Voltooi je registratie voor volledige personalisatie</string>
     <string name="settings_user_upgrade_title">Registratie voltooien</string>
     <string name="settings_user_relogin_summary">Log in als een andere gebruiker</string>
     <string name="settings_user_relogin_title">Andere gebruiker</string>
-    <string name="internet_connection_warning">Geen internetverbinding</string>
-    <string name="logindialog_registerbutton">Registreer</string>
-    <string name="registerdialog_title">Registreer</string>
-    <string name="extenddialog_title">Upgrade account</string>
-    <string name="settings_user_resetClusterklassenSummary">Herstel jouw rooster naar de standaard</string>
+    <string name="settings_user_resetClusterklassenSummary">Herstel je clusterklassen naar het origineel</string>
     <string name="settings_user_resetClusterklassenTitle">Reset clusterklassen</string>
 
-    <string-array name="settings_notification_check_interval">
+    <!-- Showcaseviews -->
+
+    <string name="showcaseview_weekkeuze_title">Weekkeuze</string>
+    <string name="showcaseview_weekkeuze_content">Kies hier de week die je wil weergeven</string>
+    <string name="showcaseview_zoeken_title">Zoek in roosters</string>
+    <string name="showcaseview_zoeken_content"><![CDATA[Vul hier een klas, docent, leerlingnummer of \'ik\' in en krijg het rooster.\nTip: Met \' & \' kan je roosters combineren]]></string>
+    <string name="internet_connection_warning">Geen internetverbinding</string>
+    <string name="rooster_null">Geen rooster gevonden!</string>
+
+    <string-array name="settings_notification_firstShow">
         <item>5 minuten</item>
         <item>10 minuten</item>
+        <item>15 minuten</item>
         <item>30 minuten</item>
         <item>1 uur</item>
         <item>2 uur</item>
-        <item>6 uur</item>
     </string-array>
-
-    <string-array name="settings_notification_check_interval_values">
+    <string-array name="settings_notification_firstShow_values">
         <item>300000</item>
         <item>600000</item>
+        <item>900000</item>
         <item>1800000</item>
         <item>3600000</item>
         <item>7200000</item>
-        <item>21600000</item>
     </string-array>
 
+    <string name="title_activity_pgtv">PGTVActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="pgtv_null">Geen gegevens gevonden!</string>
+    <string name="PGTV_Title">PGTV</string>
 
 </resources>

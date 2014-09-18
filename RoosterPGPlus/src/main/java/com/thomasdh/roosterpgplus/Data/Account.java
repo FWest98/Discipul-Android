@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -13,11 +14,12 @@ import android.widget.EditText;
 import android.widget.TabHost;
 
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
+import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
 import com.thomasdh.roosterpgplus.R;
-import com.thomasdh.roosterpgplus.Settings;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Settings.Settings;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -37,6 +39,7 @@ import java.util.Scanner;
 
 import lombok.Getter;
 
+@SuppressWarnings("UnusedDeclaration")
 public class Account {
     @Getter private static boolean isSet;
     @Getter private static String name;
@@ -51,6 +54,7 @@ public class Account {
 
     private Context context;
     private WebRequestCallbacks callbacks;
+    private static int currentVersion = 0;
 
     private static Account instance;
 
@@ -62,10 +66,24 @@ public class Account {
 
     public static void initialize(Context context) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-        if(pref.getString("version", null) == null && pref.getString("key", null) != null) {
-            isSet = false;
-            userType = UserType.NO_ACCOUNT;
-            ExceptionHandler.handleException(new Exception("Log opnieuw in of registreer opnieuw, vanwege nieuwe schooljaar"), context, ExceptionHandler.HandleType.SIMPLE);
+        currentVersion = 0;
+        int oldVersion;
+        try {
+            currentVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e("Account", e.getMessage(), e);
+        }
+        if((oldVersion = pref.getInt("oldVersion", currentVersion)) != currentVersion) {
+            // Er was een updatesel
+            int[] breakingVersions = context.getResources().getIntArray(R.array.breaking_account_versions);
+            for(int version : breakingVersions) {
+                if(currentVersion >= version && oldVersion < version) { // breaking changes
+                    isSet = false;
+                    userType = UserType.NO_ACCOUNT;
+                    ExceptionHandler.handleException(new Exception("Wijzigingen in de app vereisen opnieuw inloggen"), context, ExceptionHandler.HandleType.SIMPLE);
+                    return;
+                }
+            }
         }
         String key;
         if((key = pref.getString("key", null)) == null) {
@@ -101,12 +119,12 @@ public class Account {
         name = base.getString("naam");
         pref.putString("naam", name);
 
-        this.isAppAccount = isAppAccount;
+        Account.isAppAccount = isAppAccount;
         pref.putBoolean("appaccount", isAppAccount);
 
         isSet = true;
 
-        pref.putString("version", "2.0");
+        pref.putInt("oldVersion", currentVersion);
 
         if(base.has("code")) {
             // LERAAR
@@ -128,6 +146,9 @@ public class Account {
         pref.commit();
 
         ExceptionHandler.handleException(new Exception("Welkom, "+getName()), context, ExceptionHandler.HandleType.SIMPLE);
+
+        NextUurNotifications.disableNotifications(context);
+        new NextUurNotifications(context);
     }
 
     //endregion
@@ -149,11 +170,11 @@ public class Account {
 
     //region Login
 
-    public void login() {
-        login(result -> {});
+    public void login(AsyncActionCallback callback) {
+        login(callback, result -> {});
     }
 
-    public void login(AsyncActionCallback callback) {
+    public void login(AsyncActionCallback callback, AsyncActionCallback cancelCallback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.logindialog, null);
@@ -181,7 +202,14 @@ public class Account {
         AlertDialog loginDialog = builder.create();
         loginDialog.show();
         loginDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(v -> register(result -> { loginDialog.dismiss(); callback.onAsyncActionComplete(result); }));
-        loginDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v -> loginDialog.dismiss());
+        loginDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v -> {
+            loginDialog.dismiss();
+            try {
+                cancelCallback.onAsyncActionComplete(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         loginDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
             String username = ((EditText) dialogView.findViewById(R.id.logindialogusername)).getText().toString();
             String password = ((EditText) dialogView.findViewById(R.id.logindialogpassword)).getText().toString();
@@ -350,10 +378,6 @@ public class Account {
     //endregion
     //region Register
 
-    public void register() {
-        register(result -> {});
-    }
-
     public void register(AsyncActionCallback callback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -410,7 +434,7 @@ public class Account {
                 postParameters.add(new BasicNameValuePair("llnr", llnr));
                 postParameters.add(new BasicNameValuePair("email", email));
 
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters); // TODO Alles UTF8
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
                 httpPost.setEntity(entity);
 
                 return client.execute(httpPost);
@@ -713,11 +737,11 @@ public class Account {
     private class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, Object> {
         @Override
         protected Object doInBackground(WebRequestCallbacks... params) {
+            callbacks = params[0];
             if (!HelperFunctions.hasInternetConnection(context)) {
                 publishProgress(new Exception("Geen internetverbinding"));
                 return null;
             }
-            callbacks = params[0];
             try {
                 HttpClient httpClient = new DefaultHttpClient();
                 HttpResponse response = callbacks.onRequestCreate(httpClient);
@@ -728,8 +752,7 @@ public class Account {
                     content += scanner.nextLine();
                 }
 
-                Object data = callbacks.onRequestComplete(content, response.getStatusLine().getStatusCode());
-                return data;
+                return callbacks.onRequestComplete(content, response.getStatusLine().getStatusCode());
             } catch (Exception e) {
                 publishProgress(e);
             }

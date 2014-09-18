@@ -7,7 +7,7 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.misc.BaseDaoEnabled;
 import com.j256.ormlite.table.DatabaseTable;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,11 +21,11 @@ import java.util.Calendar;
 import java.util.Date;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-/**
- * Created by Floris on 3-12-13.
- */
-@EqualsAndHashCode
+
+@EqualsAndHashCode(callSuper = false)
+@ToString
 @DatabaseTable(tableName = "Lessen")
 public class Lesuur extends BaseDaoEnabled implements Serializable {
     private static final long serialVersionUID = 7526472295622776147L;
@@ -101,7 +101,7 @@ public class Lesuur extends BaseDaoEnabled implements Serializable {
 
             this.query =  query;
         } catch (JSONException e) {
-            ExceptionHandler.handleException(e, context, "Er is een fout opgetreden bij het lezen van de roosterdata", Lesuur.class.getSimpleName(), ExceptionHandler.HandleType.EXTENSIVE);
+            ExceptionHandler.handleException(e, context, ExceptionHandler.HandleType.EXTENSIVE);
         }
     }
 

@@ -8,66 +8,83 @@ import com.j256.ormlite.stmt.DeleteBuilder;
 import com.thomasdh.roosterpgplus.Database.DatabaseHelper;
 import com.thomasdh.roosterpgplus.Database.DatabaseManager;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeComparator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import fj.data.Array;
+
 public class Rooster {
-    public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback) {
+    //region Rooster
+
+    public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
         if(HelperFunctions.hasInternetConnection(context)) {
             if (type == RoosterViewFragment.LoadType.ONLINE) {
-                getRoosterFromInternet(query, false, context, callback);
+                getRoosterFromInternet(query, false, context, callback, exceptionCallback);
             } else if (type == RoosterViewFragment.LoadType.NEWONLINE) {
-                getRoosterFromInternet(query, true, context, callback);
+                getRoosterFromInternet(query, true, context, callback, exceptionCallback);
+            } else if(type == RoosterViewFragment.LoadType.REFRESH) {
+                getRoosterFromInternet(query, false, context, callback, exceptionCallback);
             } else {
-                getRoosterFromDatabase(query, context, callback);
+                getRoosterFromDatabase(query, context, callback, exceptionCallback);
             }
         } else if(type == RoosterViewFragment.LoadType.OFFLINE || type == RoosterViewFragment.LoadType.NEWONLINE) {
-            getRoosterFromDatabase(query, context, callback);
+            getRoosterFromDatabase(query, context, callback, exceptionCallback);
         } else {
             ExceptionHandler.handleException(new Exception("Kon rooster niet laden, er is geen internetverbinding"), context, ExceptionHandler.HandleType.SIMPLE);
+            exceptionCallback.onError(null);
         }
     }
 
-    private static void getRoosterFromInternet(List<NameValuePair> query, boolean isOffline, Context context, RoosterCallback callback) {
+    private static void getRoosterFromInternet(List<NameValuePair> query, boolean hasRoosterInDatabase, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
         String url = "rooster?"+ URLEncodedUtils.format(query, "utf-8");
 
         WebDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback), exception -> {
             Log.e("RoosterDownloader", "Er ging iets mis met het ophalen van het rooster", (Exception) exception);
-            if (isOffline) {
+            if (hasRoosterInDatabase) {
                 ExceptionHandler.handleException(new Exception("Geen internetverbinding, oude versie van het rooster!"), context, ExceptionHandler.HandleType.SIMPLE);
-                getRoosterFromDatabase(query, context, callback);
+                getRoosterFromDatabase(query, context, callback, exceptionCallback);
             } else {
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
+                exceptionCallback.onError(null);
             }
         });
     }
 
-    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback) {
+    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
-            Dao<Lesuur, ?> dao = helper.getDao(Lesuur.class);
+            Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
 
             String searchQuery = URLEncodedUtils.format(query, "utf-8");
             List<Lesuur> lessen = dao.queryForEq("query", searchQuery);
-            int week = lessen.size() > 0 ? lessen.get(0).week : 0;
+            int week = !lessen.isEmpty() ? lessen.get(0).week : 0;
 
             callback.onCallback(lessen, RoosterInfo.getWeekUrenCount(context, week));
         } catch (SQLException e) {
             Log.e("SQL ERROR", e.getMessage(), e);
             ExceptionHandler.handleException(new Exception("Opslagfout, er is geen rooster geladen"), context, ExceptionHandler.HandleType.SIMPLE);
+            exceptionCallback.onError(e);
+
         } catch (Exception e) {
             Log.e("Callback error", e.getMessage(), e);
+            exceptionCallback.onError(e);
         }
     }
 
@@ -122,7 +139,131 @@ public class Rooster {
         }
     }
 
+    //endregion
+    //region Next uur
+
+    public static String getNextLesuurText(Lesuur nextLesuur) {
+        if(nextLesuur == null) {
+            return "Geen les gevonden";
+        } else {
+            DateFormat format = new SimpleDateFormat("HH:mm");
+            return String.format("De volgende les is %1$s, %2$s het %3$se uur in %4$s en start om %5$s",
+                    nextLesuur.vak,
+                    getDayOfWeek(nextLesuur.dag + 1),
+                    nextLesuur.uur,
+                    nextLesuur.lokaal,
+                    format.format(nextLesuur.lesStart));
+        }
+    }
+
+    public static void getNextLesuur(Context context, NextUurCallback callback) {
+        Calendar now = Calendar.getInstance();
+        int currentWeek = now.get(Calendar.WEEK_OF_YEAR);
+        int weekToGet = RoosterInfo.getCurrentWeek(context);
+        int currentDay = now.get(Calendar.DAY_OF_WEEK);
+        int newDay;
+        if(currentWeek != weekToGet) {
+            // Het is weekend, dus maandag is de dag en een correctie voor de DB
+            newDay = Calendar.MONDAY;
+
+            DateTime timeToGet = DateTime.now()
+                    .withTime(0, 0, 0, 0);
+
+            getNextLesuurInDay(context, weekToGet, newDay, timeToGet, callback);
+        } else {
+            // Het is geen weekend, we kijken of er vandaag nog een les komt (zo nee, op naar morgen!)
+            getNextLesuurInDay(context, weekToGet, currentDay, new DateTime(now), lesuur -> {
+
+                if (lesuur == null) { // geen lessen meer
+                    int updatedDay = currentDay + 1;
+                    int updatedWeek = currentWeek;
+                    if (updatedDay == Calendar.SATURDAY) {
+                        updatedDay = Calendar.MONDAY;
+                        updatedWeek++;
+                    }
+
+                    DateTime timeToGet = DateTime.now()
+                            .withTime(0, 0, 0, 0);
+
+                    getNextLesuurInDay(context, updatedWeek, updatedDay, timeToGet, callback);
+                } else {
+                    // We weten de volgende les zowaar... DONE
+                    callback.onCallback(lesuur);
+                }
+            });
+        }
+    }
+
+    private static void getNextLesuurInDay(Context context, int week, int day, DateTime time, NextUurCallback callback) {
+        Account.initialize(context);
+
+        List<NameValuePair> query = new ArrayList<>();
+        query.add(new BasicNameValuePair("week", Integer.toString(week)));
+        query.add(new BasicNameValuePair("key", Account.getApiKey()));
+
+        if (HelperFunctions.hasInternetConnection(context)) {
+            // Herladen van het rooster FTW
+            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data))), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)));
+        } else {
+            callback.onCallback(getNextLesuurInDayCallback(context, day, time, query));
+        }
+    }
+    private static Lesuur getNextLesuurInDayCallback(Context context, int day, DateTime time, List<NameValuePair> query) {
+        DatabaseHelper helper = DatabaseManager.getHelper(context);
+        try {
+            Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
+
+            String searchQuery = URLEncodedUtils.format(query, "utf-8");
+            Array<Lesuur> lessenThisWeek = Array.iterableArray(dao.queryForEq("query", searchQuery));
+            return getNextLesuurInDayCallback(day, time, lessenThisWeek);
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
+    private static Lesuur getNextLesuurInDayCallback(int day, DateTime time, Array<Lesuur> lessenThisWeek) {
+        Lesuur baseLesuur = new Lesuur();
+        baseLesuur.uur = 10000; // Vast niet meer uren op een dag...
+        DateTimeComparator comparator = DateTimeComparator.getTimeOnlyInstance();
+
+        Array<Lesuur> lessenThisDay = lessenThisWeek.filter(s -> s.dag == day - 1 && !s.vervallen); // DBcorrectie
+        Array<Lesuur> futureLessen = lessenThisDay.filter(s -> comparator.compare(new DateTime(s.lesStart).plusMinutes(5), time) >= 0);
+        if(futureLessen.isEmpty()) {
+            return null;
+        }
+        return futureLessen.foldLeft((newLes, oldLes) -> newLes.uur < oldLes.uur ? newLes : oldLes, baseLesuur);
+    }
+
+    //endregion
+
+
     public interface RoosterCallback {
         void onCallback(Object data, int urenCount);
+    }
+    public interface ExceptionCallback {
+        void onError(Exception e);
+    }
+    public interface NextUurCallback {
+        void onCallback(Lesuur lesuur);
+    }
+    private static String getDayOfWeek(int dag) {
+        switch (dag) {
+            case Calendar.SUNDAY:
+                return "zondag";
+            case Calendar.MONDAY:
+                return "maandag";
+            case Calendar.TUESDAY:
+                return "dinsdag";
+            case Calendar.WEDNESDAY:
+                return "woensdag";
+            case Calendar.THURSDAY:
+                return "donderdag";
+            case Calendar.FRIDAY:
+                return "vrijdag";
+            case Calendar.SATURDAY:
+                return "zaterdag";
+
+        }
+        return null;
     }
 }

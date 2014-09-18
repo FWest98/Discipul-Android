@@ -4,17 +4,20 @@ import android.content.Context;
 import android.util.Log;
 
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
+import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
-import com.thomasdh.roosterpgplus.util.ExceptionHandler;
 
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Hashtable;
+
+import fj.data.Array;
 
 /**
  * Ophalen van roosterinfo uit opslag of van internet
@@ -23,6 +26,7 @@ public class RoosterInfo {
     private static final String WEKEN_FILENAME = "wekenarray";
     private static final String KLASSEN_FILENAME = "klassenarray";
     private static final String LERAREN_FILENAME = "lerarenarray";
+    private static final String LOKALEN_FILENAME = "lokalenarray";
     private static final String LEERLINGEN_FILENAME = "leerlingenarray";
     private static final String LOADS_FILENAME = "loadshashtable";
     private static final String WEKEN_UREN_FILENAME = "wekenhashtable";
@@ -57,6 +61,15 @@ public class RoosterInfo {
         if(weken == null) weken = new Hashtable<>();
         weken.put(week, urenCount);
         saveInStorage(WEKEN_UREN_FILENAME, context, weken);
+    }
+
+    public static int getCurrentWeek(Context context) {
+        ArrayList<Week> weken = RoosterInfo.<ArrayList<Week>>getFromStorage(WEKEN_FILENAME, context);
+        Array<Integer> weekNummers = Array.iterableArray(weken).map(s -> s.week);
+        Integer currentWeek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+        if(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) currentWeek++;
+        Integer definitiveWeek = currentWeek;
+        return weekNummers.filter(s -> s >= definitiveWeek).foldLeft((a, b) -> a < b ? a : b, 100);
     }
 
     //endregion
@@ -96,6 +109,24 @@ public class RoosterInfo {
     }
 
     //endregion
+    //region Lokalen
+
+    public static void getLokalen(Context context, AsyncActionCallback callback) {
+        if(HelperFunctions.hasInternetConnection(context)) {
+            WebDownloader.getLokalen(lokalen -> {
+                callback.onAsyncActionComplete(lokalen);
+                saveInStorage(LOKALEN_FILENAME, context, lokalen);
+            }, exception -> {
+                Log.e("WebDownloader", "Er ging iets mis het het ophalen van de lokalen", (Exception) exception);
+                ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
+                RoosterInfo.<ArrayList<String>>getOnError(LOKALEN_FILENAME, context, callback);
+            });
+        } else {
+            RoosterInfo.<ArrayList<String>>getOnError(LOKALEN_FILENAME, context, callback);
+        }
+    }
+
+    //endregion
     //region Leerlingen
 
     public static void getLeerlingen(Context context, AsyncActionCallback callback) {
@@ -118,11 +149,12 @@ public class RoosterInfo {
 
     public static Long getLoad(String itemName, Context context) {
         Hashtable<String, Long> loads = getLoads(context);
-        if(loads == null) return null;
-        return loads.get(itemName);
+        if(loads == null) return (long) 0;
+        Long result = loads.get(itemName);
+        return result == null ? Long.valueOf(0) : result;
     }
 
-    public static Hashtable<String, Long> getLoads(Context context) {
+    private static Hashtable<String, Long> getLoads(Context context) {
         return getFromStorage(LOADS_FILENAME, context);
     }
 

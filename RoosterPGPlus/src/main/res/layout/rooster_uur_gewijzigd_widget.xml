@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rooster_uur_linearlayout"
+    android:layout_width="match_parent"
+    android:layout_height="90sp"
+    android:background="@drawable/basic_rect">
+
+    <RelativeLayout
+        android:id="@+id/optioneel_container"
+        android:layout_width="match_parent"
+
+        android:layout_height="90sp"
+        android:paddingLeft="11sp"
+        android:paddingRight="14sp"
+
+        android:paddingTop="8sp">
+
+        <ImageView
+            android:id="@+id/widget_refresh"
+            android:layout_width="20sp"
+            android:layout_height="20sp"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/ic_action_refresh" />
+
+        <TextView
+            android:id="@+id/rooster_vak"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4sp"
+            android:singleLine="true"
+            android:text="@string/rooster_vak"
+            android:textColor="#FF0000"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/rooster_lokaal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/rooster_vak"
+            android:layout_marginBottom="4sp"
+            android:singleLine="true"
+            android:text="@string/rooster_lokaal"
+            android:textColor="#FF0000"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/rooster_leraar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/rooster_vak"
+            android:singleLine="true"
+            android:text="@string/rooster_leraar"
+            android:textColor="#FF0000"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/rooster_tijden"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/rooster_lokaal"
+            android:singleLine="true"
+            android:text="@string/rooster_tijden"
+            android:textColor="#FF0000"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/rooster_notes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/rooster_lokaal"
+            android:singleLine="true"
+            android:textColor="#FF0000"/>
+    </RelativeLayout>
+
+</RelativeLayout>
