@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.+'
+        classpath 'com.android.tools.build:gradle:0.14.0'
         classpath 'me.tatarka:gradle-retrolambda:1.+'
     }
 }
@@ -56,6 +56,7 @@ dependencies {
     compile 'com.netflix.rxjava:rxjava-android:0.19.6'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'joda-time:joda-time:2.4'
+    compile 'com.google.android.apps.dashclock:dashclock-api:+'
 }
 
 retrolambda {

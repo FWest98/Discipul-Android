@@ -44,7 +44,8 @@
         <activity
             android:name=".PreferencesActivity"
             android:label="@string/action_settings"
-            android:theme="@style/PreferenceTheme" />
+            android:theme="@style/PreferenceTheme"
+            android:exported="true"/>
 
         <!-- Receivers -->
         <receiver android:name=".Helpers.InternetConnectionManager$InternetConnectionReceiver" >
@@ -53,7 +54,7 @@
             </intent-filter>
         </receiver>
         <receiver android:name=".Notifications.NextUurNotificationActionReceiver" />
-        <receiver android:name=".WidgetProvider">
+        <receiver android:name=".Notifications.WidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -71,10 +72,21 @@
         -->
 
 
-        <!--
-        Services
-        <service android:name=".Notifications.GCMIntentService"/>
-        -->
+        <!-- Services -->
+        <!--<service android:name=".Notifications.GCMIntentService"/>-->
+        <service android:name=".Notifications.DashClockNextUurService"
+            android:icon="@drawable/ic_notification"
+            android:label="@string/next_uur_dashclock_title"
+            android:permission="com.google.android.apps.dashclock.permission.READ_EXTENSION_DATA">
+
+            <intent-filter>
+                <action android:name="com.google.android.apps.dashclock.Extension"/>
+            </intent-filter>
+            <meta-data android:name="protocolVersion" android:value="2"/>
+            <meta-data android:name="worldReadable" android:value="true"/>
+            <meta-data android:name="description" android:value="Een weergave van de volgende les"/>
+            <meta-data android:name="settingsActivity" android:value=".PreferencesActivity"/>
+        </service>
 
 
         <!-- Providers -->

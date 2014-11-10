@@ -91,7 +91,7 @@ public class Rooster {
     private static void saveRoosterInDatabase(List<Lesuur> lessen, String query, Context context) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
-            Dao<Lesuur, ?> dao = helper.getDao(Lesuur.class);
+            Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
 
             // Huidige lessen verwijderen
             DeleteBuilder<Lesuur, ?> deleteBuilder = dao.deleteBuilder();

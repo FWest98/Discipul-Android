@@ -1,4 +1,4 @@
-package com.thomasdh.roosterpgplus;
+package com.thomasdh.roosterpgplus.Notifications;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -11,6 +11,8 @@ import android.widget.RemoteViews;
 
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
+import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.RoosterActivity;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
