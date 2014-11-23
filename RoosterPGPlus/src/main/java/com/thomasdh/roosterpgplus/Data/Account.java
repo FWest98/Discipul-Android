@@ -747,9 +747,14 @@ public class Account {
                 HttpResponse response = callbacks.onRequestCreate(httpClient);
 
                 String content = "";
-                Scanner scanner = new Scanner(response.getEntity().getContent());
-                while (scanner.hasNext()) {
-                    content += scanner.nextLine();
+                try {
+                    Scanner scanner = new Scanner(response.getEntity().getContent());
+                    while (scanner.hasNext()) {
+                        content += scanner.nextLine();
+                    }
+                } catch(Exception e) {
+                    // No content
+                    // continue normally
                 }
 
                 return callbacks.onRequestComplete(content, response.getStatusLine().getStatusCode());

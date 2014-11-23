@@ -42,7 +42,7 @@ public class WidgetProvider extends AppWidgetProvider {
             views = new RemoteViews(context.getPackageName(), R.layout.rooster_uur_widget);
         }
 
-        if(nextLes.verplaatsing) {
+        if(nextLes.verplaatsing || nextLes.verandering) {
             views.setTextColor(R.id.rooster_lokaal, Color.parseColor("#FF0000"));
         } else {
             views.setTextColor(R.id.rooster_lokaal, Color.parseColor("#000000"));

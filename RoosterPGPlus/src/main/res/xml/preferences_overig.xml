@@ -6,4 +6,10 @@
         android:key="animaties"
         android:title="Animaties"
         android:summary="Gebruik alle animaties in de app" />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="forcePhonelayout"
+        android:title="Forceer telefoonindeling"
+        android:summary="Toon de telefoonindeling ook op tablets" />
 </PreferenceScreen>
