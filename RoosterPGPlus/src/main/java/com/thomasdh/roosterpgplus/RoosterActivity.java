@@ -164,8 +164,14 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 super.onDrawerClosed(view);
                 if(getSelectedWeek() == -1) return;
                 if(isRooster) {
-                    getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-                    getSupportActionBar().setDisplayShowTitleEnabled(false);
+                    if(actionBarSpinnerAdapter.getCount() < 1) {
+                        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+                        getSupportActionBar().setDisplayShowTitleEnabled(false);
+                    } else {
+                        getSupportActionBar().setTitle(R.string.app_name);
+                        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+                        getSupportActionBar().setDisplayShowTitleEnabled(true);
+                    }
                 } else {
                     getSupportActionBar().setTitle("PGTV - "+((PGTVRoosterFragment) mainFragment).getType().toDesc());
                 }
