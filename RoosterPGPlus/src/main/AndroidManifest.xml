@@ -2,28 +2,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.thomasdh.roosterpgplus"
     android:installLocation="auto"
-    android:versionCode="13"
-    android:versionName="2.1.0" >
+    android:versionCode="15"
+    android:versionName="2.2.0" >
 
     <permission android:name="com.thomasdh.roosterpgplus.permission.SEARCH" android:protectionLevel="signature"/>
+    <permission android:name="com.thomasdh.roosterpgplus.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="com.thomasdh.roosterpgplus.permission.SEARCH" />
-    <!--
+
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
-    
-    <permission android:name="com.thomasdh.roosterpgplus.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
     <uses-permission android:name="com.thomasdh.roosterpgplus.permission.C2D_MESSAGE"/>
-    -->
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
+        android:name="android.support.multidex.MultiDexApplication"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
 
         <!-- Activities -->
         <activity
@@ -61,19 +62,16 @@
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/appwidget" />
         </receiver>
-
-        <!--
         <receiver android:name=".Notifications.GCMBroadcastReceiver" android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
                 <category android:name="com.thomasdh.roosterpgplus"/>
             </intent-filter>
         </receiver>
-        -->
 
 
         <!-- Services -->
-        <!--<service android:name=".Notifications.GCMIntentService"/>-->
+        <service android:name=".Notifications.GCMIntentService"/>
         <service android:name=".Notifications.DashClockNextUurService"
             android:icon="@drawable/ic_notification"
             android:label="@string/next_uur_dashclock_title"

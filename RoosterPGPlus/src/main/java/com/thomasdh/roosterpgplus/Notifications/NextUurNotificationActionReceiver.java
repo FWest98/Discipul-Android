@@ -11,8 +11,11 @@ import android.support.v4.app.NotificationCompat;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.RoosterActivity;
 
 import org.joda.time.DateTime;
+
+import java.util.Calendar;
 
 public class NextUurNotificationActionReceiver extends BroadcastReceiver {
     private static int notificationID = 0;
@@ -33,19 +36,26 @@ public class NextUurNotificationActionReceiver extends BroadcastReceiver {
         String info = Rooster.getNextLesuurText(nextLesuur);
         String title = "Volgende les: " + nextLesuur.vak;
 
+        Intent contentIntent = new Intent(context, RoosterActivity.class);
+        PendingIntent contentPendingIntent = PendingIntent.getActivity(context, 0, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         /* Maak de notificatie :D */
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-            .setContentTitle(title)
-            .setContentText(info)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentTitle(title)
+                .setContentText(info)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(contentPendingIntent)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(info));
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationID, builder.build());
 
         // Set de volgende check
+        int year = nextLesuur.week < Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) ? /* nieuw jaar */ DateTime.now().getYear() + 1 : DateTime.now().getYear();
         DateTime notificationDate = DateTime.now()
+                .withYear(year)
                 .withWeekOfWeekyear(nextLesuur.week)
                 .withDayOfWeek(nextLesuur.dag)
                 .withTime(

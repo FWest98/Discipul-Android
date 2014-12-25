@@ -36,38 +36,38 @@ public class Rooster {
     public static void getRooster(List<NameValuePair> query, RoosterViewFragment.LoadType type, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
         if(HelperFunctions.hasInternetConnection(context)) {
             if (type == RoosterViewFragment.LoadType.ONLINE) {
-                getRoosterFromInternet(query, false, context, callback, exceptionCallback);
+                getRoosterFromInternet(query, false, context, callback, exceptionCallback, false);
             } else if (type == RoosterViewFragment.LoadType.NEWONLINE) {
-                getRoosterFromInternet(query, true, context, callback, exceptionCallback);
+                getRoosterFromInternet(query, true, context, callback, exceptionCallback, false);
             } else if(type == RoosterViewFragment.LoadType.REFRESH) {
-                getRoosterFromInternet(query, false, context, callback, exceptionCallback);
+                getRoosterFromInternet(query, false, context, callback, exceptionCallback, false);
             } else {
-                getRoosterFromDatabase(query, context, callback, exceptionCallback);
+                getRoosterFromDatabase(query, context, callback, exceptionCallback, false);
             }
         } else if(type == RoosterViewFragment.LoadType.OFFLINE || type == RoosterViewFragment.LoadType.NEWONLINE) {
-            getRoosterFromDatabase(query, context, callback, exceptionCallback);
+            getRoosterFromDatabase(query, context, callback, exceptionCallback, false);
         } else {
             ExceptionHandler.handleException(new Exception("Kon rooster niet laden, er is geen internetverbinding"), context, ExceptionHandler.HandleType.SIMPLE);
             exceptionCallback.onError(null);
         }
     }
 
-    private static void getRoosterFromInternet(List<NameValuePair> query, boolean hasRoosterInDatabase, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
+    private static void getRoosterFromInternet(List<NameValuePair> query, boolean hasRoosterInDatabase, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback, boolean silent) {
         String url = "rooster?"+ URLEncodedUtils.format(query, "utf-8");
 
-        WebDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback), exception -> {
-            Log.e("RoosterDownloader", "Er ging iets mis met het ophalen van het rooster", (Exception) exception);
+        WebDownloader.getRooster(url, result -> parseRooster((String) result, query, context, callback, silent), exception -> {
+            Log.w("RoosterDownloader", "Er ging iets mis met het ophalen van het rooster", (Exception) exception);
             if (hasRoosterInDatabase) {
-                ExceptionHandler.handleException(new Exception("Geen internetverbinding, oude versie van het rooster!"), context, ExceptionHandler.HandleType.SIMPLE);
-                getRoosterFromDatabase(query, context, callback, exceptionCallback);
+                if(!silent) ExceptionHandler.handleException(new Exception("Kon het rooster niet ophalen, oude rooster geladen. (" + ((Exception) exception).getMessage() + ")", (Exception) exception), context, ExceptionHandler.HandleType.SIMPLE);
+                getRoosterFromDatabase(query, context, callback, exceptionCallback, silent);
             } else {
-                ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
+                if(!silent) ExceptionHandler.handleException(new Exception("Kon het rooster niet ophalen, geen rooster geladen. (" + ((Exception) exception).getMessage() + ")", (Exception) exception), context, ExceptionHandler.HandleType.SIMPLE);
                 exceptionCallback.onError(null);
             }
         });
     }
 
-    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback) {
+    private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback, boolean silent) {
         DatabaseHelper helper = DatabaseManager.getHelper(context);
         try {
             Dao<Lesuur, ?> dao = helper.getDaoWithCache(Lesuur.class);
@@ -79,7 +79,7 @@ public class Rooster {
             callback.onCallback(lessen, RoosterInfo.getWeekUrenCount(context, week));
         } catch (SQLException e) {
             Log.e("SQL ERROR", e.getMessage(), e);
-            ExceptionHandler.handleException(new Exception("Opslagfout, er is geen rooster geladen"), context, ExceptionHandler.HandleType.SIMPLE);
+            if(!silent) ExceptionHandler.handleException(new Exception("Opslagfout, er is geen rooster geladen"), context, ExceptionHandler.HandleType.SIMPLE);
             exceptionCallback.onError(e);
 
         } catch (Exception e) {
@@ -110,7 +110,7 @@ public class Rooster {
         }
     }
 
-    private static void parseRooster(String JSON, List<NameValuePair> query, Context context, RoosterCallback callback) {
+    private static void parseRooster(String JSON, List<NameValuePair> query, Context context, RoosterCallback callback, boolean silent) {
         try {
             String queryString = URLEncodedUtils.format(query, "utf-8");
             List<Lesuur> lessen = new ArrayList<>();
@@ -119,6 +119,19 @@ public class Rooster {
             JSONObject rooster = new JSONObject(JSON);
 
             JSONArray JSONlessen = rooster.getJSONArray("lessen");
+
+            if(JSONlessen.length() == 0) {
+                // Er moet iets fout zijn.... dus uit geheugen halen....
+                getRoosterFromDatabase(query, context, (data, urenCount) -> {
+                    if(urenCount == 0 && !silent) ExceptionHandler.handleException(new Exception("Rooster wordt opnieuw opgehaald... Probeer het later opnieuw."), context, ExceptionHandler.HandleType.SIMPLE);
+                    else ExceptionHandler.handleException(new Exception("Rooster wordt opnieuw opgehaald. Oud rooster wordt getoond"), context, ExceptionHandler.HandleType.SIMPLE);
+                    callback.onCallback(data, urenCount);
+                }, e -> {
+                    if(!silent) ExceptionHandler.handleException(new Exception("Rooster wordt opnieuw opgehaald... Probeer het later opnieuw"), context, ExceptionHandler.HandleType.SIMPLE);
+                }, silent);
+                return;
+            }
+
             for(int i = 0; i < JSONlessen.length(); i++) {
                 JSONObject JSONLes = JSONlessen.getJSONObject(i);
                 Lesuur les = new Lesuur(JSONLes, context, queryString);
@@ -133,9 +146,10 @@ public class Rooster {
             saveRoosterInDatabase(lessen, queryString, context);
         } catch (JSONException e) {
             Log.e("JSON ERROR", e.getMessage(), e);
-            ExceptionHandler.handleException(new Exception("Fout bij het verwerken van het rooster"), context, ExceptionHandler.HandleType.SIMPLE);
+            if(!silent) ExceptionHandler.handleException(new Exception("Fout bij het verwerken van het rooster", e), context, ExceptionHandler.HandleType.SIMPLE);
         } catch (Exception e) {
             Log.e("Callback error", e.getMessage(), e);
+            if(!silent) ExceptionHandler.handleException(new Exception("Fout bij het verwerken van het rooster: " + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
         }
     }
 
@@ -163,7 +177,7 @@ public class Rooster {
         int currentDay = now.get(Calendar.DAY_OF_WEEK);
         int newDay;
         if(currentWeek != weekToGet) {
-            // Het is weekend, dus maandag is de dag en een correctie voor de DB
+            // Het is een veranderde week (vakantie / weekend), dus maandag is de dag en een correctie voor de DB
             newDay = Calendar.MONDAY;
 
             DateTime timeToGet = DateTime.now()
@@ -195,7 +209,7 @@ public class Rooster {
     }
 
     private static void getNextLesuurInDay(Context context, int week, int day, DateTime time, NextUurCallback callback) {
-        Account.initialize(context);
+        Account.initialize(context, false);
 
         List<NameValuePair> query = new ArrayList<>();
         query.add(new BasicNameValuePair("week", Integer.toString(week)));
@@ -203,7 +217,7 @@ public class Rooster {
 
         if (HelperFunctions.hasInternetConnection(context)) {
             // Herladen van het rooster FTW
-            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data))), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)));
+            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data))), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)), true);
         } else {
             callback.onCallback(getNextLesuurInDayCallback(context, day, time, query));
         }

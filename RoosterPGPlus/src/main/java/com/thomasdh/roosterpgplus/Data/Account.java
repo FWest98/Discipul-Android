@@ -1,5 +1,6 @@
 package com.thomasdh.roosterpgplus.Data;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,35 +14,37 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TabHost;
 
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
 import com.thomasdh.roosterpgplus.R;
-import com.thomasdh.roosterpgplus.Settings.Settings;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import lombok.Getter;
 
 @SuppressWarnings("UnusedDeclaration")
 public class Account {
     @Getter private static boolean isSet;
+    @Getter private static boolean isHandlingNewVersion;
     @Getter private static String name;
     @Getter private static String apiKey;
     @Getter private static boolean isAppAccount;
@@ -65,26 +68,60 @@ public class Account {
     //region Initialize
 
     public static void initialize(Context context) {
+        initialize(context, true);
+    }
+
+    public static void initialize(Context context, boolean showUI) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+
         currentVersion = 0;
         int oldVersion;
+
         try {
             currentVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
         } catch (PackageManager.NameNotFoundException e) {
             Log.e("Account", e.getMessage(), e);
         }
-        if((oldVersion = pref.getInt("oldVersion", currentVersion)) != currentVersion) {
+
+        if((oldVersion = pref.getInt("oldVersion", currentVersion)) != currentVersion && !isHandlingNewVersion) {
             // Er was een updatesel
             int[] breakingVersions = context.getResources().getIntArray(R.array.breaking_account_versions);
             for(int version : breakingVersions) {
                 if(currentVersion >= version && oldVersion < version) { // breaking changes
-                    isSet = false;
-                    userType = UserType.NO_ACCOUNT;
-                    ExceptionHandler.handleException(new Exception("Wijzigingen in de app vereisen opnieuw inloggen"), context, ExceptionHandler.HandleType.SIMPLE);
-                    return;
+                    switch(version) {
+                        case 6: {
+                            isSet = false;
+                            isHandlingNewVersion = true;
+                            userType = UserType.NO_ACCOUNT;
+                            ExceptionHandler.handleException(new Exception("Wijzigingen in de app vereisen opnieuw inloggen"), context, ExceptionHandler.HandleType.SIMPLE);
+                            return;
+                        }
+                        case 14: {
+                            // Vragen voor nieuwe meldingen
+                            if(!showUI || !HelperFunctions.checkPlayServices(context)) break;
+                            isHandlingNewVersion = true;
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                                    .setTitle("Wil je pushmeldingen inschakelen?")
+                                    .setMessage("Vanaf nu kan je pushmeldingen ontvangen bij roosterwijzigingen op dezelfde dag. Wil je deze inschakelen?")
+                                    .setPositiveButton("Inschakelen", (dialog, which) -> {
+                                        Account.getInstance(context, showUI).registerGCM();
+
+                                        pref.edit().putInt("oldVersion", currentVersion).commit();
+                                        isHandlingNewVersion = false;
+                                    })
+                                    .setNegativeButton("Negeren", (dialog, which) -> {
+                                        pref.edit().putInt("oldVersion", currentVersion).commit();
+                                        isHandlingNewVersion = false;
+                                    });
+
+                            builder.show();
+                        }
+                    }
                 }
             }
         }
+
         String key;
         if((key = pref.getString("key", null)) == null) {
             isSet = false;
@@ -109,59 +146,73 @@ public class Account {
         }
     }
 
-    private void processJSON(String JSON, boolean isAppAccount) throws JSONException {
-        JSONObject base = new JSONObject(JSON);
-        SharedPreferences.Editor pref = PreferenceManager.getDefaultSharedPreferences(context).edit();
+    private void processJSON(String JSON, boolean isAppAccount, Activity activity) throws JSONException {
+        if(isSet()) logout(s -> {
+            JSONObject base = new JSONObject(JSON);
+            SharedPreferences.Editor pref = PreferenceManager.getDefaultSharedPreferences(context).edit();
 
-        apiKey = base.getString("key");
-        pref.putString("key", apiKey);
+            apiKey = base.getString("key");
+            pref.putString("key", apiKey);
 
-        name = base.getString("naam");
-        pref.putString("naam", name);
+            name = base.getString("naam");
+            pref.putString("naam", name);
 
-        Account.isAppAccount = isAppAccount;
-        pref.putBoolean("appaccount", isAppAccount);
+            Account.isAppAccount = isAppAccount;
+            pref.putBoolean("appaccount", isAppAccount);
 
-        isSet = true;
+            isSet = true;
 
-        pref.putInt("oldVersion", currentVersion);
+            pref.putInt("oldVersion", currentVersion);
+            isHandlingNewVersion = false;
 
-        if(base.has("code")) {
-            // LERAAR
-            userType = UserType.LERAAR;
+            if (base.has("code")) {
+                // LERAAR
+                userType = UserType.LERAAR;
 
-            leraarCode = base.getString("code");
-            pref.putString("code", leraarCode);
-        } else {
-            // LEERLING
-            userType = UserType.LEERLING;
+                leraarCode = base.getString("code");
+                pref.putString("code", leraarCode);
+            } else {
+                // LEERLING
+                userType = UserType.LEERLING;
 
-            leerlingKlas = base.getJSONObject("klas").getString("klasnaam");
-            pref.putString("klas", leerlingKlas);
+                leerlingKlas = base.getJSONObject("klas").getString("klasnaam");
+                pref.putString("klas", leerlingKlas);
 
-            isVertegenwoordiger = base.getBoolean("vertegenwoordiger");
-            pref.putBoolean("isVertegenwoordiger", isVertegenwoordiger);
-        }
+                isVertegenwoordiger = base.getBoolean("vertegenwoordiger");
+                pref.putBoolean("isVertegenwoordiger", isVertegenwoordiger);
+            }
 
-        pref.commit();
+            pref.apply();
 
-        ExceptionHandler.handleException(new Exception("Welkom, "+getName()), context, ExceptionHandler.HandleType.SIMPLE);
+            ExceptionHandler.handleException(new Exception("Welkom, " + getName()), context, ExceptionHandler.HandleType.SIMPLE);
 
-        NextUurNotifications.disableNotifications(context);
-        new NextUurNotifications(context);
+            NextUurNotifications.disableNotifications(context);
+            new NextUurNotifications(context);
+
+            registerGCM();
+        });
     }
 
     //endregion
     //region Constructors
 
     private Account(Context context) {
-        initialize(context);
+        initialize(context, true);
+        this.context = context;
+    }
+
+    private Account(Context context, boolean showUI) {
+        initialize(context, showUI);
         this.context = context;
     }
 
     public static Account getInstance(Context context) {
+        return getInstance(context, true);
+    }
+
+    public static Account getInstance(Context context, boolean showUI) {
         if(instance == null || !context.equals(instance.context)) {
-            instance = new Account(context);
+            instance = new Account(context, showUI);
         }
         return instance;
     }
@@ -171,10 +222,18 @@ public class Account {
     //region Login
 
     public void login(AsyncActionCallback callback) {
-        login(callback, result -> {});
+        login((Activity) null, callback);
     }
 
     public void login(AsyncActionCallback callback, AsyncActionCallback cancelCallback) {
+        login(null, callback, cancelCallback);
+    }
+
+    public void login(Activity activity, AsyncActionCallback callback) {
+        login(activity, callback, result -> {});
+    }
+
+    public void login(Activity activity, AsyncActionCallback callback, AsyncActionCallback cancelCallback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.logindialog, null);
@@ -201,7 +260,7 @@ public class Account {
 
         AlertDialog loginDialog = builder.create();
         loginDialog.show();
-        loginDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(v -> register(result -> { loginDialog.dismiss(); callback.onAsyncActionComplete(result); }));
+        loginDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(v -> register(activity, result -> { loginDialog.dismiss(); callback.onAsyncActionComplete(result); }));
         loginDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v -> {
             loginDialog.dismiss();
             try {
@@ -222,7 +281,7 @@ public class Account {
                         if ("".equals(username)) throw new Exception("Gebruikersnaam is verplicht!");
                         if ("".equals(password)) throw new Exception("Wachtwoord is verplicht!");
 
-                        login(username, password, result -> {
+                        login(activity, username, password, result -> {
                             loginDialog.dismiss();
                             callback.onAsyncActionComplete(result);
                         });
@@ -231,7 +290,7 @@ public class Account {
                     case 1:
                         if ("".equals(llnrString)) throw new Exception("Leerlingnummer is verplicht!");
 
-                        login(llnrString, false, result -> {
+                        login(activity, llnrString, false, result -> {
                             loginDialog.dismiss();
                             callback.onAsyncActionComplete(result);
                         });
@@ -253,32 +312,37 @@ public class Account {
         loginDialog.setOnDismissListener(dialog -> InternetConnectionManager.unregisterListener(loginInternetListenerName));
     }
 
-    private void login(String username, String password, AsyncActionCallback callback) {
+    private void login(Activity activity, String username, String password, AsyncActionCallback callback) {
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
-            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
-                HttpPost httpPost = new HttpPost(Settings.API_Base_URL + "account/login");
-
+            public HttpURLConnection onCreateConnection() throws Exception {
                 List<NameValuePair> postParamaters = new ArrayList<>();
                 postParamaters.add(new BasicNameValuePair("username", username));
                 postParamaters.add(new BasicNameValuePair("password", password));
                 UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParamaters);
-                httpPost.setEntity(entity);
 
-                return client.execute(httpPost);
+                URL url = new URL(Constants.HTTP_BASE + "account/login");
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+
+                connection.setDoOutput(true);
+                connection.setFixedLengthStreamingMode((int) entity.getContentLength());
+
+                entity.writeTo(connection.getOutputStream());
+
+                return connection;
             }
 
             @Override
-            public Object onRequestComplete(String data, int status) throws Exception {
+            public String onValidateResponse(String data, int status) throws Exception {
                 switch(status) {
-                    case 400:
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
                         throw new Exception("Missende gegevens");
-                    case 401:
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
                         throw new Exception("Ongeldige logingegevens");
-                    case 500:
+                    case HttpURLConnection.HTTP_INTERNAL_ERROR:
                         Log.e("AccountWebRequest", data);
                         throw new Exception("Serverfout");
-                    case 200:
+                    case HttpURLConnection.HTTP_OK:
                         if("".equals(data)) throw new Exception("Onbekende fout. Probeer het opnieuw");
                         return data;
                     default:
@@ -287,10 +351,9 @@ public class Account {
             }
 
             @Override
-            public void onDataHandle(Object data) {
+            public void onProcessData(String data) {
                 try {
-                    String JSON = (String) data;
-                    processJSON(JSON, false);
+                    processJSON(data, false, activity);
                     callback.onAsyncActionComplete(data);
                 } catch(Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij het inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
@@ -306,35 +369,36 @@ public class Account {
         new WebActions().execute(webRequestCallbacks);
     }
 
-    private void login(String llnr, boolean force, AsyncActionCallback callback) {
+    private void login(Activity activity, String llnr, boolean force, AsyncActionCallback callback) {
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
-            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
-                String url = Settings.API_Base_URL + "account/login";
-                if(force) {
-                    url += "?force";
-                }
-                HttpPost httpPost = new HttpPost(url);
-
+            public HttpURLConnection onCreateConnection() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("llnr", llnr));
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
-                httpPost.setEntity(entity);
+                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                return client.execute(httpPost);
+                URL url = new URL(Constants.HTTP_BASE + "account/login" + (force ? "?force" : ""));
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+
+                connection.setDoOutput(true);
+                connection.setFixedLengthStreamingMode((int) data.getContentLength());
+
+                data.writeTo(connection.getOutputStream());
+
+                return connection;
             }
 
             @Override
-            public Object onRequestComplete(String data, int status) throws Exception {
+            public String onValidateResponse(String data, int status) throws Exception {
                 switch(status) {
-                    case 400:
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
                         throw new Exception("Missende gegevens");
-                    case 204:
+                    case HttpURLConnection.HTTP_NO_CONTENT:
                         throw new IllegalArgumentException("Deze gebruiker bestaat al");
-                    case 500:
+                    case HttpURLConnection.HTTP_INTERNAL_ERROR:
                         Log.e("AccountWebRequest", data);
                         throw new Exception("Serverfout");
-                    case 200:
+                    case HttpURLConnection.HTTP_OK:
                         if("".equals(data)) throw new Exception("Onbekende fout. Probeer het opnieuw");
                         return data;
                     default:
@@ -343,10 +407,9 @@ public class Account {
             }
 
             @Override
-            public void onDataHandle(Object data) {
+            public void onProcessData(String data) {
                 try {
-                    String JSON = (String) data;
-                    processJSON(JSON, true);
+                    processJSON(data, true, activity);
                     callback.onAsyncActionComplete(data);
                 } catch(Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij het inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
@@ -362,7 +425,7 @@ public class Account {
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
                     builder.setTitle(R.string.logindialog_warning_title);
                     builder.setMessage(R.string.logindialog_warning_text);
-                    builder.setPositiveButton(R.string.logindialog_warning_submitButton, (dialog, which) -> login(llnr, true, callback));
+                    builder.setPositiveButton(R.string.logindialog_warning_submitButton, (dialog, which) -> login(activity, llnr, true, callback));
                     builder.setNegativeButton(R.string.logindialog_warning_cancelButton, (dialog, which) -> {});
 
                     builder.show();
@@ -379,6 +442,10 @@ public class Account {
     //region Register
 
     public void register(AsyncActionCallback callback) {
+        register(null, callback);
+    }
+
+    public void register(Activity activity, AsyncActionCallback callback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.registerdialog, null);
@@ -404,7 +471,7 @@ public class Account {
                 if(!password.equals(repass)) throw new Exception("Wachtwoorden moeten gelijk zijn!");
                 if ("".equals(llnr)) throw new Exception("Leerlingnummer is verplicht!");
 
-                register(username, password, llnr, email, false, result -> {
+                register(activity, username, password, llnr, email, false, result -> {
                     registerDialog.dismiss();
                     callback.onAsyncActionComplete(result);
                 });
@@ -418,41 +485,41 @@ public class Account {
         registerDialog.setOnDismissListener(dialog -> InternetConnectionManager.unregisterListener(registerInternetListenerName));
     }
 
-    private void register(String username, String password, String llnr, String email, boolean force, AsyncActionCallback callback) {
+    private void register(Activity activity, String username, String password, String llnr, String email, boolean force, AsyncActionCallback callback) {
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
-            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
-                String url = Settings.API_Base_URL + "account/register";
-                if(force) {
-                    url += "?force";
-                }
-                HttpPost httpPost = new HttpPost(url);
-
+            public HttpURLConnection onCreateConnection() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("username", username));
                 postParameters.add(new BasicNameValuePair("password", password));
                 postParameters.add(new BasicNameValuePair("llnr", llnr));
                 postParameters.add(new BasicNameValuePair("email", email));
+                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
-                httpPost.setEntity(entity);
+                URL url = new URL(Constants.HTTP_BASE + "account/register" + (force ? "?force" : ""));
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 
-                return client.execute(httpPost);
+                connection.setDoOutput(true);
+                connection.setFixedLengthStreamingMode((int) data.getContentLength());
+
+                data.writeTo(connection.getOutputStream());
+
+                return connection;
             }
 
             @Override
-            public Object onRequestComplete(String data, int status) throws Exception {
+            public String onValidateResponse(String data, int status) throws Exception {
                 switch(status) {
-                    case 204:
+                    case HttpURLConnection.HTTP_NO_CONTENT:
                         throw new IllegalArgumentException("Deze gebruiker bestaat al");
-                    case 400:
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
                         throw new Exception("Missende gegevens");
-                    case 500:
+                    case HttpURLConnection.HTTP_INTERNAL_ERROR:
                         Log.e("AccountWebReuest", data);
                         throw new Exception("Serverfout");
-                    case 409:
+                    case HttpURLConnection.HTTP_CONFLICT:
                         throw new Exception("Deze gebruikersnaam is al in gebruik!");
-                    case 200:
+                    case HttpURLConnection.HTTP_OK:
                         if("".equals(data)) throw new Exception("Onbekende fout");
                         return data;
                     default:
@@ -461,10 +528,9 @@ public class Account {
             }
 
             @Override
-            public void onDataHandle(Object data) {
+            public void onProcessData(String data) {
                 try {
-                    String JSON = (String) data;
-                    processJSON(JSON, true);
+                    processJSON(data, true, activity);
                     callback.onAsyncActionComplete(data);
                 } catch (Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij registreren", e), context, ExceptionHandler.HandleType.SIMPLE);
@@ -480,7 +546,7 @@ public class Account {
                     builder.setTitle(R.string.logindialog_warning_title);
                     builder.setMessage(R.string.logindialog_warning_text);
 
-                    builder.setPositiveButton(R.string.logindialog_warning_submitButton, (dialog, which) -> register(username, password, llnr, email, true, callback));
+                    builder.setPositiveButton(R.string.logindialog_warning_submitButton, (dialog, which) -> register(activity, username, password, llnr, email, true, callback));
                     builder.setNegativeButton(R.string.logindialog_cancelbutton, (dialog, which) -> {});
                 } catch(Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij registreren:" + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
@@ -543,36 +609,40 @@ public class Account {
     private void extend(String username, String password, String email, AsyncActionCallback callback) {
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
-            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
-                HttpPost httpPost = new HttpPost(Settings.API_Base_URL + "account/extend");
-
+            public HttpURLConnection onCreateConnection() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("username", username));
                 postParameters.add(new BasicNameValuePair("password", password));
                 postParameters.add(new BasicNameValuePair("email", email));
                 postParameters.add(new BasicNameValuePair("key", apiKey));
+                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
-                httpPost.setEntity(entity);
+                URL url = new URL(Constants.HTTP_BASE + "account/extend");
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 
-                return client.execute(httpPost);
+                connection.setDoOutput(true);
+                connection.setFixedLengthStreamingMode((int) data.getContentLength());
+
+                data.writeTo(connection.getOutputStream());
+
+                return connection;
             }
 
             @Override
-            public Object onRequestComplete(String data, int status) throws Exception {
+            public String onValidateResponse(String data, int status) throws Exception {
                 switch(status) {
-                    case 401:
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
                         throw new Exception("Fout bij upgraden. Log opnieuw in en probeer het opnieuw");
-                    case 400:
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
                         throw new Exception("Missende gegevens. Log opnieuw in en probeer het opnieuw");
-                    case 409:
+                    case HttpURLConnection.HTTP_CONFLICT:
                         throw new Exception("Deze gebruikersnaam is al in gebruik!");
-                    case 405:
+                    case HttpURLConnection.HTTP_BAD_METHOD:
                         throw new Exception("Dit account is al opgewaardeerd! Log opnieuw in");
-                    case 500:
+                    case HttpURLConnection.HTTP_INTERNAL_ERROR:
                         Log.e("AccountWebRequest", data);
                         throw new Exception("Serverfout");
-                    case 200:
+                    case HttpURLConnection.HTTP_OK:
                         return data;
                     default:
                         throw new Exception("Onbekende fout");
@@ -580,7 +650,7 @@ public class Account {
             }
 
             @Override
-            public void onDataHandle(Object data) {
+            public void onProcessData(String data) {
                 PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean("appaccount", false).commit();
                 isAppAccount = false;
                 try {
@@ -600,6 +670,122 @@ public class Account {
     }
 
     //endregion
+    //region GCM
+
+    public void registerGCM() {
+        registerGCM(null);
+    }
+
+    public void registerGCM(Activity activity) {
+        if(activity == null) {
+            if(!HelperFunctions.checkPlayServices(context)) return;
+        } else {
+            if (!HelperFunctions.checkPlayServicesWithError(activity)) return;
+        }
+
+        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
+
+        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+            @Override
+            public HttpURLConnection onCreateConnection() throws Exception {
+                String regKey = gcm.register(Constants.PLAY_SERVICES_SENDER_ID);
+
+                URL url = new URL(Constants.HTTP_BASE + "account/gcm");
+
+                List<NameValuePair> postParameters = new ArrayList<>();
+                postParameters.add(new BasicNameValuePair("key", getApiKey()));
+                postParameters.add(new BasicNameValuePair("GCM", regKey));
+                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
+
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+
+                connection.setDoOutput(true);
+                connection.setFixedLengthStreamingMode((int) data.getContentLength());
+
+                data.writeTo(connection.getOutputStream());
+
+                return connection;
+            }
+
+            @Override
+            public String onValidateResponse(String data, int status) throws Exception {
+                switch (status) {
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
+                    case HttpURLConnection.HTTP_NOT_FOUND:
+                        throw new Exception("Foute gegevens. Log opnieuw in.");
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
+                    case HttpURLConnection.HTTP_INTERNAL_ERROR:
+                        throw new Exception("Interne fout. Probeer het later nogmaals.");
+                    case HttpURLConnection.HTTP_NO_CONTENT:
+                    case HttpURLConnection.HTTP_OK:
+                        return data;
+                    default:
+                        throw new Exception("Onbekende fout");
+                }
+            }
+
+            @Override
+            public void onProcessData(String data) {
+                // success!
+            }
+
+            @Override
+            public void onError(Exception e) {
+                ExceptionHandler.handleException(new Exception("Fout bij aanmelden pushnotificaties: "+ e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        };
+
+        new WebActions().execute(webRequestCallbacks);
+    }
+
+    //endregion
+    //region Logout
+
+    public void logout(AsyncActionCallback callback) {
+        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+            @Override
+            public HttpURLConnection onCreateConnection() throws Exception {
+                URL url = new URL(Constants.HTTP_BASE + "account/logout");
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+
+                UrlEncodedFormEntity data = new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair("key", getApiKey())));
+
+                connection.setFixedLengthStreamingMode((int) data.getContentLength());
+                connection.setDoOutput(true);
+
+                data.writeTo(connection.getOutputStream());
+
+                return connection;
+            }
+
+            @Override
+            public String onValidateResponse(String data, int status) throws Exception {
+                return data;
+            }
+
+            @Override
+            public void onProcessData(String data) {
+                try {
+                    callback.onAsyncActionComplete(null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                try {
+                    callback.onAsyncActionComplete(null);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
+        };
+
+        new WebActions().execute(webRequestCallbacks);
+    }
+
+    //endregion
 
     //region Subklassen
     //region get
@@ -607,28 +793,24 @@ public class Account {
     public void getSubklassen(boolean all, AsyncActionCallback callback) {
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
-            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
-                String url = Settings.API_Base_URL + "account/clusterklassen?key="+apiKey;
-                if(all) {
-                    url += "&all";
-                }
-                HttpGet httpGet = new HttpGet(url);
-                return client.execute(httpGet);
+            public HttpURLConnection onCreateConnection() throws Exception {
+                URL url = new URL(Constants.HTTP_BASE + "account/clusterklassen?key=" + apiKey + (all ? "&all" : ""));
+                return (HttpURLConnection) url.openConnection();
             }
 
             @Override
-            public Object onRequestComplete(String data, int status) throws Exception {
+            public String onValidateResponse(String data, int status) throws Exception {
                 switch(status) {
-                    case 401:
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
                         throw new Exception("Foute gegevens. Log opnieuw in");
-                    case 404:
+                    case HttpURLConnection.HTTP_NOT_FOUND:
                         throw new Exception("Gebruiker niet gevonden. Log opnieuw in");
-                    case 405:
+                    case HttpURLConnection.HTTP_BAD_METHOD:
                         throw new Exception("Hiervoor moet je leerling zijn");
-                    case 500:
+                    case HttpURLConnection.HTTP_INTERNAL_ERROR:
                         Log.e("AccountWebRequest", data);
                         throw new Exception("Serverfout");
-                    case 200:
+                    case HttpURLConnection.HTTP_OK:
                         if("".equals(data)) throw new Exception("Onbekende fout");
                         return data;
                     default:
@@ -637,10 +819,10 @@ public class Account {
             }
 
             @Override
-            public void onDataHandle(Object data) {
+            public void onProcessData(String data) {
                 try {
                     ArrayList<Subklas> subklassen = new ArrayList<>();
-                    JSONArray jsonArray = new JSONArray((String) data);
+                    JSONArray jsonArray = new JSONArray(data);
 
                     for(int i = 0;i < jsonArray.length(); i++) {
                         JSONObject subklas = jsonArray.getJSONObject(i);
@@ -668,12 +850,7 @@ public class Account {
     public void setSubklassen(boolean refresh, ArrayList<String> subklassen, AsyncActionCallback callback) {
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
-            public HttpResponse onRequestCreate(HttpClient client) throws Exception {
-                String url = Settings.API_Base_URL + "account/clusterklassen";
-                if(refresh) url += "?refresh";
-
-                HttpPost httpPost = new HttpPost(url);
-
+            public HttpURLConnection onCreateConnection() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("key", apiKey));
                 if(subklassen != null) {
@@ -681,28 +858,34 @@ public class Account {
                         postParameters.add(new BasicNameValuePair("klassen[" + i + "]", subklassen.get(i)));
                     }
                 }
+                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
-                httpPost.setEntity(entity);
+                URL url = new URL(Constants.HTTP_BASE + "account/clusterklassen" + (refresh ? "?refresh" : ""));
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 
-                return client.execute(httpPost);
+                connection.setDoOutput(true);
+                connection.setFixedLengthStreamingMode((int) data.getContentLength());
+
+                data.writeTo(connection.getOutputStream());
+
+                return connection;
             }
 
             @Override
-            public Object onRequestComplete(String data, int status) throws Exception {
+            public String onValidateResponse(String data, int status) throws Exception {
                 switch(status) {
-                    case 401:
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
                         throw new Exception("Foute gegevens. Log opnieuw in");
-                    case 404:
+                    case HttpURLConnection.HTTP_NOT_FOUND:
                         throw new Exception("Gebruiker niet gevonden. Log opnieuw in");
-                    case 405:
+                    case HttpURLConnection.HTTP_BAD_METHOD:
                         throw new Exception("Hiervoor moet je leerling zijn");
-                    case 400:
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
                         throw new Exception("Deze leerling bestaat niet meer");
-                    case 500:
+                    case HttpURLConnection.HTTP_INTERNAL_ERROR:
                         Log.e("AccountWebRequest", data);
                         throw new Exception("Serverfout");
-                    case 200:
+                    case HttpURLConnection.HTTP_OK:
                         if("".equals(data)) throw new Exception("Onbekende fout");
                         return data;
                     default:
@@ -711,7 +894,7 @@ public class Account {
             }
 
             @Override
-            public void onDataHandle(Object data) {
+            public void onProcessData(String data) {
                 try {
                     callback.onAsyncActionComplete(data);
                 } catch (Exception e) {
@@ -734,30 +917,31 @@ public class Account {
 
     //region WebActions
 
-    private class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, Object> {
+    private class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, String> {
         @Override
-        protected Object doInBackground(WebRequestCallbacks... params) {
+        protected String doInBackground(WebRequestCallbacks... params) {
             callbacks = params[0];
             if (!HelperFunctions.hasInternetConnection(context)) {
                 publishProgress(new Exception("Geen internetverbinding"));
                 return null;
             }
             try {
-                HttpClient httpClient = new DefaultHttpClient();
-                HttpResponse response = callbacks.onRequestCreate(httpClient);
+                HttpURLConnection connection = callbacks.onCreateConnection();
 
                 String content = "";
                 try {
-                    Scanner scanner = new Scanner(response.getEntity().getContent());
+                    Scanner scanner = new Scanner(connection.getInputStream());
                     while (scanner.hasNext()) {
                         content += scanner.nextLine();
                     }
                 } catch(Exception e) {
                     // No content
                     // continue normally
+                } finally {
+                    connection.disconnect();
                 }
 
-                return callbacks.onRequestComplete(content, response.getStatusLine().getStatusCode());
+                return callbacks.onValidateResponse(content, connection.getResponseCode());
             } catch (Exception e) {
                 publishProgress(e);
             }
@@ -765,8 +949,8 @@ public class Account {
         }
 
         @Override
-        protected void onPostExecute(Object o) {
-            callbacks.onDataHandle(o);
+        protected void onPostExecute(String o) {
+            callbacks.onProcessData(o);
         }
 
         @Override
@@ -802,9 +986,9 @@ public class Account {
     //region Interfaces
 
     public interface WebRequestCallbacks {
-        public HttpResponse onRequestCreate(HttpClient client) throws Exception;
-        public Object onRequestComplete(String data, int status) throws Exception;
-        public void onDataHandle(Object data);
+        public HttpURLConnection onCreateConnection() throws Exception;
+        public String onValidateResponse(String data, int status) throws Exception;
+        public void onProcessData(String data);
         public void onError(Exception e);
     }
 

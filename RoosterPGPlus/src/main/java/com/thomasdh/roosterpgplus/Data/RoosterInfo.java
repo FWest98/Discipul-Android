@@ -68,7 +68,7 @@ public class RoosterInfo {
         Array<Integer> weekNummers = Array.iterableArray(weken).map(s -> s.week);
         Integer currentWeek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         if(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) currentWeek++;
-        Integer definitiveWeek = currentWeek;
+        Integer definitiveWeek = currentWeek >= 52 ? 2 : currentWeek; // next year fix..... wanted?
         return weekNummers.filter(s -> s >= definitiveWeek).foldLeft((a, b) -> a < b ? a : b, 100);
     }
 

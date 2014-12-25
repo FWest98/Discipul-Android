@@ -16,6 +16,7 @@ import com.google.analytics.tracking.android.MapBuilder;
 import com.thomasdh.roosterpgplus.CustomUI.ListPreferenceMultiSelect;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
+import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotificationActionReceiver;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
 
@@ -76,7 +77,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                 Preference details = findPreference("mijn_account");
 
                 logIn.setOnPreferenceClickListener(preference -> {
-                    Account.getInstance(this).login(callback -> {
+                    Account.getInstance(this).login(this, callback -> {
                         Intent intent = getIntent();
                         finish();
                         startActivity(intent);
@@ -135,7 +136,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
             // Configure login button
             findPreference("log_in").setOnPreferenceClickListener(preference -> {
-                Account.getInstance(this).login(callback -> {
+                Account.getInstance(this).login(this, callback -> {
                     Intent intent = getIntent();
                     finish();
                     startActivity(intent);
@@ -268,6 +269,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
             Preference mainSetting = findPreference("notificaties");
             Preference notificationFirstShow = findPreference("notificationFirstShow");
+            Preference pushNotification = findPreference("pushNotificaties");
 
             mainSetting.setOnPreferenceChangeListener((preference, newValue) -> {
                 boolean choice = (boolean) newValue;
@@ -285,6 +287,16 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                 NextUurNotificationActionReceiver.disableNotifications(getActivity());
                 new NextUurNotifications(getActivity(), Long.parseLong((String) newValue), true); // Update alles
                 return true;
+            });
+
+            if(!HelperFunctions.checkPlayServices(getActivity())) pushNotification.setEnabled(false);
+            pushNotification.setOnPreferenceClickListener(preference -> {
+                if(!HelperFunctions.checkPlayServices(getActivity())) {
+                    HelperFunctions.checkPlayServicesWithError(getActivity());
+                    return false;
+                } else {
+                    return true;
+                }
             });
         }
     }
@@ -320,7 +332,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                 Preference details = findPreference("mijn_account");
 
                 logIn.setOnPreferenceClickListener(preference -> {
-                    Account.getInstance(getActivity()).login(callback -> getActivity().recreate());
+                    Account.getInstance(getActivity()).login(getActivity(), callback -> getActivity().recreate());
                     return true;
                 });
                 logIn.setTitle("Log in");
@@ -382,7 +394,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
             // Configure login button
             findPreference("log_in").setOnPreferenceClickListener(preference -> {
-                Account.getInstance(getActivity()).login(callback -> getActivity().recreate());
+                Account.getInstance(getActivity()).login(getActivity(), callback -> getActivity().recreate());
 
                 return true;
             });

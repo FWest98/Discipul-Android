@@ -31,7 +31,7 @@ import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.Models.Week;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
-import com.thomasdh.roosterpgplus.Settings.Settings;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,7 +164,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 super.onDrawerClosed(view);
                 if(getSelectedWeek() == -1) return;
                 if(isRooster) {
-                    if(actionBarSpinnerAdapter.getCount() < 1) {
+                    if(actionBarSpinnerAdapter.getCount() >= 1) {
                         getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
                         getSupportActionBar().setDisplayShowTitleEnabled(false);
                     } else {
@@ -345,7 +345,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         if (wekenArray == null || wekenArray.isEmpty()) {
             strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         } else {
-            for (int c = 0; c < Settings.WEEKS_IN_SPINNER && c < wekenArray.size(); c++) {
+            for (int c = 0; c < Constants.WEEKS_IN_SPINNER && c < wekenArray.size(); c++) {
                 if(wekenArray.get(c).isVakantieweek()) continue;
                 strings.add("Week " + wekenArray.get(c).week);
             }

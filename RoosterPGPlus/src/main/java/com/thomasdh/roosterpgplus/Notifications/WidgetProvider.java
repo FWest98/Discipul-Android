@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class WidgetProvider extends AppWidgetProvider {
     @Override
@@ -30,35 +31,34 @@ public class WidgetProvider extends AppWidgetProvider {
 
     @SuppressWarnings("deprecation")
     private void createWidgetView(Context context, AppWidgetManager appWidgetManager, int widgetID, Lesuur nextLes) {
-        if(nextLes == null) {
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.rooster_null);
-            appWidgetManager.updateAppWidget(widgetID, views);
-            return;
-        }
         RemoteViews views;
-        if(nextLes.verandering) {
-            views = new RemoteViews(context.getPackageName(), R.layout.rooster_uur_gewijzigd_widget);
+        if(nextLes == null) {
+            views = new RemoteViews(context.getPackageName(), R.layout.rooster_null);
         } else {
-            views = new RemoteViews(context.getPackageName(), R.layout.rooster_uur_widget);
-        }
+            if (nextLes.verandering) {
+                views = new RemoteViews(context.getPackageName(), R.layout.rooster_uur_gewijzigd_widget);
+            } else {
+                views = new RemoteViews(context.getPackageName(), R.layout.rooster_uur_widget);
+            }
 
-        if(nextLes.verplaatsing || nextLes.verandering) {
-            views.setTextColor(R.id.rooster_lokaal, Color.parseColor("#FF0000"));
-        } else {
-            views.setTextColor(R.id.rooster_lokaal, Color.parseColor("#000000"));
-        }
-        if(nextLes.isNew) {
-            views.setTextViewText(R.id.rooster_notes, "Nieuwe les");
-        } else {
-            views.setTextViewText(R.id.rooster_notes, "");
-        }
+            if (nextLes.verplaatsing || nextLes.verandering) {
+                views.setTextColor(R.id.rooster_lokaal, Color.parseColor("#FF0000"));
+            } else {
+                views.setTextColor(R.id.rooster_lokaal, Color.parseColor("#000000"));
+            }
+            if (nextLes.isNew) {
+                views.setTextViewText(R.id.rooster_notes, "Nieuwe les");
+            } else {
+                views.setTextViewText(R.id.rooster_notes, "");
+            }
 
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
-        views.setTextViewText(R.id.rooster_vak, nextLes.vak);
-        views.setTextViewText(R.id.rooster_leraar, StringUtils.join(nextLes.leraren, " & "));
-        views.setTextViewText(R.id.rooster_lokaal, nextLes.lokaal);
-        views.setTextViewText(R.id.rooster_tijden, format.format(nextLes.lesStart) + " - " + format.format(nextLes.lesEind));
+            views.setTextViewText(R.id.rooster_vak, nextLes.vak);
+            views.setTextViewText(R.id.rooster_leraar, StringUtils.join(nextLes.leraren, " & "));
+            views.setTextViewText(R.id.rooster_lokaal, nextLes.lokaal);
+            views.setTextViewText(R.id.rooster_tijden, format.format(nextLes.lesStart) + " - " + format.format(nextLes.lesEind));
+        }
 
         Intent intent = new Intent(context, RoosterActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -72,7 +72,10 @@ public class WidgetProvider extends AppWidgetProvider {
         views.setOnClickPendingIntent(R.id.widget_refresh, refreshPendingIntent);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        int year = nextLes.week < Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) ? /* nieuw jaar */ DateTime.now().getYear() + 1 : DateTime.now().getYear();
+
         DateTime notificationDate = DateTime.now()
+                .withYear(year)
                 .withWeekOfWeekyear(nextLes.week)
                 .withDayOfWeek(nextLes.dag)
                 .withTime(
