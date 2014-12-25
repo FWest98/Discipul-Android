@@ -111,6 +111,7 @@ public class Rooster {
     }
 
     private static void parseRooster(String JSON, List<NameValuePair> query, Context context, RoosterCallback callback, boolean silent) {
+        if(context == null) return; // Oude context
         try {
             String queryString = URLEncodedUtils.format(query, "utf-8");
             List<Lesuur> lessen = new ArrayList<>();

@@ -96,7 +96,7 @@ public class Account {
                             ExceptionHandler.handleException(new Exception("Wijzigingen in de app vereisen opnieuw inloggen"), context, ExceptionHandler.HandleType.SIMPLE);
                             return;
                         }
-                        case 14: {
+                        case 15: {
                             // Vragen voor nieuwe meldingen
                             if(!showUI || !HelperFunctions.checkPlayServices(context)) break;
                             isHandlingNewVersion = true;
@@ -105,13 +105,21 @@ public class Account {
                                     .setTitle("Wil je pushmeldingen inschakelen?")
                                     .setMessage("Vanaf nu kan je pushmeldingen ontvangen bij roosterwijzigingen op dezelfde dag. Wil je deze inschakelen?")
                                     .setPositiveButton("Inschakelen", (dialog, which) -> {
-                                        Account.getInstance(context, showUI).registerGCM();
+                                        Account.getInstance(context, true).registerGCM();
 
-                                        pref.edit().putInt("oldVersion", currentVersion).commit();
+                                        pref.edit()
+                                                .putInt("oldVersion", currentVersion)
+                                                .putBoolean("pushNotificaties", true)
+                                                .commit();
                                         isHandlingNewVersion = false;
                                     })
                                     .setNegativeButton("Negeren", (dialog, which) -> {
-                                        pref.edit().putInt("oldVersion", currentVersion).commit();
+                                        Account.getInstance(context, true).registerGCM();
+
+                                        pref.edit()
+                                                .putInt("oldVersion", currentVersion)
+                                                .putBoolean("pushNotificaties", false)
+                                                .commit();
                                         isHandlingNewVersion = false;
                                     });
 
@@ -120,6 +128,7 @@ public class Account {
                     }
                 }
             }
+            if(!isHandlingNewVersion) /* No breaking change */ pref.edit().putInt("oldVersion", currentVersion).commit();
         }
 
         String key;

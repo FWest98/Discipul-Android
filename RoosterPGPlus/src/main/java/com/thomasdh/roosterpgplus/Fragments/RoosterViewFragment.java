@@ -133,8 +133,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     }
 
     public void loadRooster(boolean reload) {
-        if(!canLoadRooster()) return;
-        if(getWeek() == -1) return;
+        if(!canLoadRooster() || getWeek() == -1 || getActivity() == null) return;
         roosterLoadStateListener.onRoosterLoadStart();
 
         List<NameValuePair> query = new ArrayList<>();
@@ -144,6 +143,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         LoadType loadType = reload ? LoadType.REFRESH : getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), (result, urenCount) -> {
+            if(getActivity() == null) return; // oude context
             if(loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
                 setLoad();
             }
