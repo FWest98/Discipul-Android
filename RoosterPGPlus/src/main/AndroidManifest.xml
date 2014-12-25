@@ -3,7 +3,7 @@
     package="com.thomasdh.roosterpgplus"
     android:installLocation="auto"
     android:versionCode="15"
-    android:versionName="2.2.0" >
+    android:versionName="2.2.0 bèta 1" >
 
     <permission android:name="com.thomasdh.roosterpgplus.permission.SEARCH" android:protectionLevel="signature"/>
     <permission android:name="com.thomasdh.roosterpgplus.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
