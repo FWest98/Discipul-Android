@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.thomasdh.roosterpgplus"
     android:installLocation="auto"
-    android:versionCode="16"
-    android:versionName="2.2.0 bèta 2" >
+    android:versionCode="17"
+    android:versionName="2.2.0" >
 
     <permission android:name="com.thomasdh.roosterpgplus.permission.SEARCH" android:protectionLevel="signature"/>
     <permission android:name="com.thomasdh.roosterpgplus.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
@@ -20,7 +20,7 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:name="android.support.multidex.MultiDexApplication"
+        android:name="com.thomasdh.roosterpgplus.MainApplication"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
 

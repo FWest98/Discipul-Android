@@ -38,6 +38,20 @@ android {
     dexOptions {
         javaMaxHeapSize "4g"
     }
+
+    buildTypes {
+        debug {
+            buildConfigField "boolean", "GRADLE_DEBUG", "true"
+        }
+
+        prerelease {
+            buildConfigField "boolean", "GRADLE_DEBUG", "true"
+        }
+
+        release {
+            buildConfigField "boolean", "GRADLE_DEBUG", "false"
+        }
+    }
 }
 
 dependencies {

@@ -12,6 +12,7 @@ import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -27,6 +28,11 @@ public class EntityRoosterFragment extends RoosterViewFragment {
 
     @Getter @Setter
     private String entity;
+
+    @Override
+    public String getAnalyticsTitle() {
+        return Constants.ANALYTICS_FRAGMENT_SEARCHROOSTER;
+    }
 
     //region Lifecycle
 

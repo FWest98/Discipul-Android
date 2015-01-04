@@ -18,5 +18,6 @@
     <integer-array name="breaking_account_versions">
         <item>6</item>
         <item>15</item>
+        <item>17</item>
     </integer-array>
 </resources>

@@ -17,6 +17,7 @@ import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
@@ -38,6 +39,11 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
     @Getter @Setter private String lokaal;
 
     private DefaultSpinner lokaalSpinner;
+
+    @Override
+    public String getAnalyticsTitle() {
+        return Constants.ANALYTICS_FRAGMENT_LOKROOSTER;
+    }
 
     //region Lifecycle
 

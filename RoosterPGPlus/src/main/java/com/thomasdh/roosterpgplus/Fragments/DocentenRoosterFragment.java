@@ -18,6 +18,7 @@ import com.thomasdh.roosterpgplus.Models.Leraar;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
@@ -42,6 +43,11 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
 
     private DefaultSpinner leraarSpinner;
     private DefaultSpinner vakSpinner;
+
+    @Override
+    public String getAnalyticsTitle() {
+        return Constants.ANALYTICS_FRAGMENT_DOCROOSTER;
+    }
 
     //region Lifecycle
 
