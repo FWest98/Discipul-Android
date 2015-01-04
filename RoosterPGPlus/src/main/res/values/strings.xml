@@ -63,9 +63,9 @@
     <string name="logindialog_llnr_desc">Log in met je leerlingnummer</string>
     <string name="logindialog_llnr_hint">Leerlingnummer</string>
     <string name="logindialog_warning_title">Doorgaan?</string>
-    <string name="logindialog_warning_text">Er bestaat al een RoosterPG+-account met dit leerlingnummer. Wilt u dat gebruiken?</string>
-    <string name="logindialog_warning_submitButton">Alsnog aanmaken</string>
-    <string name="logindialog_warning_cancelButton">Inloggen</string>
+    <string name="logindialog_warning_text">Er bestaat al een RoosterPG+-account met dit leerlingnummer. Wilt u daarmee inloggen?</string>
+    <string name="logindialog_warning_submitButton">Doorgaan</string>
+    <string name="logindialog_warning_cancelButton">Daarnee inloggen</string>
 
     <!-- Registerdialog -->
     <string name="registerdialog_leerling_text">Registreer je als leerling</string>
@@ -103,13 +103,12 @@
     <string name="settings_user_resetClusterklassenTitle">Reset clusterklassen</string>
 
     <!-- Showcaseviews -->
-
     <string name="showcaseview_weekkeuze_title">Weekkeuze</string>
     <string name="showcaseview_weekkeuze_content">Kies hier de week die je wil weergeven</string>
     <string name="showcaseview_zoeken_title">Zoek in roosters</string>
     <string name="showcaseview_zoeken_content"><![CDATA[Vul hier een klas, docent, leerlingnummer of \'ik\' in en krijg het rooster.\nTip: Met \' & \' kan je roosters combineren]]></string>
     <string name="internet_connection_warning">Geen internetverbinding</string>
-    <string name="rooster_null">Geen rooster gevonden!</string>
+    <string name="rooster_null">Geen les gevonden!</string>
 
     <string-array name="settings_notification_firstShow">
         <item>5 minuten</item>
@@ -132,5 +131,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="pgtv_null">Geen gegevens gevonden!</string>
     <string name="PGTV_Title">PGTV</string>
+
+    <!-- DashClock -->
+    <string name="next_uur_dashclock_title">RoosterPG+ Volgende uur</string>
 
 </resources>

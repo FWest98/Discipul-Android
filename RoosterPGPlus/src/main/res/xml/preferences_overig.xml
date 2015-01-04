@@ -6,4 +6,16 @@
         android:key="animaties"
         android:title="Animaties"
         android:summary="Gebruik alle animaties in de app" />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="forcePhonelayout"
+        android:title="Forceer telefoonindeling"
+        android:summary="Toon de telefoonindeling ook op tablets" />
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="analytics"
+        android:title="Gebruik Google Analytics"
+        android:summary="Hiermee worden gebruiksgegevens en fouten gestuurd naar de ontwikkelaar om de app te verbeteren"/>
 </PreferenceScreen>

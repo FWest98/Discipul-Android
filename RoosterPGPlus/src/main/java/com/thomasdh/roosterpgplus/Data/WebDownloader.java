@@ -10,19 +10,18 @@ import com.thomasdh.roosterpgplus.Models.Leraar;
 import com.thomasdh.roosterpgplus.Models.PGTVPage;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
-import com.thomasdh.roosterpgplus.Settings.Settings;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Scanner;
+
+import javax.net.ssl.HttpsURLConnection;
 
 
 public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Object>> {
@@ -42,12 +41,20 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
     @Override
     protected Hashtable<String, Object> doInBackground(Object... info) {
         try {
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpGet get = new HttpGet(Settings.API_Base_URL + info[0]);
-            HttpResponse response = httpClient.execute(get);
+            URL url = new URL(Constants.HTTP_BASE + info[0]);
+            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 
-            //Object data = ((AsyncCallback) info[1]).onBackground(response);
-            Object data = asyncAction.onBackground(response);
+            String content = "";
+            try {
+                Scanner scanner = new Scanner(connection.getInputStream());
+                while(scanner.hasNext()) content += scanner.nextLine();
+            } catch (Exception e) {
+                // error whatever
+            } finally {
+                connection.disconnect();
+            }
+
+            Object data = asyncAction.onBackground(connection.getResponseCode(), content);
 
             Hashtable<String, Object> hashtable = new Hashtable<>();
             hashtable.put(DATA_KEY, data);
@@ -81,20 +88,12 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
     public static void getLeraren(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
         String url = "rooster/info?leraren&sort";
 
-        AsyncCallback AsyncCallback = r -> {
-            HttpResponse response = (HttpResponse) r;
-            int status = response.getStatusLine().getStatusCode();
+        AsyncCallback AsyncCallback = (status, s) -> {
             switch(status) {
                 case 500: throw new Exception("Serverfout, probeer het later nogmaals");
                 case 401: throw new Exception("Fout in de aanvraag, probeer de app te updaten");
                 case 200: break;
                 default: throw new Exception("Onbekende fout, "+status);
-            }
-
-            String s = "";
-            Scanner scanner = new Scanner(response.getEntity().getContent());
-            while (scanner.hasNext()) {
-                s += scanner.nextLine();
             }
 
             if(s.equals("")) throw new NullPointerException("Geen leraren gevonden!");
@@ -149,21 +148,12 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
     public static void getKlassen(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
         String url = "rooster/info?klassen";
 
-        AsyncCallback AsyncCallback = r -> {
-            HttpResponse response = (HttpResponse) r;
-            int status = response.getStatusLine().getStatusCode();
-
+        AsyncCallback AsyncCallback = (status, s) -> {
             switch(status) {
                 case 200: break;
                 case 500: throw new Exception("Serverfout. Probeer het later nogmaals");
                 case 401: throw new Exception("Onverwachte aanvraag. Update de app");
                 default: throw new Exception("Onbekende fout, "+status);
-            }
-
-            String s = "";
-            Scanner sc = new Scanner(response.getEntity().getContent());
-            while (sc.hasNext()) {
-                s += sc.nextLine();
             }
 
             if (s.equals("")) throw new NullPointerException("Geen klassen gevonden!");
@@ -187,20 +177,13 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
     public static void getLokalen(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
         String url = "rooster/info?lokalen";
 
-        AsyncCallback AsyncCallback = r -> {
-            HttpResponse response = (HttpResponse) r;
-            int status = response.getStatusLine().getStatusCode();
-
+        AsyncCallback AsyncCallback = (status, s) -> {
             switch(status) {
                 case 200: break;
                 case 500: throw new Exception("Serverfout. Probeer het later nogmaals");
                 case 401: throw new Exception("Onverwachte aanvraag. Update de app");
                 default: throw new Exception("Onbekende fout, "+status);
             }
-
-            String s = "";
-            Scanner sc = new Scanner(response.getEntity().getContent());
-            while(sc.hasNext()) s += sc.nextLine();
 
             if("".equals(s)) throw new NullPointerException("Geen lokalen gevonden!");
 
@@ -228,21 +211,12 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
         if(periode) url += "&periode";
         if(known) url += "&known";
 
-        AsyncCallback AsyncCallback = r -> {
-            HttpResponse response = (HttpResponse) r;
-            int status = response.getStatusLine().getStatusCode();
-
+        AsyncCallback AsyncCallback = (status, s) -> {
             switch(status) {
                 case 200: break;
                 case 500: throw new Exception("Serverfout, Probeer het later nogmaals");
                 case 401: throw new Exception("Onverwachte aanvraag. Update de app");
                 default: throw new Exception("Onbekende fout, "+status);
-            }
-
-            String s = "";
-            Scanner scanner = new Scanner(response.getEntity().getContent());
-            while (scanner.hasNext()) {
-                s += scanner.nextLine();
             }
 
             if(s.equals("")) throw new NullPointerException("Geen weken gevonden!");
@@ -268,20 +242,12 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
     public static void getLeerlingen(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
         String url = "rooster/info?leerlingen&sort";
 
-        AsyncCallback asyncCallback = r -> {
-            HttpResponse response = (HttpResponse) r;
-            int status = response.getStatusLine().getStatusCode();
+        AsyncCallback asyncCallback = (status, s) -> {
             switch(status) {
                 case 500: throw new Exception("Serverfout, probeer het later nogmaals");
                 case 401: throw new Exception("Fout in de aanvraag, probeer de app te updaten");
                 case 200: break;
                 default: throw new Exception("Onbekende fout, "+status);
-            }
-
-            String s = "";
-            Scanner scanner = new Scanner(response.getEntity().getContent());
-            while(scanner.hasNext()) {
-                s += scanner.nextLine();
             }
 
             if("".equals(s)) throw new Exception("Geen leerlingen gevonden");
@@ -316,14 +282,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
 
     /* Rooster downloader */
     public static void getRooster(String url, AsyncActionCallback callback, AsyncActionCallback errorCallback) {
-        AsyncCallback AsyncCallback = r -> {
-            HttpResponse response = (HttpResponse) r;
-            int status = response.getStatusLine().getStatusCode();
-
-            String content = "";
-            Scanner sc = new Scanner(response.getEntity().getContent());
-            while(sc.hasNext()) { content += sc.nextLine(); }
-
+        AsyncCallback AsyncCallback = (status, content) -> {
             switch(status) {
                 case 200: break;
                 case 404: throw new Exception(content);
@@ -342,14 +301,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
     public static void getPGTVRooster(String query, AsyncActionCallback successCallback, AsyncActionCallback errorCallback) {
         String url = "pgtv/"+query;
 
-        AsyncCallback callback = r -> {
-            HttpResponse response = (HttpResponse) r;
-            int status = response.getStatusLine().getStatusCode();
-
-            String content = "";
-            Scanner sc = new Scanner(response.getEntity().getContent());
-            while(sc.hasNext()) { content += sc.nextLine(); }
-
+        AsyncCallback callback = (status, content) -> {
             switch (status) {
                 case 200: break;
                 case 503: throw new Exception("PGTV niet bereikbaar. Probeer het later nog eens");
@@ -377,7 +329,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
 
 
     private interface AsyncCallback {
-        public Object onBackground(Object result) throws Exception;
+        public Object onBackground(int statusCode, String result) throws Exception;
     }
 
 }

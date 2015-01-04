@@ -18,6 +18,7 @@ import android.widget.ExpandableListView;
 
 import com.fwest98.showcaseview.ShowcaseView;
 import com.fwest98.showcaseview.targets.ViewTarget;
+import com.google.android.gms.analytics.HitBuilders;
 import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
@@ -31,7 +32,7 @@ import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.Models.Week;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
-import com.thomasdh.roosterpgplus.Settings.Settings;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,8 +165,14 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 super.onDrawerClosed(view);
                 if(getSelectedWeek() == -1) return;
                 if(isRooster) {
-                    getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-                    getSupportActionBar().setDisplayShowTitleEnabled(false);
+                    if(actionBarSpinnerAdapter.getCount() >= 1) {
+                        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+                        getSupportActionBar().setDisplayShowTitleEnabled(false);
+                    } else {
+                        getSupportActionBar().setTitle(R.string.app_name);
+                        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+                        getSupportActionBar().setDisplayShowTitleEnabled(true);
+                    }
                 } else {
                     getSupportActionBar().setTitle("PGTV - "+((PGTVRoosterFragment) mainFragment).getType().toDesc());
                 }
@@ -329,6 +336,13 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         String itemString = (String) actionBarSpinnerAdapter.getItem(pos);
         int week = Integer.parseInt(itemString.substring(5));
 
+        MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext())
+                .send(new HitBuilders.EventBuilder()
+                        .setCategory(Constants.ANALYTICS_CATEGORIES_ROOSTER)
+                        .setAction(Constants.ANALYTICS_ACTIVITY_ROOSTER_ACTION_CHANGE_WEEK)
+                        .setLabel(mainFragment.getAnalyticsTitle())
+                        .build());
+
         setSelectedWeek(week);
         return true;
     }
@@ -339,7 +353,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         if (wekenArray == null || wekenArray.isEmpty()) {
             strings.add("Week " + Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         } else {
-            for (int c = 0; c < Settings.WEEKS_IN_SPINNER && c < wekenArray.size(); c++) {
+            for (int c = 0; c < Constants.WEEKS_IN_SPINNER && c < wekenArray.size(); c++) {
                 if(wekenArray.get(c).isVakantieweek()) continue;
                 strings.add("Week " + wekenArray.get(c).week);
             }

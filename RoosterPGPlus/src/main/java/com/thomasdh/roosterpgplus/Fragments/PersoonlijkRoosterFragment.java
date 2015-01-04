@@ -12,6 +12,7 @@ import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -24,6 +25,11 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
     private static final String LOADS_NAME = "personal";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 2700000;
 
+    @Override
+    public String getAnalyticsTitle() {
+        return Constants.ANALYTICS_FRAGMENT_PERSROOSTER;
+    }
+
     //region Lifecycle
 
     @Override
@@ -35,7 +41,7 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
         if(!Account.isSet()) {
-            Account.getInstance(getActivity()).login(result -> loadRooster(), result -> roosterLoadStateListener.onRoosterLoadCancel());
+            Account.getInstance(getActivity()).login(getActivity(), result -> loadRooster(), result -> roosterLoadStateListener.onRoosterLoadCancel());
         } else {
             loadRooster();
         }

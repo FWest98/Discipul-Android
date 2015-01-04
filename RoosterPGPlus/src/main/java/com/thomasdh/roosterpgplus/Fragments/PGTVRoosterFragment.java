@@ -12,6 +12,7 @@ import com.thomasdh.roosterpgplus.Data.WebDownloader;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.PGTVPage;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.http.NameValuePair;
 
@@ -44,6 +45,16 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
         }
     }
     @Getter @Setter private PGTVType type;
+
+    @Override
+    public String getAnalyticsTitle() {
+        switch(type) {
+            case ROOSTER:
+                return Constants.ANALYTICS_FRAGMENT_PGTVROOSTER;
+            default:
+                return Constants.ANALYTICS_FRAGMENT_PGTVALGEM;
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

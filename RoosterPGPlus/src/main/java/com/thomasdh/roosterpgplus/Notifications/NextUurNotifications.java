@@ -12,6 +12,8 @@ import com.thomasdh.roosterpgplus.Data.Rooster;
 
 import org.joda.time.DateTime;
 
+import java.util.Calendar;
+
 public class NextUurNotifications {
     private static PendingIntent currentIntent;
 
@@ -33,7 +35,10 @@ public class NextUurNotifications {
 
             /* Dan de notificatietijd bepalen */
             long notificationDelay = delay == 0 ? Long.parseLong(PreferenceManager.getDefaultSharedPreferences(context).getString("notificationFirstShow", "3600000")) : delay;
+            int year = nextLes.week < Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) ? /* nieuw jaar */ DateTime.now().getYear() + 1 : DateTime.now().getYear();
+
             DateTime notificationDate = DateTime.now()
+                    .withYear(year)
                     .withWeekOfWeekyear(nextLes.week)
                     .withDayOfWeek(nextLes.dag)
                     .withTime(

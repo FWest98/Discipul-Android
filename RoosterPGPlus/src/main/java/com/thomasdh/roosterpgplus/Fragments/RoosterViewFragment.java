@@ -9,13 +9,17 @@ import android.widget.TextView;
 
 import com.fwest98.showcaseview.ShowcaseView;
 import com.fwest98.showcaseview.targets.ActionViewTarget;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.Animations;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
+import com.thomasdh.roosterpgplus.MainApplication;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -80,6 +84,16 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     //endregion
     //region LifeCycle
 
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity());
+        tracker.setScreenName(getAnalyticsTitle());
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return null;
@@ -127,14 +141,22 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
     protected abstract LoadType getLoadType();
     protected abstract long getLoad();
     protected abstract void setLoad();
+    public abstract String getAnalyticsTitle();
 
     public void loadRooster() {
         loadRooster(false);
     }
 
     public void loadRooster(boolean reload) {
-        if(!canLoadRooster()) return;
-        if(getWeek() == -1) return;
+        if(!canLoadRooster() || getWeek() == -1 || getActivity() == null) return;
+
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity().getApplicationContext());
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(Constants.ANALYTICS_CATEGORIES_ROOSTER)
+                .setAction(reload ? Constants.ANALYTICS_ACTIVITY_ROOSTER_ACTION_REFRESH : Constants.ANALYTICS_ACTIVITY_ROOSTER_ACTION_LOAD)
+                .setLabel(getAnalyticsTitle())
+                .build());
+
         roosterLoadStateListener.onRoosterLoadStart();
 
         List<NameValuePair> query = new ArrayList<>();
@@ -144,6 +166,7 @@ public abstract class RoosterViewFragment extends RoboFragment implements ViewPa
         LoadType loadType = reload ? LoadType.REFRESH : getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), (result, urenCount) -> {
+            if(getActivity() == null) return; // oude context
             if(loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
                 setLoad();
             }

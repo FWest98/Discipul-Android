@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.+'
+        classpath 'com.android.tools.build:gradle:1.0.0'
         classpath 'me.tatarka:gradle-retrolambda:1.+'
     }
 }
@@ -17,11 +17,12 @@ repositories {
 
 android {
     compileSdkVersion 20
-    buildToolsVersion '20.0.0'
+    buildToolsVersion '21.1.2'
 
     defaultConfig {
-        minSdkVersion 8
+        minSdkVersion 9
         targetSdkVersion 20
+        multiDexEnabled true
     }
 
     compileOptions {
@@ -33,20 +34,41 @@ android {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
     }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField "boolean", "GRADLE_DEBUG", "true"
+        }
+
+        prerelease {
+            buildConfigField "boolean", "GRADLE_DEBUG", "true"
+        }
+
+        release {
+            buildConfigField "boolean", "GRADLE_DEBUG", "false"
+        }
+    }
 }
 
 dependencies {
-    compile('org.roboguice:roboguice:3.0-alpha-2') {
-        exclude module: 'asm'
-    }
+    compile 'org.roboguice:roboguice:3.+'
+    provided 'org.roboguice:roboblender:3.+'
     provided 'org.projectlombok:lombok:1.14.4'
     compile fileTree(dir: 'libs', include: '*.jar')
     // You must install or update the Support Repository through the SDK manager to use this dependency.
     //compile 'com.viewpagerindicator:library:2.4.1' HEEFT BUGGY ANDROID SUPPORT?!!!
     compile project(':ShowcaseView')
-    compile 'com.android.support:support-v4:20.0.0'
-    compile 'com.android.support:gridlayout-v7:20.0.0'
-    compile 'com.android.support:appcompat-v7:20.0.0'
+    compile 'com.android.support:support-v4:20.+'
+    compile 'com.android.support:gridlayout-v7:20.+'
+    compile 'com.android.support:appcompat-v7:20.+'
+    compile 'com.android.support:multidex:1.0.0'
+    //compile 'com.android.support:cardview-v7:21.+'
+    //compile 'com.android.support:recyclerview-v7:21.+'
+    compile 'com.google.android.gms:play-services-base:6.5.87'
     compile 'com.google.code.findbugs:jsr305:1.3.9'
     compile 'org.robobinding:robobinding:0.8.1'
     compile 'com.j256.ormlite:ormlite-core:4.48'
@@ -56,6 +78,8 @@ dependencies {
     compile 'com.netflix.rxjava:rxjava-android:0.19.6'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'joda-time:joda-time:2.4'
+    compile 'com.google.android.apps.dashclock:dashclock-api:+'
+    //compile 'com.mikepenz.aboutlibraries:library:4.5.0'
 }
 
 retrolambda {

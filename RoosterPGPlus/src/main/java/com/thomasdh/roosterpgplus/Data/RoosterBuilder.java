@@ -3,6 +3,7 @@ package com.thomasdh.roosterpgplus.Data;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -106,7 +107,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
         boolean isWide = context.getResources().getBoolean(R.bool.isWideWeekview);
         boolean isHigh = context.getResources().getBoolean(R.bool.isHighWeekview);
-        weekView = isWide || isHigh;
+        weekView = (isWide || isHigh) && !PreferenceManager.getDefaultSharedPreferences(context).getBoolean("forcePhonelayout", false);
 
         int week = lessen.get(0).week;
         Calendar calendar = Calendar.getInstance();

@@ -1,21 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Notificaties">
 
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:enabled="true"
-        android:key="notificaties"
-        android:summary="@string/settings_notifications_summary"
-        android:title="@string/settings_notifications_title" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:enabled="true"
+            android:key="notificaties"
+            android:summary="@string/settings_notifications_summary"
+            android:title="@string/settings_notifications_title" />
 
-    <ListPreference
-        android:defaultValue="3600000"
-        android:enabled="true"
-        android:entries="@array/settings_notification_firstShow"
-        android:entryValues="@array/settings_notification_firstShow_values"
-        android:key="notificationFirstShow"
-        android:summary="@string/settings_notificationsInterval_summary"
-        android:title="@string/settings_notificationInterval_title" />
+        <ListPreference
+            android:defaultValue="3600000"
+            android:enabled="true"
+            android:entries="@array/settings_notification_firstShow"
+            android:entryValues="@array/settings_notification_firstShow_values"
+            android:key="notificationFirstShow"
+            android:summary="@string/settings_notificationsInterval_summary"
+            android:title="@string/settings_notificationInterval_title" />
+    </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="Pushnotificaties">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:enabled="true"
+            android:key="pushNotificaties"
+            android:summary="Pushmeldingen als er vandaag een les wordt aangepast"
+            android:title="Pushmeldingen" />
+    </PreferenceCategory>
 </PreferenceScreen>
