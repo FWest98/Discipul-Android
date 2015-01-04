@@ -178,60 +178,59 @@ public class Account {
     }
 
     private void processJSON(String JSON, boolean isAppAccount, Activity activity) throws JSONException {
-        if(isSet()) logout(s -> {
-            JSONObject base = new JSONObject(JSON);
-            SharedPreferences.Editor pref = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        if(isSet()) logout(s -> {});
+        JSONObject base = new JSONObject(JSON);
+        SharedPreferences.Editor pref = PreferenceManager.getDefaultSharedPreferences(context).edit();
 
-            apiKey = base.getString("key");
-            pref.putString("key", apiKey);
+        apiKey = base.getString("key");
+        pref.putString("key", apiKey);
 
-            name = base.getString("naam");
-            pref.putString("naam", name);
+        name = base.getString("naam");
+        pref.putString("naam", name);
 
-            Account.isAppAccount = isAppAccount;
-            pref.putBoolean("appaccount", isAppAccount);
+        Account.isAppAccount = isAppAccount;
+        pref.putBoolean("appaccount", isAppAccount);
 
-            isSet = true;
+        isSet = true;
 
-            pref.putInt("oldVersion", currentVersion);
-            isHandlingNewVersion = false;
+        pref.putInt("oldVersion", currentVersion);
+        isHandlingNewVersion = false;
 
-            if (base.has("code")) {
-                // LERAAR
-                userType = UserType.LERAAR;
+        if (base.has("code")) {
+            // LERAAR
+            userType = UserType.LERAAR;
 
-                leraarCode = base.getString("code");
-                pref.putString("code", leraarCode);
-            } else {
-                // LEERLING
-                userType = UserType.LEERLING;
+            leraarCode = base.getString("code");
+            pref.putString("code", leraarCode);
+        } else {
+            // LEERLING
+            userType = UserType.LEERLING;
 
-                leerlingKlas = base.getJSONObject("klas").getString("klasnaam");
-                pref.putString("klas", leerlingKlas);
+            leerlingKlas = base.getJSONObject("klas").getString("klasnaam");
+            pref.putString("klas", leerlingKlas);
 
-                isVertegenwoordiger = base.getBoolean("vertegenwoordiger");
-                pref.putBoolean("isVertegenwoordiger", isVertegenwoordiger);
-            }
+            isVertegenwoordiger = base.getBoolean("vertegenwoordiger");
+            pref.putBoolean("isVertegenwoordiger", isVertegenwoordiger);
+        }
 
-            pref.apply();
+        pref.apply();
 
-            ExceptionHandler.handleException(new Exception("Welkom, " + getName()), context, ExceptionHandler.HandleType.SIMPLE);
+        ExceptionHandler.handleException(new Exception("Welkom, " + getName()), context, ExceptionHandler.HandleType.SIMPLE);
 
-            NextUurNotifications.disableNotifications(context);
-            new NextUurNotifications(context);
+        NextUurNotifications.disableNotifications(context);
+        new NextUurNotifications(context);
 
-            registerGCM();
+        registerGCM();
 
-            getAccountInfo(p -> {
-                JSONObject json = new JSONObject((String) p);
+        getAccountInfo(p -> {
+            JSONObject json = new JSONObject((String) p);
 
-                userID = json.getInt("id");
-                PreferenceManager.getDefaultSharedPreferences(context).edit().putInt("userid", userID).apply();
+            userID = json.getInt("id");
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putInt("userid", userID).apply();
 
-                MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext())
-                        .set("&uid", String.valueOf(userID));
-            }, context);
-        });
+            MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext())
+                    .set("&uid", String.valueOf(userID));
+        }, context);
     }
 
     //endregion
