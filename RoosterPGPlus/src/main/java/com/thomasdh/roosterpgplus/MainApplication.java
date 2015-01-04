@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.multidex.MultiDexApplication;
+import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
@@ -24,6 +25,9 @@ public class MainApplication extends MultiDexApplication {
         if(BuildConfig.GRADLE_DEBUG) {
             GoogleAnalytics.getInstance(getApplicationContext()).setDryRun(true);
         }
+
+        Log.e("GRADLE DEBUG", String.valueOf(BuildConfig.GRADLE_DEBUG));
+        Log.e("DEBUG", String.valueOf(BuildConfig.DEBUG));
     }
 
     @Override
