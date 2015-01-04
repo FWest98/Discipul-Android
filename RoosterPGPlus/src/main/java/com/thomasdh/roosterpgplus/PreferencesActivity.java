@@ -10,15 +10,16 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.view.MenuItem;
 
-import com.google.analytics.tracking.android.EasyTracker;
-import com.google.analytics.tracking.android.Fields;
-import com.google.analytics.tracking.android.MapBuilder;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.thomasdh.roosterpgplus.CustomUI.ListPreferenceMultiSelect;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotificationActionReceiver;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,11 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         String action = getIntent().getAction();
         if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_info);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_INFO);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
             try {
                 findPreference("versie").setTitle("Versie: " + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
             } catch (Exception e) {
@@ -68,6 +74,10 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             }
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_user);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_USER);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
 
             if(!Account.isSet()) {
                 findPreference("subklassen").setEnabled(false);
@@ -162,8 +172,21 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             });
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$OverigFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_overig);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_OVERIG);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+            findPreference("analytics").setOnPreferenceChangeListener((pref, newValue) -> {
+                GoogleAnalytics.getInstance(getApplicationContext()).setAppOptOut((Boolean) newValue);
+                return true;
+            });
         } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$AchtergrondFragment".equals(action)) {
             addPreferencesFromResource(R.xml.preferences_achtergrond);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_NOTIFICATIES);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
 
             Preference mainSetting = findPreference("notificaties");
             Preference notificationFirstShow = findPreference("notificationFirstShow");
@@ -188,6 +211,10 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             addPreferencesFromResource(R.xml.preference_headers_old);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_MAIN);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
         }
     }
 
@@ -208,12 +235,12 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
     @Override
     protected void onStop() {
-        EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
+        /*EasyTracker tracker = EasyTracker.getInstance(getApplicationContext());
         tracker.set(Fields.SCREEN_NAME, null);
         tracker.send(MapBuilder
                 .createAppView()
                 .build()
-        );
+        );*/
         super.onStop();
     }
 
@@ -235,6 +262,10 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     @Override
     public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.preference_headers, target);
+
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
+        tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_MAIN);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -243,6 +274,11 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_info);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity().getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_INFO);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
             try {
                 findPreference("versie").setTitle("Versie: " + getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0).versionName);
             } catch (Exception e) {
@@ -257,6 +293,15 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_overig);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity().getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_OVERIG);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+            findPreference("analytics").setOnPreferenceChangeListener((pref, newValue) -> {
+                GoogleAnalytics.getInstance(getActivity().getApplicationContext()).setAppOptOut((Boolean) newValue);
+                return true;
+            });
         }
     }
 
@@ -266,6 +311,10 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_achtergrond);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity().getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_NOTIFICATIES);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
 
             Preference mainSetting = findPreference("notificaties");
             Preference notificationFirstShow = findPreference("notificationFirstShow");
@@ -323,6 +372,10 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences_user);
+
+            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity().getApplicationContext());
+            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_USER);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
 
             if(!Account.isSet()) {
                 findPreference("subklassen").setEnabled(false);

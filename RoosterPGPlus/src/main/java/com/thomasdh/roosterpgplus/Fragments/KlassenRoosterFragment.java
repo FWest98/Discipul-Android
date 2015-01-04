@@ -17,6 +17,7 @@ import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
@@ -37,6 +38,11 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     private DefaultSpinner klasSpinner;
 
     @Getter @Setter private String klas;
+
+    @Override
+    public String getAnalyticsTitle() {
+        return Constants.ANALYTICS_FRAGMENT_KLASROOSTER;
+    }
 
     //region Lifecycle
 

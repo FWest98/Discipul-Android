@@ -14,11 +14,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TabHost;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
+import com.thomasdh.roosterpgplus.MainApplication;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
@@ -43,6 +46,7 @@ import lombok.Getter;
 
 @SuppressWarnings("UnusedDeclaration")
 public class Account {
+    @Getter private static int userID = 0;
     @Getter private static boolean isSet;
     @Getter private static boolean isHandlingNewVersion;
     @Getter private static String name;
@@ -56,7 +60,6 @@ public class Account {
     @Getter private static String leraarCode;
 
     private Context context;
-    private WebRequestCallbacks callbacks;
     private static int currentVersion = 0;
 
     private static Account instance;
@@ -96,7 +99,7 @@ public class Account {
                             ExceptionHandler.handleException(new Exception("Wijzigingen in de app vereisen opnieuw inloggen"), context, ExceptionHandler.HandleType.SIMPLE);
                             return;
                         }
-                        case 14: {
+                        case 15: {
                             // Vragen voor nieuwe meldingen
                             if(!showUI || !HelperFunctions.checkPlayServices(context)) break;
                             isHandlingNewVersion = true;
@@ -105,21 +108,48 @@ public class Account {
                                     .setTitle("Wil je pushmeldingen inschakelen?")
                                     .setMessage("Vanaf nu kan je pushmeldingen ontvangen bij roosterwijzigingen op dezelfde dag. Wil je deze inschakelen?")
                                     .setPositiveButton("Inschakelen", (dialog, which) -> {
-                                        Account.getInstance(context, showUI).registerGCM();
+                                        Account.getInstance(context, true).registerGCM();
 
-                                        pref.edit().putInt("oldVersion", currentVersion).commit();
+                                        pref.edit()
+                                                .putInt("oldVersion", currentVersion)
+                                                .putBoolean("pushNotificaties", true)
+                                                .commit();
                                         isHandlingNewVersion = false;
                                     })
                                     .setNegativeButton("Negeren", (dialog, which) -> {
-                                        pref.edit().putInt("oldVersion", currentVersion).commit();
+                                        Account.getInstance(context, true).registerGCM();
+
+                                        pref.edit()
+                                                .putInt("oldVersion", currentVersion)
+                                                .putBoolean("pushNotificaties", false)
+                                                .commit();
                                         isHandlingNewVersion = false;
                                     });
 
                             builder.show();
                         }
+                        case 17: {
+                            // Analytics, get Account ID
+                            if((apiKey = pref.getString("key", null)) == null) break;
+
+                            isHandlingNewVersion = true;
+
+                            getAccountInfo(s -> {
+                                JSONObject base = new JSONObject((String) s);
+
+                                userID = base.getInt("id");
+                                pref.edit().putInt("oldVersion", currentVersion).putInt("userid", userID).apply();
+
+                                MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext())
+                                    .set("&uid", String.valueOf(userID));
+
+                                isHandlingNewVersion = false;
+                            }, context);
+                        }
                     }
                 }
             }
+            if(!isHandlingNewVersion) /* No breaking change */ pref.edit().putInt("oldVersion", currentVersion).commit();
         }
 
         String key;
@@ -128,6 +158,7 @@ public class Account {
             userType = UserType.NO_ACCOUNT;
         } else {
             isSet = true;
+            userID = pref.getInt("userid", 0);
             name = pref.getString("naam", null);
             apiKey = key;
             isAppAccount = pref.getBoolean("appaccount", false);
@@ -190,6 +221,16 @@ public class Account {
             new NextUurNotifications(context);
 
             registerGCM();
+
+            getAccountInfo(p -> {
+                JSONObject json = new JSONObject((String) p);
+
+                userID = json.getInt("id");
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putInt("userid", userID).apply();
+
+                MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext())
+                        .set("&uid", String.valueOf(userID));
+            }, context);
         });
     }
 
@@ -234,6 +275,10 @@ public class Account {
     }
 
     public void login(Activity activity, AsyncActionCallback callback, AsyncActionCallback cancelCallback) {
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext());
+        tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_LOGIN);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.logindialog, null);
@@ -313,6 +358,12 @@ public class Account {
     }
 
     private void login(Activity activity, String username, String password, AsyncActionCallback callback) {
+        MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
+                .send(new HitBuilders.EventBuilder()
+                        .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
+                        .setAction(Constants.ANALYTICS_ACTION_LOGIN)
+                        .build());
+
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
             public HttpURLConnection onCreateConnection() throws Exception {
@@ -366,10 +417,16 @@ public class Account {
             }
         };
 
-        new WebActions().execute(webRequestCallbacks);
+        new WebActions(context).execute(webRequestCallbacks);
     }
 
     private void login(Activity activity, String llnr, boolean force, AsyncActionCallback callback) {
+        MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
+                .send(new HitBuilders.EventBuilder()
+                        .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
+                        .setAction(Constants.ANALYTICS_ACTION_LOGIN)
+                        .build());
+
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
             public HttpURLConnection onCreateConnection() throws Exception {
@@ -435,7 +492,7 @@ public class Account {
             }
         };
 
-        new WebActions().execute(webRequestCallbacks);
+        new WebActions(context).execute(webRequestCallbacks);
     }
 
     //endregion
@@ -446,6 +503,10 @@ public class Account {
     }
 
     public void register(Activity activity, AsyncActionCallback callback) {
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext());
+        tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_REGISTER);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.registerdialog, null);
@@ -486,6 +547,12 @@ public class Account {
     }
 
     private void register(Activity activity, String username, String password, String llnr, String email, boolean force, AsyncActionCallback callback) {
+        MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
+                .send(new HitBuilders.EventBuilder()
+                        .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
+                        .setAction(Constants.ANALYTICS_ACTION_REGISTER)
+                        .build());
+
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
             public HttpURLConnection onCreateConnection() throws Exception {
@@ -554,7 +621,7 @@ public class Account {
             }
         };
 
-        new WebActions().execute(webRequestCallbacks);
+        new WebActions(context).execute(webRequestCallbacks);
     }
 
     //endregion
@@ -569,6 +636,10 @@ public class Account {
             ExceptionHandler.handleException(new Exception("Je bent al geüpgraded!"), context, ExceptionHandler.HandleType.SIMPLE);
             return;
         }
+
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext());
+        tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_EXTEND);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -607,6 +678,12 @@ public class Account {
     }
 
     private void extend(String username, String password, String email, AsyncActionCallback callback) {
+        MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
+                .send(new HitBuilders.EventBuilder()
+                        .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
+                        .setAction(Constants.ANALYTICS_ACTION_EXTEND)
+                        .build());
+
         WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
             @Override
             public HttpURLConnection onCreateConnection() throws Exception {
@@ -666,7 +743,55 @@ public class Account {
             }
         };
 
-        new WebActions().execute(webRequestCallbacks);
+        new WebActions(context).execute(webRequestCallbacks);
+    }
+
+    //endregion
+    //region AccountInfo
+
+    private static void getAccountInfo(AsyncActionCallback callback, Context context) {
+        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+            @Override
+            public HttpURLConnection onCreateConnection() throws Exception {
+                URL url = new URL(Constants.HTTP_BASE + "account/accountinfo?key=" + getApiKey());
+
+                return (HttpsURLConnection) url.openConnection();
+            }
+
+            @Override
+            public String onValidateResponse(String data, int status) throws Exception {
+                switch(status) {
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
+                        throw new Exception("Missende gegevens");
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
+                        throw new Exception("Deze gerbuiker bestaat niet");
+                    case HttpURLConnection.HTTP_INTERNAL_ERROR:
+                        throw new Exception("Serverfout");
+                    case HttpURLConnection.HTTP_OK:
+                    case HttpURLConnection.HTTP_NO_CONTENT:
+                        if("".equals(data)) throw new Exception("Onbekende fout");
+                        return data;
+                    default:
+                        throw new Exception("Onbekende fout");
+                }
+            }
+
+            @Override
+            public void onProcessData(String data) {
+                try {
+                    callback.onAsyncActionComplete(data);
+                } catch (Exception e) {
+                    ExceptionHandler.handleException(new Exception("Fout bij ophalen accountinformatie", e), context, ExceptionHandler.HandleType.SIMPLE);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                ExceptionHandler.handleException(new Exception("Fout bij ophalen accountinformatie: " + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        };
+
+        new WebActions(context).execute(webRequestCallbacks);
     }
 
     //endregion
@@ -735,7 +860,7 @@ public class Account {
             }
         };
 
-        new WebActions().execute(webRequestCallbacks);
+        new WebActions(context).execute(webRequestCallbacks);
     }
 
     //endregion
@@ -782,7 +907,7 @@ public class Account {
             }
         };
 
-        new WebActions().execute(webRequestCallbacks);
+        new WebActions(context).execute(webRequestCallbacks);
     }
 
     //endregion
@@ -841,7 +966,7 @@ public class Account {
             }
         };
 
-        new WebActions().execute(webRequestCallbacks);
+        new WebActions(context).execute(webRequestCallbacks);
     }
 
     //endregion
@@ -908,7 +1033,7 @@ public class Account {
             }
         };
 
-        new WebActions().execute(webRequestCallbacks);
+        new WebActions(context).execute(webRequestCallbacks);
     }
 
     //endregion
@@ -917,7 +1042,14 @@ public class Account {
 
     //region WebActions
 
-    private class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, String> {
+    private static class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, String> {
+        private Context context;
+        private WebRequestCallbacks callbacks;
+
+        private WebActions(Context context) {
+            this.context = context;
+        }
+
         @Override
         protected String doInBackground(WebRequestCallbacks... params) {
             callbacks = params[0];

@@ -111,6 +111,7 @@ public class Rooster {
     }
 
     private static void parseRooster(String JSON, List<NameValuePair> query, Context context, RoosterCallback callback, boolean silent) {
+        if(context == null) return; // Oude context
         try {
             String queryString = URLEncodedUtils.format(query, "utf-8");
             List<Lesuur> lessen = new ArrayList<>();
@@ -161,11 +162,11 @@ public class Rooster {
             return "Geen les gevonden";
         } else {
             DateFormat format = new SimpleDateFormat("HH:mm");
-            return String.format("De volgende les is %1$s, %2$s het %3$se uur in %4$s en start om %5$s",
+            return String.format("De volgende les is %1$s, %2$s het %3$se uur%4$s en start om %5$s",
                     nextLesuur.vak,
                     getDayOfWeek(nextLesuur.dag + 1),
                     nextLesuur.uur,
-                    nextLesuur.lokaal,
+                    "".equals(nextLesuur.lokaal) ? "" : " in " + nextLesuur.lokaal,
                     format.format(nextLesuur.lesStart));
         }
     }

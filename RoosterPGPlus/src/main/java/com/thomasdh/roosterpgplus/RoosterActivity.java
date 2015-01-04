@@ -18,6 +18,7 @@ import android.widget.ExpandableListView;
 
 import com.fwest98.showcaseview.ShowcaseView;
 import com.fwest98.showcaseview.targets.ViewTarget;
+import com.google.android.gms.analytics.HitBuilders;
 import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
@@ -334,6 +335,13 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     public boolean onNavigationItemSelected(int pos, long item) {
         String itemString = (String) actionBarSpinnerAdapter.getItem(pos);
         int week = Integer.parseInt(itemString.substring(5));
+
+        MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext())
+                .send(new HitBuilders.EventBuilder()
+                        .setCategory(Constants.ANALYTICS_CATEGORIES_ROOSTER)
+                        .setAction(Constants.ANALYTICS_ACTIVITY_ROOSTER_ACTION_CHANGE_WEEK)
+                        .setLabel(mainFragment.getAnalyticsTitle())
+                        .build());
 
         setSelectedWeek(week);
         return true;

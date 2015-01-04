@@ -18,6 +18,7 @@ import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Klas;
 import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -42,6 +43,11 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
     private DefaultSpinner klasSpinner;
     private DefaultSpinner leerlingSpinner;
     private EditText leerlingNummerEditor;
+
+    @Override
+    public String getAnalyticsTitle() {
+        return Constants.ANALYTICS_FRAGMENT_LERROOSTER;
+    }
 
     //region Lifecycle
 

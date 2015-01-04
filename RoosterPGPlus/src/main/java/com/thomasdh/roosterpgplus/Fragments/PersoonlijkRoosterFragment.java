@@ -12,6 +12,7 @@ import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -23,6 +24,11 @@ import java.util.List;
 public class PersoonlijkRoosterFragment extends RoosterViewFragment {
     private static final String LOADS_NAME = "personal";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 2700000;
+
+    @Override
+    public String getAnalyticsTitle() {
+        return Constants.ANALYTICS_FRAGMENT_PERSROOSTER;
+    }
 
     //region Lifecycle
 
