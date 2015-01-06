@@ -52,12 +52,14 @@ public class GCMIntentService extends IntentService {
                 .setContentText(message)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setFullScreenIntent(contentPendingIntent, true)
                 .setContentIntent(contentPendingIntent)
                 .setLights(Color.RED, 300, 200)
-                .setVibrate(new long[] { 5000, 1000 })
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(message));
+                .setVibrate(new long[] { 0, 2000, 500, 2000, 500, 2000 })
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setColor(Color.parseColor("#F7D507"));
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify((int) (Math.random() * 54365323 + 100), builder.build());
