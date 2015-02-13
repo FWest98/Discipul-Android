@@ -20,3 +20,6 @@ android:
 
 before_install:
  - chmod +x gradlew
+
+jdk:
+ - oraclejdk8
