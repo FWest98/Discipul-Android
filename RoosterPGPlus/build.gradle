@@ -73,7 +73,7 @@ dependencies {
     compile 'org.robobinding:robobinding:0.8.1'
     compile 'com.j256.ormlite:ormlite-core:4.48'
     compile 'com.j256.ormlite:ormlite-android:4.48'
-    compile 'org.functionaljava:functionaljava:4.2-beta-1'
+    compile 'org.functionaljava:functionaljava:4.2'
     compile 'com.netflix.rxjava:rxjava-core:0.19.6'
     compile 'com.netflix.rxjava:rxjava-android:0.19.6'
     compile 'com.nineoldandroids:library:2.4.0'
