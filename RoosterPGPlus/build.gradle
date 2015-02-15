@@ -52,12 +52,17 @@ android {
             buildConfigField "boolean", "GRADLE_DEBUG", "false"
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
     compile 'org.roboguice:roboguice:3.+'
     provided 'org.roboguice:roboblender:3.+'
-    provided 'org.projectlombok:lombok:1.14.4'
+    provided 'org.projectlombok:lombok:1.16.2'
+    provided 'javax.annotation:jsr250-api:1.0'
     compile fileTree(dir: 'libs', include: '*.jar')
     // You must install or update the Support Repository through the SDK manager to use this dependency.
     //compile 'com.viewpagerindicator:library:2.4.1' HEEFT BUGGY ANDROID SUPPORT?!!!
