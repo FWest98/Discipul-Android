@@ -19,7 +19,7 @@
         android:layout_gravity="start"
         android:background="#F5F5F5"
         android:choiceMode="singleChoice"
-        android:divider="@drawable/abc_list_divider_holo_light"
+        android:divider="@drawable/abc_list_divider_mtrl_alpha"
         android:dividerHeight="1dp" />
 
 </android.support.v4.widget.DrawerLayout>

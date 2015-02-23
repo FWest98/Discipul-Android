@@ -3,8 +3,13 @@
     <color name="logindialog_textcolor">#FFF</color>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light" />
-    <style name="PreferenceTheme" parent="Theme.AppCompat.Light"/>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">#F5B400</item>
+        <item name="colorPrimaryDark">#E59900</item>
+        <item name="colorAccent">#FADC86</item>
+        <item name="android:windowBackground">@android:color/background_light</item>
+    </style>
+    <style name="PreferenceTheme" parent="AppTheme"/>
 
     <style name="ShowCaseTheme" parent="ShowcaseView">
         <item name="sv_showcaseColor">#F7D711</item>

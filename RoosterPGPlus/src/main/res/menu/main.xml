@@ -12,7 +12,7 @@
 
     <item
         android:id="@+id/menu_item_refresh"
-        android:icon="@drawable/navigation_refresh"
+        android:icon="@drawable/ic_action_refresh"
         android:title="@string/action_bar_button_refresh"
         app:showAsAction="ifRoom" />
 

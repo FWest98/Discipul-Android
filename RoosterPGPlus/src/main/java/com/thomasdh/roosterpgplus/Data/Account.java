@@ -146,6 +146,15 @@ public class Account {
                                 isHandlingNewVersion = false;
                             }, context);
                         }
+                        case 19: {
+                            // GCMID wel verzenden, maar niet lokaal inschakelen
+                            isHandlingNewVersion = true;
+                            if(HelperFunctions.hasInternetConnection(context)) {
+                                Account.getInstance(context, true).registerGCM();
+                                pref.edit().putInt("oldVersion", currentVersion).commit();
+                                isHandlingNewVersion = false;
+                            }
+                        }
                     }
                 }
             }
