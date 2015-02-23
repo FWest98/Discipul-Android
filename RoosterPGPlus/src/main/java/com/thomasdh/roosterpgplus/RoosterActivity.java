@@ -11,6 +11,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,6 +51,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     private static int selectedWeek = -1;
 
     private static ActionBar actionBar;
+    private static Toolbar toolbar;
     private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
     private ActionBarDrawerToggle actionBarDrawerToggle;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem refreshItem;
@@ -69,9 +71,10 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         super.onCreate(savedInstanceState);
 
         /* Setup */
-        //databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
-        //GoogleAnalytics.getInstance(this).setDryRun(true);
         setContentView(R.layout.activity_rooster);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
         Account.getInstance(this);
 
