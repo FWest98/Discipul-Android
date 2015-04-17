@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="logindialog_textcolor">#FFF</color>
+    <color name="colorPrimary">#F5B400</color>
+    <color name="colorPrimaryDark">#E59900</color>
+    <color name="colorAccent">#FADC86</color>
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">#F5B400</item>
-        <item name="colorPrimaryDark">#E59900</item>
-        <item name="colorAccent">#FADC86</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@android:color/background_light</item>
     </style>
-    <style name="PreferenceTheme" parent="AppTheme"/>
+
+    <style name="PreferenceTheme" parent="AppTheme">
+        <item name="actionBarStyle">@style/BackActionBar</item>
+    </style>
+
+    <style name="BackActionBar" parent="Widget.AppCompat.Light.ActionBar">
+        <item name="displayOptions">showHome|homeAsUp|showTitle</item>
+    </style>
 
     <style name="ShowCaseTheme" parent="ShowcaseView">
         <item name="sv_showcaseColor">#F7D711</item>
