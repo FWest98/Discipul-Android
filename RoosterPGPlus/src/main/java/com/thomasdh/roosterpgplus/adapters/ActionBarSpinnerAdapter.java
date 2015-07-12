@@ -1,6 +1,6 @@
 package com.thomasdh.roosterpgplus.Adapters;
 
-import android.content.Context;
+import android.app.Activity;
 import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +11,6 @@ import android.widget.TextView;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +19,12 @@ import lombok.Getter;
 public class ActionBarSpinnerAdapter implements SpinnerAdapter {
     @Getter
     private Class<?> type;
-    private final WeakReference<Context> context;
+    private final Activity activity;
     private final List<String> data;
     private ArrayList<DataSetObserver> observers = new ArrayList<>();
 
-    public ActionBarSpinnerAdapter(Context context, List<String> data, Class<?> type) {
-        this.context = new WeakReference<>(context);
+    public ActionBarSpinnerAdapter(Activity activity, List<String> data, Class<?> type) {
+        this.activity = activity;
         this.data = data;
         setType(type);
     }
@@ -74,8 +73,9 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null && context.get() != null) {
-            LayoutInflater vi = (LayoutInflater) context.get().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        if (convertView == null && activity!= null) {
+            activity.setTheme(R.style.AppTheme);
+            LayoutInflater vi = activity.getLayoutInflater();
             convertView = vi.inflate(android.R.layout.simple_spinner_dropdown_item, parent, false);
         }
         if (convertView != null) {
@@ -87,12 +87,12 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (context.get() != null) {
-            View view = View.inflate(context.get(), R.layout.action_bar_list_view, null);
+        if (activity != null) {
+            View view = View.inflate(activity, R.layout.action_bar_list_view, null);
             ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
 
             int typeRes = type.getAnnotation(FragmentTitle.class).title();
-            ((TextView) view.findViewById(R.id.action_bar_dropdown_type)).setText(context.get().getString(typeRes));
+            ((TextView) view.findViewById(R.id.action_bar_dropdown_type)).setText(activity.getString(typeRes));
             return view;
         }
         return null;

@@ -6,16 +6,20 @@
     <color name="colorAccent">#FADC86</color>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="MaterialDrawerTheme.Light">
+    <style name="AppTheme" parent="MaterialDrawerTheme.Light.DarkToolbar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@android:color/background_light</item>
+        <item name="actionBarWidgetTheme">@style/Theme.AppCompat.Light</item>
     </style>
 
-    <style name="PreferenceTheme" parent="AppTheme">
-
+    <style name="PreferenceTheme" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowActionModeOverlay">true</item>
     </style>
 
     <style name="ShowCaseTheme" parent="ShowcaseView">

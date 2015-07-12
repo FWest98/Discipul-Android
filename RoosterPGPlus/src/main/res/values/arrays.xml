@@ -18,13 +18,13 @@
     <string-array name="drawer_icons_rooster">
         <item>ic_person_grey</item>
         <item>ic_people_grey</item>
-        <item>ic_people_grey</item>
-        <item>ic_people_grey</item>
-        <item>ic_people_grey</item>
+        <item>ic_school_grey</item>
+        <item>ic_location_grey</item>
+        <item>ic_contact_grey</item>
     </string-array>
     <string-array name="drawer_icons_pgtv">
-        <item>ic_people_grey</item>
-        <item>ic_people_grey</item>
+        <item>ic_rate_review_grey</item>
+        <item>ic_speaker_notes_grey</item>
     </string-array>
     <integer-array name="breaking_account_versions">
         <item>6</item>

@@ -232,7 +232,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             LinearLayout root = (LinearLayout) findViewById(android.R.id.list).getParent().getParent().getParent();
-            toolbar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.activity_preferences_toolbar, root, false);
+            toolbar = (Toolbar) getLayoutInflater().inflate(R.layout.activity_preferences_toolbar, root, false);
             toolbar.setTitle(getTitle());
             root.addView(toolbar, 0);
         } else {

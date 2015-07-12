@@ -123,7 +123,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 .addProfiles(
                         new ProfileDrawerItem().withName(Account.getName()).withEmail("Klas " + Account.getLeerlingKlas())
                 )
-                .withHeaderBackground(R.drawable.drawer_header)
+                .withHeaderBackground(R.drawable.drawer_header_blurred)
                 .withHeaderBackgroundScaleType(ImageView.ScaleType.CENTER_CROP)
                 .withOnAccountHeaderListener((view, iProfile, b) -> false)
                 .withSavedInstance(savedInstanceState)
