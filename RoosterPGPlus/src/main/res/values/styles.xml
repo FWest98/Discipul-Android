@@ -6,7 +6,7 @@
     <color name="colorAccent">#FADC86</color>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="MaterialDrawerTheme.Light">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -15,11 +15,7 @@
     </style>
 
     <style name="PreferenceTheme" parent="AppTheme">
-        <item name="actionBarStyle">@style/BackActionBar</item>
-    </style>
 
-    <style name="BackActionBar" parent="Widget.AppCompat.Light.ActionBar">
-        <item name="displayOptions">showHome|homeAsUp|showTitle</item>
     </style>
 
     <style name="ShowCaseTheme" parent="ShowcaseView">

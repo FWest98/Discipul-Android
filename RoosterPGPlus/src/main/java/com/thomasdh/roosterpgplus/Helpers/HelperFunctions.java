@@ -10,6 +10,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.thomasdh.roosterpgplus.Settings.Constants;
 
+import java.lang.reflect.Field;
+
 
 public class HelperFunctions {
     public static boolean hasInternetConnection(Context context) {
@@ -43,6 +45,15 @@ public class HelperFunctions {
             int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity);
             GooglePlayServicesUtil.getErrorDialog(resultCode, activity, Constants.PLAY_SERVICES_RESOLUTION_REQUEST).show();
             return false;
+        }
+    }
+
+    public static int getResId(String resName, Class<?> c) {
+        try {
+            Field idField = c.getField(resName);
+            return idField.getInt(null);
+        } catch(Exception e) {
+            return -1;
         }
     }
 }

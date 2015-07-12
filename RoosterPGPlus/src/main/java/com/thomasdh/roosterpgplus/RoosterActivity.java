@@ -16,12 +16,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 
 import com.fwest98.showcaseview.ShowcaseView;
 import com.fwest98.showcaseview.targets.ViewTarget;
 import com.google.android.gms.analytics.HitBuilders;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.accountswitcher.AccountHeader;
+import com.mikepenz.materialdrawer.accountswitcher.AccountHeaderBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
+import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
-import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Data.SearchRecentsProvider;
@@ -42,7 +50,6 @@ import java.util.Calendar;
 import lombok.AccessLevel;
 import lombok.Getter;
 import roboguice.activity.RoboActionBarActivity;
-import roboguice.inject.InjectView;
 
 public class RoosterActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadStateChangedListener {
     private static final String ROOSTER_TYPE = "roosterType";
@@ -57,14 +64,16 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem refreshItem;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem searchItem;
 
-    @InjectView(R.id.drawerlayout)
+    //@InjectView(R.id.drawerlayout)
     private DrawerLayout drawerLayout;
-    @InjectView(R.id.drawer)
+    //@InjectView(R.id.drawer)
     private ExpandableListView drawerList;
 
     private RoosterViewFragment mainFragment;
     private Class<? extends RoosterViewFragment> roosterType;
     private boolean isRooster = true;
+    private Drawer drawer;
+    private AccountHeader drawerHeader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,13 +118,113 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         }
 
         /* Navigation Drawer */
+        drawerHeader = new AccountHeaderBuilder()
+                .withActivity(this)
+                .addProfiles(
+                        new ProfileDrawerItem().withName(Account.getName()).withEmail("Klas " + Account.getLeerlingKlas())
+                )
+                .withHeaderBackground(R.drawable.drawer_header)
+                .withHeaderBackgroundScaleType(ImageView.ScaleType.CENTER_CROP)
+                .withOnAccountHeaderListener((view, iProfile, b) -> false)
+                .withSavedInstance(savedInstanceState)
+                .withProfileImagesVisible(false)
+                .withSelectionListEnabled(false)
+                .build();
+
         ArrayList<String> groups = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_groups)));
-        ArrayList<ArrayList<String>> children = new ArrayList<ArrayList<String>>() {{
+        ArrayList<ArrayList<String>> itemTitles = new ArrayList<ArrayList<String>>() {{
             add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_roosters))));
             add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_pgtv))));
         }};
+        ArrayList<ArrayList<String>> itemIcons = new ArrayList<ArrayList<String>>() {{
+           add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_icons_rooster))));
+            add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_icons_pgtv))));
+        }};
 
-        drawerList.setAdapter(new NavigationDrawerAdapter(this, groups, children));
+        DrawerBuilder drawerBuilder = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withAccountHeader(drawerHeader)
+                .withAnimateDrawerItems(true)
+                .withCloseOnClick(true)
+                .withSavedInstance(savedInstanceState)
+                .withOnDrawerItemClickListener((adapterView, view, i, l, iDrawerItem) -> {
+                    int firstDigit = iDrawerItem.getIdentifier() / 10; // first digit
+                    int secondDigit = iDrawerItem.getIdentifier() % 10; // second digit
+
+                    if (firstDigit == 0) {
+                        // Roostergroup
+                        Class<? extends RoosterViewFragment> newType = RoosterViewFragment.types[secondDigit];
+
+                        mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek(), this);
+                        roosterType = newType;
+
+                        if (actionBarSpinnerAdapter != null)
+                            actionBarSpinnerAdapter.setType(newType);
+
+                        isRooster = true;
+                    } else if(firstDigit == 1) {
+                        // PGTV group
+                        Class<? extends RoosterViewFragment> newType = PGTVRoosterFragment.class;
+
+                        PGTVRoosterFragment fragment = RoosterViewFragment.newInstance(PGTVRoosterFragment.class, getSelectedWeek(), this);
+
+                        switch (secondDigit) {
+                            case 0:
+                                fragment.setType(PGTVRoosterFragment.PGTVType.ROOSTER);
+                                break;
+                            case 1:
+                                fragment.setType(PGTVRoosterFragment.PGTVType.MEDEDELINGEN);
+                                break;
+                            default:
+                                break;
+                        }
+                        actionBar.setTitle("PGTV - " + fragment.getType().toDesc());
+                        isRooster = false;
+                        mainFragment = fragment;
+                        roosterType = newType;
+                    } else if(firstDigit == 2) {
+                        // Settings
+                        drawer.closeDrawer();
+                        Intent preferencesIntent = new Intent(this, PreferencesActivity.class);
+                        startActivity(preferencesIntent);
+                        return false;
+                    }
+
+                    getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
+                    drawer.closeDrawer();
+
+                    return true;
+                });
+
+        int i = 0;
+        for(String groupName : groups) {
+            drawerBuilder.addDrawerItems(new SectionDrawerItem().setDivider(i != 0).withName(groupName));
+            int u = 0;
+            for(String childName : itemTitles.get(i)) {
+                int resource = HelperFunctions.getResId(itemIcons.get(i).get(u), R.drawable.class);
+                drawerBuilder.addDrawerItems(
+                        new PrimaryDrawerItem()
+                                .withName(childName)
+                                .withIdentifier(Integer.parseInt(i + "" + u))
+                                .withIcon(resource)
+                );
+                u++;
+            }
+            i++;
+        }
+
+        drawer = drawerBuilder
+                .addDrawerItems(
+                        new DividerDrawerItem(),
+                        new PrimaryDrawerItem().withName("Instellingen").withIcon(R.drawable.ic_settings_grey).withIdentifier(20)
+                )
+                .withSelectedItem(1)
+                .build();
+
+        drawerLayout = drawer.getDrawerLayout();
+
+        /*drawerList.setAdapter(new NavigationDrawerAdapter(this, groups, children));
         drawerList.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
             if (groupPosition == 0) {
                 Class<? extends RoosterViewFragment> newType = RoosterViewFragment.types[childPosition];
@@ -161,7 +270,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         // Open alle groepen
         for (int pos = 0; pos < drawerList.getExpandableListAdapter().getGroupCount(); pos++) {
             drawerList.expandGroup(pos);
-        }
+        }*/
 
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
             public void onDrawerClosed(View view) {
@@ -225,6 +334,9 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState = drawer.saveInstanceState(savedInstanceState);
+        savedInstanceState = drawerHeader.saveInstanceState(savedInstanceState);
+
         savedInstanceState.putSerializable(ROOSTER_TYPE, roosterType);
         savedInstanceState.putInt("WEEK", getSelectedWeek());
         if(!isRooster) {
@@ -243,6 +355,15 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     }
 
     @Override
+    public void onBackPressed() {
+        if(drawer != null && drawer.isDrawerOpen()) {
+            drawer.closeDrawer();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
@@ -257,7 +378,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        boolean drawerOpen = drawerLayout.isDrawerOpen(drawerList);
+        boolean drawerOpen = drawer.isDrawerOpen();
         menu.findItem(R.id.menu_item_refresh).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
@@ -320,7 +441,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     @Override
     public void onRoosterLoadCancel() {
         setRefreshButtonState(false);
-        drawerLayout.openDrawer(drawerList);
+        drawer.openDrawer();
     }
 
     void setRefreshButtonState(boolean loading) {

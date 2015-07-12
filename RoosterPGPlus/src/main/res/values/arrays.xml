@@ -15,6 +15,17 @@
         <item>Roosterwijzigingen</item>
         <item>Algemene mededelingen</item>
     </string-array>
+    <string-array name="drawer_icons_rooster">
+        <item>ic_person_grey</item>
+        <item>ic_people_grey</item>
+        <item>ic_people_grey</item>
+        <item>ic_people_grey</item>
+        <item>ic_people_grey</item>
+    </string-array>
+    <string-array name="drawer_icons_pgtv">
+        <item>ic_people_grey</item>
+        <item>ic_people_grey</item>
+    </string-array>
     <integer-array name="breaking_account_versions">
         <item>6</item>
         <item>15</item>

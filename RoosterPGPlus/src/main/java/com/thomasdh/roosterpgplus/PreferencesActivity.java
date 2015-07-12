@@ -8,7 +8,13 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
+import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
@@ -216,6 +222,43 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_MAIN);
             tracker.send(new HitBuilders.ScreenViewBuilder().build());
         }
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        Toolbar toolbar;
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            LinearLayout root = (LinearLayout) findViewById(android.R.id.list).getParent().getParent().getParent();
+            toolbar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.activity_preferences_toolbar, root, false);
+            toolbar.setTitle(getTitle());
+            root.addView(toolbar, 0);
+        } else {
+            ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
+            ListView content = (ListView) root.getChildAt(0);
+
+            root.removeAllViews();
+
+            toolbar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.activity_preferences_toolbar, root, false);
+
+            int height;
+            TypedValue typedValue = new TypedValue();
+            if(getTheme().resolveAttribute(R.attr.actionBarSize, typedValue, true)) {
+                height = TypedValue.complexToDimensionPixelSize(typedValue.data, getResources().getDisplayMetrics());
+            } else {
+                height = toolbar.getHeight();
+            }
+
+            content.setPadding(0, height, 0, 0);
+            toolbar.setTitle(getTitle());
+
+            root.addView(content);
+            root.addView(toolbar);
+        }
+
+        toolbar.setNavigationOnClickListener((v) -> finish());
     }
 
     @Override

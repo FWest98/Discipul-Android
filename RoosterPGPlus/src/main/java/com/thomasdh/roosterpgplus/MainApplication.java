@@ -9,12 +9,25 @@ import android.util.Log;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
 
+import org.acra.ACRA;
+import org.acra.annotation.ReportsCrashes;
+import org.acra.sender.HttpSender;
+
 import java.util.HashMap;
 
+@ReportsCrashes(
+        httpMethod = HttpSender.Method.PUT,
+        reportType = HttpSender.Type.JSON,
+        formUri = "http://logging.discipul.nl:5984/acra-discipul/_design/acra-storage/_update/report",
+        formUriBasicAuthLogin = "discipul_reporter",
+        formUriBasicAuthPassword = "2phh!3GRakVd"
+)
 public class MainApplication extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        ACRA.init(this);
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
 
