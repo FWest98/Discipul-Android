@@ -31,9 +31,8 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import roboguice.fragment.RoboFragment;
 
-public abstract class RoosterViewFragment extends RoboFragment implements ViewPager.OnPageChangeListener {
+public abstract class RoosterViewFragment extends android.support.v4.app.Fragment implements ViewPager.OnPageChangeListener {
     @Getter
     ViewPager viewPager;
     @Getter @Setter private View rootView;

@@ -8,7 +8,15 @@
     android:layout_height="wrap_content"
     android:minHeight="?attr/actionBarSize"
     app:navigationContentDescription="@string/abc_action_bar_up_description"
-    android:background="?attr/colorPrimary"
-    app:navigationIcon="?attr/homeAsUpIndicator"
-    app:title="@string/action_settings"
-    />
+    android:background="@color/colorPrimary"
+    app:navigationIcon="?attr/homeAsUpIndicator" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_settings"
+        android:textColor="#FFF"
+        style="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
+        android:id="@+id/toolbar_title" />
+
+</android.support.v7.widget.Toolbar>

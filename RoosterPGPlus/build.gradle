@@ -20,7 +20,7 @@ android {
     buildToolsVersion '21.1.2'
 
     defaultConfig {
-        minSdkVersion 10
+        minSdkVersion 11
         targetSdkVersion 21
         multiDexEnabled true
     }
@@ -59,8 +59,6 @@ android {
 }
 
 dependencies {
-    compile 'org.roboguice:roboguice:3.+'
-    provided 'org.roboguice:roboblender:3.+'
     provided 'org.projectlombok:lombok:1.16.2'
     provided 'javax.annotation:jsr250-api:1.0'
     compile fileTree(dir: 'libs', include: '*.jar')

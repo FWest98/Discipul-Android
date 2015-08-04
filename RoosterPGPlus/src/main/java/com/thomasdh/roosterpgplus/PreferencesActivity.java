@@ -1,20 +1,29 @@
 package com.thomasdh.roosterpgplus;
 
 import android.annotation.TargetApi;
-import android.content.Intent;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
+import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatCheckBox;
+import android.support.v7.widget.AppCompatCheckedTextView;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.AppCompatRadioButton;
+import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
+import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
@@ -31,8 +40,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@SuppressWarnings("deprecation")
-public class PreferencesActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class PreferencesActivity extends PreferenceActivity {
+
+    private Toolbar toolbar;
 
     @Override
     protected boolean isValidFragment(String fragmentName) {
@@ -43,198 +53,36 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        String summary;
-        if(Account.getUserType() == Account.UserType.LEERLING) {
-            summary = "Naam: " + Account.getName() + ", " + "Klas: " + Account.getLeerlingKlas();
-        } else {
-            summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
-        }
-        findPreference("mijn_account").setSummary(summary);
-
-        findPreference("account_upgraden").setEnabled(Account.isAppAccount());
-        findPreference("subklassen").setEnabled(!Account.isAppAccount());
-        findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Account.initialize(this);
 
-        // Voor android versies vóór 3.0
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) return;
+        /*ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
+        View content = root.getChildAt(0);
+        LinearLayout toolbarContainer = (LinearLayout) View.inflate(this, R.layout.activity_preferences, null);
 
-        String action = getIntent().getAction();
-        if ("com.thomasdh.roosterpgplus.PreferencesActivity$InfoFragment".equals(action)) {
-            addPreferencesFromResource(R.xml.preferences_info);
+        root.removeAllViews();
+        toolbarContainer.addView(content);
+        root.addView(toolbarContainer);
 
-            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
-            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_INFO);
-            tracker.send(new HitBuilders.ScreenViewBuilder().build());
-
-            try {
-                findPreference("versie").setTitle("Versie: " + getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
-            addPreferencesFromResource(R.xml.preferences_user);
-
-            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
-            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_USER);
-            tracker.send(new HitBuilders.ScreenViewBuilder().build());
-
-            if(!Account.isSet()) {
-                findPreference("subklassen").setEnabled(false);
-                findPreference("clusterklassen_reload").setEnabled(false);
-                findPreference("account_upgraden").setEnabled(false);
-                Preference logIn = findPreference("log_in");
-                Preference details = findPreference("mijn_account");
-
-                logIn.setOnPreferenceClickListener(preference -> {
-                    Account.getInstance(this).login(this, callback -> {
-                        Intent intent = getIntent();
-                        finish();
-                        startActivity(intent);
-                    });
-                    return true;
-                });
-                logIn.setTitle("Log in");
-                logIn.setSummary("Je bent nog niet ingelogd");
-
-                details.setTitle("Je bent nog niet ingelogd");
-                details.setSummary(null);
-                return;
-            }
-
-            // Initialize subklassen
-            ListPreferenceMultiSelect subklassenPref = (ListPreferenceMultiSelect) findPreference("subklassen");
-            subklassenPref.setEnabled(!Account.isAppAccount());
-            subklassenPref.setEntries(new String[]{"Subklassen"});
-            subklassenPref.setEntryValues(new String[]{"Subklassen"});
-
-            subklassenPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                ArrayList<String> newSubklassen = (ArrayList<String>) newValue;
-                Account.getInstance(this).setSubklassen(false, newSubklassen, result -> {});
-
-                return true;
-            });
-
-            Account.getInstance(this).getSubklassen(true, result -> {
-                ArrayList<Account.Subklas> subklasArray = (ArrayList<Account.Subklas>) result;
-
-                if (subklasArray != null) {
-                    ArrayList<String> strings = new ArrayList<>();
-                    ArrayList<String> namen = new ArrayList<>();
-
-                    for (Account.Subklas subklas : subklasArray) {
-                        strings.add(subklas.naam + ": " + subklas.vak + " van " + subklas.leraar);
-                        namen.add(subklas.naam);
-                    }
-
-                    subklassenPref.setEntries(strings.toArray(new String[strings.size()]));
-                    subklassenPref.setEntryValues(namen.toArray(new String[namen.size()]));
-                }
-            });
-
-            subklassenPref.setEnabled(!Account.isAppAccount());
-
-            // Create user and fill in account information
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-            String summary;
-            if(Account.getUserType() == Account.UserType.LEERLING) {
-                summary = "Naam: " + Account.getName() + ", " + "Klas: " + Account.getLeerlingKlas();
-            } else {
-                summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
-            }
-            findPreference("mijn_account").setSummary(summary);
-
-            // Configure login button
-            findPreference("log_in").setOnPreferenceClickListener(preference -> {
-                Account.getInstance(this).login(this, callback -> {
-                    Intent intent = getIntent();
-                    finish();
-                    startActivity(intent);
-                });
-
-                return true;
-            });
-
-            /* account upgraden */
-            findPreference("account_upgraden").setEnabled(Account.isAppAccount());
-            findPreference("account_upgraden").setOnPreferenceClickListener(preference -> {
-                Account.getInstance(this).extend();
-
-                return true;
-            });
-
-            findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
-            findPreference("clusterklassen_reload").setOnPreferenceClickListener(preference -> {
-                Account.getInstance(this).setSubklassen(true, null, result -> {
-                });
-
-                return true;
-            });
-        } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$OverigFragment".equals(action)) {
-            addPreferencesFromResource(R.xml.preferences_overig);
-
-            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
-            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_OVERIG);
-            tracker.send(new HitBuilders.ScreenViewBuilder().build());
-
-            findPreference("analytics").setOnPreferenceChangeListener((pref, newValue) -> {
-                GoogleAnalytics.getInstance(getApplicationContext()).setAppOptOut((Boolean) newValue);
-                return true;
-            });
-        } else if ("com.thomasdh.roosterpgplus.PreferencesActivity$AchtergrondFragment".equals(action)) {
-            addPreferencesFromResource(R.xml.preferences_achtergrond);
-
-            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
-            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_NOTIFICATIES);
-            tracker.send(new HitBuilders.ScreenViewBuilder().build());
-
-            Preference mainSetting = findPreference("notificaties");
-            Preference notificationFirstShow = findPreference("notificationFirstShow");
-
-            mainSetting.setOnPreferenceChangeListener((preference, newValue) -> {
-                boolean choice = (boolean) newValue;
-                if (choice) {
-                    notificationFirstShow.setEnabled(true);
-                    new NextUurNotifications(this, 0, true); // Setup
-                } else {
-                    notificationFirstShow.setEnabled(false);
-                    NextUurNotificationActionReceiver.disableNotifications(this);
-                }
-                return true;
-            });
-
-            notificationFirstShow.setOnPreferenceChangeListener((preference, newValue) -> {
-                NextUurNotificationActionReceiver.disableNotifications(this);
-                new NextUurNotifications(this, Long.parseLong((String) newValue), true); // Update alles
-                return true;
-            });
-
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            addPreferencesFromResource(R.xml.preference_headers_old);
-
-            Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext());
-            tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_MAIN);
-            tracker.send(new HitBuilders.ScreenViewBuilder().build());
-        }
+        toolbar = (Toolbar) toolbarContainer.findViewById(R.id.toolbar);
+        toolbar.setTitle(getTitle());
+        toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+        toolbar.setNavigationOnClickListener(v -> finish());*/
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 
-        Toolbar toolbar;
-
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             LinearLayout root = (LinearLayout) findViewById(android.R.id.list).getParent().getParent().getParent();
-            toolbar = (Toolbar) getLayoutInflater().inflate(R.layout.activity_preferences_toolbar, root, false);
-            toolbar.setTitle(getTitle());
+            toolbar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.activity_preferences_toolbar, root, false);
+            ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText(getTitle());
             root.addView(toolbar, 0);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+            }
         } else {
             ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
             ListView content = (ListView) root.getChildAt(0);
@@ -252,7 +100,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             }
 
             content.setPadding(0, height, 0, 0);
-            toolbar.setTitle(getTitle());
+            ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText(getTitle());
 
             root.addView(content);
             root.addView(toolbar);
@@ -267,13 +115,28 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         return true;
     }
 
+    @Nullable
     @Override
-    protected void onResume() {
-        super.onResume();
-        String action = getIntent().getAction();
-        if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
-            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    public View onCreateView(String name, Context context, AttributeSet attrs) {
+        final View result = super.onCreateView(name, context, attrs);
+        if(result != null) return result;
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            switch(name) {
+                case "EditText":
+                    return new AppCompatEditText(this, attrs);
+                case "Spinner":
+                    return new AppCompatSpinner(this, attrs);
+                case "CheckBox":
+                    return new AppCompatCheckBox(this, attrs);
+                case "RadioButton":
+                    return new AppCompatRadioButton(this, attrs);
+                case "CheckedTextView":
+                    return new AppCompatCheckedTextView(this, attrs);
+            }
         }
+
+        return null;
     }
 
     @Override
@@ -285,15 +148,6 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
                 .build()
         );*/
         super.onStop();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        String action = getIntent().getAction();
-        if ("com.thomasdh.roosterpgplus.PreferencesActivity$UserFragment".equals(action)) {
-            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-        }
     }
 
     @Override
@@ -311,8 +165,17 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
+    public static class ThemedPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            getActivity().setTheme(R.style.PreferenceTheme);
+        }
+    }
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class InfoFragment extends PreferenceFragment {
+    public static class InfoFragment extends ThemedPreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -331,7 +194,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class OverigFragment extends PreferenceFragment {
+    public static class OverigFragment extends ThemedPreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -349,7 +212,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class AchtergrondFragment extends PreferenceFragment {
+    public static class AchtergrondFragment extends ThemedPreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -394,7 +257,7 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class UserFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+    public static class UserFragment extends ThemedPreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

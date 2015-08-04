@@ -2,10 +2,9 @@ package com.thomasdh.roosterpgplus.Adapters;
 
 import android.app.Activity;
 import android.database.DataSetObserver;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SpinnerAdapter;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
@@ -16,7 +15,7 @@ import java.util.List;
 
 import lombok.Getter;
 
-public class ActionBarSpinnerAdapter implements SpinnerAdapter {
+public class ActionBarSpinnerAdapter extends BaseAdapter {
     @Getter
     private Class<?> type;
     private final Activity activity;
@@ -73,16 +72,15 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null && activity!= null) {
-            activity.setTheme(R.style.AppTheme);
-            LayoutInflater vi = activity.getLayoutInflater();
-            convertView = vi.inflate(android.R.layout.simple_spinner_dropdown_item, parent, false);
+        if(convertView == null || !convertView.getTag().toString().equals("DROPDOWN")) {
+            convertView = activity.getLayoutInflater().inflate(R.layout.toolbar_spinner_item_dropdown, parent, false);
+            convertView.setTag("DROPDOWN");
         }
-        if (convertView != null) {
-            ((TextView) convertView).setText(data.get(position));
-        }
-        return convertView;
 
+        TextView textView = (TextView) convertView.findViewById(android.R.id.text1);
+        textView.setText(data.get(position));
+
+        return convertView;
     }
 
     @Override

@@ -10,13 +10,19 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.fwest98.showcaseview.ShowcaseView;
 import com.fwest98.showcaseview.targets.ViewTarget;
@@ -49,9 +55,8 @@ import java.util.Calendar;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import roboguice.activity.RoboActionBarActivity;
 
-public class RoosterActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadStateChangedListener {
+public class RoosterActivity extends AppCompatActivity implements InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadStateChangedListener {
     private static final String ROOSTER_TYPE = "roosterType";
 
     @Getter
@@ -59,7 +64,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
 
     private static ActionBar actionBar;
     private static Toolbar toolbar;
-    private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
+    private static ActionBarSpinnerAdapter toolbarSpinnerAdapter;
     private ActionBarDrawerToggle actionBarDrawerToggle;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem refreshItem;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem searchItem;
@@ -68,6 +73,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     private DrawerLayout drawerLayout;
     //@InjectView(R.id.drawer)
     private ExpandableListView drawerList;
+    private int currentSelection;
 
     private RoosterViewFragment mainFragment;
     private Class<? extends RoosterViewFragment> roosterType;
@@ -88,6 +94,8 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         Account.getInstance(this);
 
         new NextUurNotifications(this);
+
+
 
         if (savedInstanceState == null) {
             Intent intent = getIntent();
@@ -159,8 +167,8 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                         mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek(), this);
                         roosterType = newType;
 
-                        if (actionBarSpinnerAdapter != null)
-                            actionBarSpinnerAdapter.setType(newType);
+                        if (toolbarSpinnerAdapter != null)
+                            toolbarSpinnerAdapter.setType(newType);
 
                         isRooster = true;
                     } else if(firstDigit == 1) {
@@ -186,6 +194,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                     } else if(firstDigit == 2) {
                         // Settings
                         drawer.closeDrawer();
+                        drawer.setSelectionByIdentifier(currentSelection);
                         Intent preferencesIntent = new Intent(this, PreferencesActivity.class);
                         startActivity(preferencesIntent);
                         return false;
@@ -193,6 +202,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
 
                     getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
                     drawer.closeDrawer();
+                    currentSelection = iDrawerItem.getIdentifier();
 
                     return true;
                 });
@@ -221,6 +231,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 )
                 .withSelectedItem(1)
                 .build();
+        currentSelection = 1;
 
         drawerLayout = drawer.getDrawerLayout();
 
@@ -233,8 +244,8 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek(), this);
                 roosterType = newType;
 
-                if(actionBarSpinnerAdapter != null)
-                    actionBarSpinnerAdapter.setType(newType);
+                if(toolbarSpinnerAdapter != null)
+                    toolbarSpinnerAdapter.setType(newType);
 
                 getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
                 isRooster = true;
@@ -277,25 +288,18 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 super.onDrawerClosed(view);
                 if(getSelectedWeek() == -1) return;
                 if(isRooster) {
-                    if(actionBarSpinnerAdapter.getCount() >= 1) {
-                        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-                        getSupportActionBar().setDisplayShowTitleEnabled(false);
-                    } else {
-                        getSupportActionBar().setTitle(R.string.app_name);
-                        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-                        getSupportActionBar().setDisplayShowTitleEnabled(true);
-                    }
+                    toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
+                    toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.VISIBLE);
                 } else {
-                    getSupportActionBar().setTitle("PGTV - "+((PGTVRoosterFragment) mainFragment).getType().toDesc());
+                    toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.GONE);
+                    toolbar.findViewById(R.id.toolbar_title).setVisibility(View.VISIBLE);
+                    ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText("PGTV - "+((PGTVRoosterFragment) mainFragment).getType().toDesc());
                 }
                 supportInvalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View view) {
                 super.onDrawerOpened(view);
-                getSupportActionBar().setTitle(R.string.app_name);
-                getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-                getSupportActionBar().setDisplayShowTitleEnabled(true);
                 supportInvalidateOptionsMenu();
             }
         };
@@ -315,7 +319,7 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         if(((Object) mainFragment).getClass() != EntityRoosterFragment.class) {
             roosterType = EntityRoosterFragment.class;
             EntityRoosterFragment searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
-            actionBarSpinnerAdapter.setType(roosterType);
+            toolbarSpinnerAdapter.setType(roosterType);
 
             mainFragment = searchFragment;
             searchFragment.setEntity(intent.getStringExtra(SearchManager.QUERY));
@@ -406,10 +410,6 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) return true;
 
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                Intent preferencesIntent = new Intent(this, PreferencesActivity.class);
-                startActivity(preferencesIntent);
-                return true;
             case R.id.menu_item_refresh:
                 mainFragment.loadRooster(true);
                 return true;
@@ -455,9 +455,8 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         }
     }
 
-    @Override
-    public boolean onNavigationItemSelected(int pos, long item) {
-        String itemString = (String) actionBarSpinnerAdapter.getItem(pos);
+    public boolean onWeekSelected(int pos) {
+        String itemString = (String) toolbarSpinnerAdapter.getItem(pos);
         int week = Integer.parseInt(itemString.substring(5));
 
         MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext())
@@ -482,16 +481,34 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 strings.add("Week " + wekenArray.get(c).week);
             }
         }
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, ((Object) mainFragment).getClass());
-        actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, this);
+
+        View spinnerContainer = LayoutInflater.from(this).inflate(R.layout.toolbar_spinner, toolbar, false);
+        ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        toolbar.addView(spinnerContainer, layoutParams);
+        toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
+
+        toolbarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, ((Object) mainFragment).getClass());
+
+        Spinner spinner = (Spinner) spinnerContainer.findViewById(R.id.toolbar_spinner);
+        spinner.setAdapter(toolbarSpinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                onWeekSelected(i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         if(isRooster) {
             actionBar.setDisplayShowTitleEnabled(false);
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         }
 
         if(getSelectedWeek() != -1) {
-            actionBar.setSelectedNavigationItem(strings.indexOf("Week "+getSelectedWeek()));
+            spinner.setSelection(strings.indexOf("Week " + getSelectedWeek()));
         }
     }
 

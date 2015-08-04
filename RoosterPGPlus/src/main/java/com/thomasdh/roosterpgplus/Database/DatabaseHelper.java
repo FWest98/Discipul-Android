@@ -2,6 +2,7 @@ package com.thomasdh.roosterpgplus.Database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
@@ -12,8 +13,6 @@ import com.thomasdh.roosterpgplus.R;
 
 import java.sql.SQLException;
 import java.util.Hashtable;
-
-import roboguice.util.Ln;
 
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String DATABASE_NAME = "roosterpgplus.db";
@@ -30,7 +29,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         try {
             TableUtils.createTable(connectionSource, Lesuur.class);
         } catch (SQLException e) {
-            Ln.e(e, "Fout bij maken DB");
+            Log.e("ERROR", "Fout bij maken DB", e);
             throw new RuntimeException(e);
         }
 
@@ -45,7 +44,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
             onCreate(db, connectionSource);
         } catch (SQLException e) {
-            Ln.e(e, "Fout bij verwijderen DB");
+            Log.e("ERROR", "Fout bij verwijderen DB", e);
             throw new RuntimeException(e);
         }
     }
