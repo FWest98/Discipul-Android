@@ -2,6 +2,7 @@ package com.thomasdh.roosterpgplus.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,10 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         setRootView(inflater.inflate(R.layout.fragment_main, container, false));
+
+        swipeRefreshLayout = (SwipeRefreshLayout) getRootView().findViewById(R.id.rooster_swiperefresh);
+        swipeRefreshLayout.setOnRefreshListener(() -> loadRooster(true));
+
         viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 

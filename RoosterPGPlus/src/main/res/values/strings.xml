@@ -88,7 +88,7 @@
     <string name="settings_user_title">Gebruiker</string>
     <string name="settings_background_title">Notificaties</string>
     <string name="settings_other_title">Overig</string>
-    <string name="settings_info_title">Info</string>
+    <string name="settings_info_title">Over de app</string>
     <string name="settings_notifications_title">Notificaties</string>
     <string name="settings_notifications_summary">Meldingen die de volgende les aangeven</string>
     <string name="settings_notificationsInterval_summary">Hoeveel minuten voor aanvang van de les de melding getoond moet worden</string>
@@ -101,6 +101,7 @@
     <string name="settings_user_relogin_title">Andere gebruiker</string>
     <string name="settings_user_resetClusterklassenSummary">Herstel je clusterklassen naar het origineel</string>
     <string name="settings_user_resetClusterklassenTitle">Reset clusterklassen</string>
+    <string name="settings_about_app_desc">Dit is een app om het rooster van Infoweb op een handige en makkelijke manier te tonen op Android</string>
 
     <!-- Showcaseviews -->
     <string name="showcaseview_weekkeuze_title">Weekkeuze</string>

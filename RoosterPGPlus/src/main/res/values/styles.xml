@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="logindialog_textcolor">#FFF</color>
+    <color name="logindialog_textcolor">#000</color>
     <color name="colorPrimary">#F5B400</color>
     <color name="colorPrimaryDark">#E59900</color>
     <color name="colorAccent">#FADC86</color>
@@ -9,11 +9,7 @@
     <style name="AppTheme" parent="MaterialDrawerTheme.Light.DarkToolbar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:textColorPrimary">@color/abc_primary_text_material_dark</item>
-        <item name="android:textColorPrimaryInverse">@color/abc_primary_text_material_dark</item>
-        <item name="actionMenuTextColor">@color/abc_primary_text_material_dark</item>
-        <item name="android:textColorSecondary">@color/abc_secondary_text_material_dark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@android:color/background_light</item>
         <item name="actionBarWidgetTheme">@style/Theme.AppCompat.Light</item>
@@ -22,14 +18,13 @@
     <style name="PreferenceTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:textColorPrimary">@color/abc_primary_text_material_dark</item>
-        <item name="android:textColorPrimaryInverse">@color/abc_primary_text_material_dark</item>
-        <item name="actionMenuTextColor">@color/abc_primary_text_material_dark</item>
-        <item name="android:textColorSecondary">@color/abc_secondary_text_material_dark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
         <item name="windowActionModeOverlay">true</item>
-        <item name="android:windowBackground">@android:color/background_light</item>
-        <item name="actionBarWidgetTheme">@style/Theme.AppCompat.Light</item>
+        <item name="android:actionBarStyle">@style/BackActionBar</item>
+    </style>
+
+    <style name="BackActionBar" parent="Widget.AppCompat.Light.ActionBar">
+        <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
     </style>
 
     <!-- Showcasetheme -->

@@ -8,6 +8,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -58,6 +59,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
         return lesView;
     };
+    @Setter private OnDagScrollListener onDagScrollListener = (scrollY, dag) -> {};
 
     private Array<Lesuur> lessen;
     private boolean weekView;
@@ -212,6 +214,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
         @Setter private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");
 
         private LinearLayout linearLayout;
+        private ScrollView scrollView;
 
         public View build() {
             linearLayout = (LinearLayout) parentView.findViewById(R.id.rooster_dag_linearlayout);
@@ -302,6 +305,13 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                 int pxPadding = converter.DPtoPX(10);
                 linearLayout.addView(getUpdateText(lastLoad));
                 linearLayout.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
+
+                scrollView = (ScrollView) parentView.findViewById(R.id.scrollView);
+                scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                    int scrollY = scrollView.getScrollY();
+
+                    onDagScrollListener.OnScroll(scrollY, dag - 2); // weekdag naar kolomconversie
+                });
             }
 
             return parentView;
@@ -397,5 +407,9 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
     public interface BuilderFunctions {
         View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
+    }
+
+    public interface OnDagScrollListener {
+        void OnScroll(int scrollY, int dag);
     }
 }

@@ -2,6 +2,7 @@ package com.thomasdh.roosterpgplus.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,11 +36,16 @@ import lombok.Setter;
 public abstract class RoosterViewFragment extends android.support.v4.app.Fragment implements ViewPager.OnPageChangeListener {
     @Getter
     ViewPager viewPager;
+    @Getter
+    SwipeRefreshLayout swipeRefreshLayout;
     @Getter @Setter private View rootView;
+
     public enum LoadType { OFFLINE, ONLINE, NEWONLINE, REFRESH }
 
     @Getter(value = AccessLevel.PACKAGE) private int week;
     @Getter @Setter private int dag = 0;
+    private boolean isScrollingViewPager = false;
+    private boolean[] isScrollingScrollView = new boolean[5];
 
     public interface onRoosterLoadStateChangedListener {
         public void onRoosterLoadEnd();
@@ -83,7 +89,6 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     //endregion
     //region LifeCycle
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,11 +96,19 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
         Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity());
         tracker.setScreenName(getAnalyticsTitle());
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+        onPostCreateView();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return null;
+    }
+
+    public void onPostCreateView() {
+        if(swipeRefreshLayout != null) {
+            swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent, R.color.colorPrimaryDark);
+        }
     }
 
     @Override
@@ -127,7 +140,11 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     public void onPageScrolled(int i, float v, int i2) {}
 
     @Override
-    public void onPageScrollStateChanged(int i) {}
+    public void onPageScrollStateChanged(int i) {
+        isScrollingViewPager = i != ViewPager.SCROLL_STATE_IDLE;
+        if(swipeRefreshLayout != null)
+            swipeRefreshLayout.setEnabled(!isScrollingViewPager && !isScrollingScrollView[getDag()]);
+    }
 
     @Override
     public void onPageSelected(int i) { setDag(i); }
@@ -165,15 +182,17 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
         LoadType loadType = reload ? LoadType.REFRESH : getLoadType();
 
         Rooster.getRooster(query, loadType, getActivity(), (result, urenCount) -> {
-            if(getActivity() == null) return; // oude context
-            if(loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
+            if (getActivity() == null) return; // oude context
+            if (loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
                 setLoad();
             }
             roosterLoadStateListener.onRoosterLoadEnd();
+            if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
             buildRooster(urenCount).build((List<Lesuur>) result);
         }, exception -> {
             roosterLoadStateListener.onRoosterLoadEnd();
-            if(loadType != LoadType.REFRESH) {
+            if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+            if (loadType != LoadType.REFRESH) {
                 buildRooster(0).build((List<Lesuur>) null);
             }
         });
@@ -193,12 +212,18 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     RoosterBuilder buildRooster(int urenCount) {
         if(getViewPager().getAdapter() == null) getViewPager().setAdapter(new AnimatedPagerAdapter());
         getViewPager().getAdapter().notifyDataSetChanged();
-        getViewPager().setOnPageChangeListener(this);
+        getViewPager().addOnPageChangeListener(this);
         return new RoosterBuilder(getActivity())
                 .in(getViewPager())
                 .setShowDag(getDag())
                 .setShowVervangenUren(true)
                 .setLastLoad(getLoad())
+                .setOnDagScrollListener((scrollY, dag) -> {
+                    if (swipeRefreshLayout != null && dag == getDag()) {
+                        isScrollingScrollView[dag] = scrollY != 0;
+                        swipeRefreshLayout.setEnabled(!isScrollingViewPager && !isScrollingScrollView[dag]);
+                    }
+                })
                 .setUrenCount(urenCount);
     }
 
