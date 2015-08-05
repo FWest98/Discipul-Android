@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -109,7 +110,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
         boolean isWide = context.getResources().getBoolean(R.bool.isWideWeekview);
         boolean isHigh = context.getResources().getBoolean(R.bool.isHighWeekview);
-        weekView = (isWide || isHigh) && !PreferenceManager.getDefaultSharedPreferences(context).getBoolean("forcePhonelayout", false);
+        weekView = (isWide || isHigh);
 
         int week = lessen.get(0).week;
         Calendar calendar = Calendar.getInstance();
@@ -182,10 +183,29 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             if (weekViewNoScroll || isWide) {
                 ScrollView scrollView = new ScrollView(context);
                 scrollView.addView(container);
+                scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                    int scrollY = scrollView.getScrollY();
+
+                    for(int i = 0; i < 10; i++) {
+                        onDagScrollListener.OnScroll(scrollY, i); // weekdag naar kolomconversie, alle dagen om problemen te voorkomen
+                    }
+                });
                 adapter.setView(scrollView, 0, context);
             } else if (isHigh) {
                 HorizontalScrollView scrollView = new HorizontalScrollView(context);
                 scrollView.addView(container);
+                scrollView.setOnTouchListener((view, motionEvent) -> {
+                    if(motionEvent.getAction() == MotionEvent.ACTION_SCROLL) {
+                        for(int i = 0; i < 10; i++) {
+                            onDagScrollListener.OnScroll(1, i);
+                        }
+                    } else if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                        for(int i = 0; i < 10; i++) {
+                            onDagScrollListener.OnScroll(0, i);
+                        }
+                    }
+                    return false;
+                });
                 adapter.setView(scrollView, 0, context);
             }
         } else {

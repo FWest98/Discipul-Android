@@ -2,6 +2,7 @@ package com.thomasdh.roosterpgplus.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,6 +59,8 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         setRootView(inflater.inflate(R.layout.fragment_main_docenten, container, false));
         viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
+        swipeRefreshLayout = (SwipeRefreshLayout) getRootView().findViewById(R.id.rooster_swiperefresh);
+        setupSwipeRefreshLayout();
 
         leraarSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_naam);
         vakSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_vak);

@@ -32,4 +32,22 @@
         tools:context=".MainActivity"
         android:animateLayoutChanges="true"
         tools:ignore="MergeRootFrame" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/search_overlay"
+        android:visibility="gone"
+        android:background="#AA000000" />
+
+    <com.quinny898.library.persistentsearch.SearchBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginTop="-3dp"
+        android:layout_marginLeft="-3dp"
+        android:layout_marginRight="-3dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:id="@+id/searchbox" />
 </RelativeLayout>

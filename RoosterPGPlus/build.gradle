@@ -13,6 +13,7 @@ apply plugin: 'retrolambda'
 repositories {
     mavenCentral()
     maven { url 'http://dl.bintray.com/populov/maven' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 android {
@@ -86,6 +87,7 @@ dependencies {
     compile 'com.google.android.apps.dashclock:dashclock-api:2.0.0'
     compile 'com.mikepenz.aboutlibraries:library:4.5.0'
     compile 'ch.acra:acra:4.6.1'
+    compile 'com.quinny898.library.persistentsearch:library:1.0.0-SNAPSHOT'
     compile('com.mikepenz:materialdrawer:3.1.2@aar') { transitive = true }
 }
 

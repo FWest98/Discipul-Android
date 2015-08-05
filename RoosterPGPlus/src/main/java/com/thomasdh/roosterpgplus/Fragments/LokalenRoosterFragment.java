@@ -3,6 +3,7 @@ package com.thomasdh.roosterpgplus.Fragments;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,6 +55,8 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
         setRootView(inflater.inflate(R.layout.fragment_main_lokaal, container, false));
         viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
+        swipeRefreshLayout = (SwipeRefreshLayout) getRootView().findViewById(R.id.rooster_swiperefresh);
+        setupSwipeRefreshLayout();
 
         lokaalSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_lokaal);
 

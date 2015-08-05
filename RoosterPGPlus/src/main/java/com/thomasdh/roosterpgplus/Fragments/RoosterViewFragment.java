@@ -47,13 +47,6 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     private boolean isScrollingViewPager = false;
     private boolean[] isScrollingScrollView = new boolean[5];
 
-    public interface onRoosterLoadStateChangedListener {
-        public void onRoosterLoadEnd();
-        public void onRoosterLoadCancel();
-        public void onRoosterLoadStart();
-    }
-    @Setter onRoosterLoadStateChangedListener roosterLoadStateListener;
-
     private boolean hadInternetConnection = true;
 
     //region Types
@@ -71,7 +64,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     //region Creating
 
     // Nieuwe instantie van het opgegeven type
-    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week, onRoosterLoadStateChangedListener listener) {
+    public static <T extends RoosterViewFragment> T newInstance(Class<T> type, int week) {
         T fragment;
         try {
             fragment = type.newInstance();
@@ -80,7 +73,6 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
             return null;
         }
 
-        fragment.setRoosterLoadStateListener(listener);
         fragment.setWeek(week, false);
 
         return fragment;
@@ -96,8 +88,6 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
         Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity());
         tracker.setScreenName(getAnalyticsTitle());
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
-
-        onPostCreateView();
     }
 
     @Override
@@ -105,9 +95,10 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
         return null;
     }
 
-    public void onPostCreateView() {
+    public void setupSwipeRefreshLayout() {
         if(swipeRefreshLayout != null) {
             swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent, R.color.colorPrimaryDark);
+            swipeRefreshLayout.setOnRefreshListener(() -> loadRooster(true));
         }
     }
 
@@ -173,7 +164,8 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
                 .setLabel(getAnalyticsTitle())
                 .build());
 
-        roosterLoadStateListener.onRoosterLoadStart();
+        if(swipeRefreshLayout != null)
+            swipeRefreshLayout.setRefreshing(true);
 
         List<NameValuePair> query = new ArrayList<>();
         query.add(new BasicNameValuePair("week", Integer.toString(getWeek())));
@@ -186,11 +178,9 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
             if (loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
                 setLoad();
             }
-            roosterLoadStateListener.onRoosterLoadEnd();
             if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
             buildRooster(urenCount).build((List<Lesuur>) result);
         }, exception -> {
-            roosterLoadStateListener.onRoosterLoadEnd();
             if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
             if (loadType != LoadType.REFRESH) {
                 buildRooster(0).build((List<Lesuur>) null);

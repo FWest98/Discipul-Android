@@ -40,13 +40,13 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment {
         setRootView(inflater.inflate(R.layout.fragment_main, container, false));
 
         swipeRefreshLayout = (SwipeRefreshLayout) getRootView().findViewById(R.id.rooster_swiperefresh);
-        swipeRefreshLayout.setOnRefreshListener(() -> loadRooster(true));
+        setupSwipeRefreshLayout();
 
         viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
         if(!Account.isSet()) {
-            Account.getInstance(getActivity()).login(getActivity(), result -> loadRooster(), result -> roosterLoadStateListener.onRoosterLoadCancel());
+            Account.getInstance(getActivity()).login(getActivity(), result -> loadRooster(), result -> swipeRefreshLayout.setRefreshing(false));
         } else {
             loadRooster();
         }

@@ -1,50 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="?attr/actionBarSize"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
-    <RelativeLayout
-        android:id="@+id/toolbar_spinner_wrapper"
+    <TextView
+        android:id="@+id/action_bar_text_field"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/action_bar_app_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:text="@string/app_name"
-            android:textSize="16dp" />
-
-        <TextView
-            android:id="@+id/action_bar_text_field"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/action_bar_app_name"
-            android:text="@string/action_bar_dropdown_week"
-            android:textColor="#FFFFFF"
-            android:textSize="11dp" />
-
-        <TextView
-            android:id="@+id/action_bar_dropdown_type"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/action_bar_app_name"
-            android:layout_marginLeft="4dp"
-            android:layout_toRightOf="@+id/action_bar_text_field"
-            android:text="@string/action_bar_dropdown_persoonlijk_rooster"
-            android:textColor="#EFE6D0"
-            android:textSize="11dp" />
-
-    </RelativeLayout>
+        android:layout_height="wrap_content"
+        style="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
+        android:text="@string/action_bar_dropdown_week"
+        android:textColor="#FFF"
+        android:textSize="20dp" />
 
     <View
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_toRightOf="@+id/toolbar_spinner_wrapper"
         android:background="@drawable/ic_spinner_more"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="8dp" />
-</RelativeLayout>
+        android:layout_marginLeft="6dp" />
+</LinearLayout>

@@ -2,6 +2,7 @@ package com.thomasdh.roosterpgplus.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,6 +62,10 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         setRootView(inflater.inflate(R.layout.fragment_main, container, false));
+
+        swipeRefreshLayout = (SwipeRefreshLayout) getRootView().findViewById(R.id.rooster_swiperefresh);
+        setupSwipeRefreshLayout();
+
         viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
@@ -96,14 +101,14 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
     public void loadRooster(boolean reload) {
         // PGTV laden
         if(type == null) return;
-        roosterLoadStateListener.onRoosterLoadStart();
+        swipeRefreshLayout.setRefreshing(true);
 
         WebDownloader.getPGTVRooster(type.toString(), result -> {
-            roosterLoadStateListener.onRoosterLoadEnd();
+            swipeRefreshLayout.setRefreshing(false);
             ArrayList<PGTVPage> data = (ArrayList<PGTVPage>) result;
             new PGTVBuilder().build(data);
         }, e -> {
-            roosterLoadStateListener.onRoosterLoadEnd();
+            swipeRefreshLayout.setRefreshing(false);
             new PGTVBuilder().build(null);
         });
     }

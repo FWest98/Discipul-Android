@@ -90,7 +90,6 @@ public class ActionBarSpinnerAdapter extends BaseAdapter {
             ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
 
             int typeRes = type.getAnnotation(FragmentTitle.class).title();
-            ((TextView) view.findViewById(R.id.action_bar_dropdown_type)).setText(activity.getString(typeRes));
             return view;
         }
         return null;
