@@ -1,37 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:id="@+id/main_linearlayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity$PlaceholderFragment">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="?attr/colorPrimary"
-        android:paddingLeft="19dp"
-        android:paddingRight="19dp"
+        android:layout_height="wrap_content"
+        android:paddingLeft="72dp"
+        android:paddingRight="16dp"
         android:paddingBottom="8dp">
 
         <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
-            android:id="@+id/main_fragment_spinner_docent_vak"
-            android:layout_width="0dp"
-            android:layout_marginRight="5dp"
-            style="@style/ToolbarSpinner"
+            android:id="@+id/main_fragment_spinner_leerling_klas"
+            android:layout_marginRight="40dp"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:layout_weight=".6"
-            android:prompt="@string/rooster_docenten_vakspinner_placeholder"/>
+            style="@style/ToolbarSpinner"
+            android:prompt="@string/rooster_leerling_klasSpinner_placeholder" />
 
         <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
-            android:id="@+id/main_fragment_spinner_docent_naam"
-            android:layout_width="0dp"
-            android:layout_marginLeft="5dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".4"
+            android:id="@+id/main_fragment_spinner_leerling_naam"
             style="@style/ToolbarSpinner"
-            android:prompt="@string/rooster_docenten_docentspinner_placeholder"/>
+            android:prompt="@string/rooster_leerling_leerlingSpinner_placeholder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="300dp"
+            android:layout_marginRight="80dp"/>
+
+        <android.support.v7.widget.AppCompatEditText
+            android:id="@+id/rooster_leerling_leerlingNummer"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:fontFamily="sans-serif"
+            android:hint="@string/rooster_leerling_leerlingNummer_hint"
+            android:singleLine="true"
+            android:textColor="#FFF"
+            android:textColorHint="#F4E7C3"/>
 
     </LinearLayout>
 

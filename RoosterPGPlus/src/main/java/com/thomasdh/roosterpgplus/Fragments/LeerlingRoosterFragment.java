@@ -3,6 +3,7 @@ package com.thomasdh.roosterpgplus.Fragments;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -10,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
@@ -43,7 +43,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
 
     private DefaultSpinner klasSpinner;
     private DefaultSpinner leerlingSpinner;
-    private EditText leerlingNummerEditor;
+    private AppCompatEditText leerlingNummerEditor;
 
     @Override
     public String getAnalyticsTitle() {
@@ -64,7 +64,7 @@ public class LeerlingRoosterFragment extends RoosterViewFragment implements Adap
 
         klasSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_leerling_klas);
         leerlingSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_leerling_naam);
-        leerlingNummerEditor = (EditText) getRootView().findViewById(R.id.rooster_leerling_leerlingNummer);
+        leerlingNummerEditor = (AppCompatEditText) getRootView().findViewById(R.id.rooster_leerling_leerlingNummer);
 
         if(savedInstanceState != null) {
             setLeerling((Leerling) savedInstanceState.getSerializable("LEERLING"));

@@ -1,21 +1,23 @@
 package com.thomasdh.roosterpgplus.CustomUI;
 
 import android.content.Context;
+import android.support.v7.widget.AppCompatSpinner;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+
+import com.thomasdh.roosterpgplus.R;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 @SuppressWarnings("UnusedDeclaration")
-public class DefaultSpinner extends Spinner {
+public class DefaultSpinner extends AppCompatSpinner {
 
     public DefaultSpinner(Context context) {
         super(context);
@@ -99,10 +101,7 @@ public class DefaultSpinner extends Spinner {
                 throws IllegalAccessException {
 
             if( position<0 ) {
-                TextView v =
-                        (TextView) ((LayoutInflater)getContext().getSystemService(
-                                Context.LAYOUT_INFLATER_SERVICE)).inflate(
-                                android.R.layout.simple_spinner_item,parent,false);
+                TextView v = (TextView) LayoutInflater.from(getContext()).inflate(R.layout.spinner_title, parent, false);
                 v.setText(getPrompt());
                 return v;
             }

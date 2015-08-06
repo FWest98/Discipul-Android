@@ -10,32 +10,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginLeft="10dp"
-        android:paddingTop="@dimen/klasrooster_desc_padding"
-        android:paddingBottom="@dimen/klasrooster_desc_padding">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/rooster_lokaal_desc"
-            android:textSize="@dimen/docentenrooster_descSize"/>
+        android:background="?attr/colorPrimary"
+        android:paddingBottom="8dp"
+        android:paddingLeft="72dp"
+        android:paddingRight="6dp">
 
         <com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner
             android:id="@+id/main_fragment_spinner_lokaal"
             android:layout_width="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="5dp"
             android:layout_height="wrap_content"
+            android:dropDownWidth="100dp"
+            style="@style/ToolbarSpinner"
             android:prompt="@string/rooster_lokaal_lokaalSpinner_placeholder"/>
 
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#CCC" />
-
-    <!-- TODO vervang de lijnview door een drawable bg -->
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:layout_width="match_parent"

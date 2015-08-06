@@ -103,7 +103,9 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         vakSpinner.setOnItemSelectedListener(this);
         leraarSpinner.setOnItemSelectedListener(this);
 
-        vakSpinner.setSelection(vakAdapter.getPosition(Svak.getNaam()));
+        if(Svak != null) {
+            vakSpinner.setSelection(vakAdapter.getPosition(Svak.getNaam()));
+        }
         leraarToGet = Sleraar;
     }
 

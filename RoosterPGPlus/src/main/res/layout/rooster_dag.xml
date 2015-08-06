@@ -17,6 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
+            android:textColor="#000"
             android:text="@string/rooster_weekdag"
             android:textSize="@dimen/weekdag_fontSize" />
 

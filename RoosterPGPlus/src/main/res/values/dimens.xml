@@ -6,7 +6,7 @@
     <dimen name="weekdag_marginSize">7dp</dimen>
     <dimen name="weekdag_datum_textSize">14sp</dimen>
     <dimen name="weekdag_datum_marginTop">7dp</dimen>
-    <dimen name="docentenrooster_descSize">16sp</dimen>
+    <dimen name="docentenrooster_descSize">20sp</dimen>
     <dimen name="klasrooster_desc_padding">3dp</dimen>
     <dimen name="rooster_uur_vak_fontSize">20sp</dimen>
 

@@ -110,11 +110,11 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
             setSelectedWeek(savedInstanceState.getInt("WEEK"));
             if(!isRooster) {
                 ((PGTVRoosterFragment) mainFragment).setType((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE"));
-                toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.GONE);
-                toolbar.findViewById(R.id.toolbar_title).setVisibility(View.VISIBLE);
+                //toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.GONE);
+                //toolbar.findViewById(R.id.toolbar_title).setVisibility(View.VISIBLE);
             } else {
-                toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.VISIBLE);
-                toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
+                //toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.VISIBLE);
+                //toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
             }
         }
 
