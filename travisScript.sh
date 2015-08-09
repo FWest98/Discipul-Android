@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ev
 ./gradlew :RoosterPGPlus:clean :RoosterPGPlus:assembleRelease
-if [ "#{TRAVIS_TAG}" = "true" ]; then
+if [ -z "${TRAVIS_TAG+x}" ]; then
     ./gradlew :RoosterPGPlus:publishApkRelease
 fi
