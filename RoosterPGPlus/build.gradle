@@ -43,20 +43,6 @@ android {
         javaMaxHeapSize "4g"
     }
 
-    buildTypes {
-        debug {
-            buildConfigField "boolean", "GRADLE_DEBUG", "true"
-        }
-
-        prerelease {
-            buildConfigField "boolean", "GRADLE_DEBUG", "true"
-        }
-
-        release {
-            buildConfigField "boolean", "GRADLE_DEBUG", "false"
-        }
-    }
-
     signingConfigs {
         debug {
             storeFile rootProject.file('debug.keystore')
@@ -71,6 +57,28 @@ android {
                 keyAlias System.getenv("ALIAS_NAME")
                 keyPassword System.getenv("ALIAS_PASS")
             }
+        } else {
+            release {
+                storeFile rootProject.file('releasekeystore.dat')
+                storePassword ""
+                keyAlias ""
+                keyPassword ""
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField "boolean", "GRADLE_DEBUG", "true"
+        }
+
+        prerelease {
+            buildConfigField "boolean", "GRADLE_DEBUG", "true"
+        }
+
+        release {
+            buildConfigField "boolean", "GRADLE_DEBUG", "false"
+            signingConfig signingConfigs.release
         }
     }
 
@@ -110,14 +118,6 @@ dependencies {
     compile('com.mikepenz:materialdrawer:3.1.2@aar') { transitive = true }
 }
 
-task('travisBuild') << {
-    clean
-    assembleRelease
-    if(System.getenv("TRAVIS_TAG")) {
-        publishApkRelease
-    }
-}
-
 retrolambda {
     jdk System.getenv("JAVA_HOME")
     oldJdk System.getenv("JAVA7_HOME")
@@ -125,16 +125,23 @@ retrolambda {
     jvmArgs '-noverify'
 }
 
+
 if(System.getenv("TRAVIS") && System.getenv("TRAVIS_TAG")) {
     play {
         serviceAccountEmail = System.getenv("SERVICE_EMAIL")
         pk12File = rootProject.file('play.p12')
-        if(System.getenv("TRAVIS_TAG").contains("beta")) {
+        if(System.getenv("TRAVIS_TAG") && System.getenv("TRAVIS_TAG").contains("beta")) {
             track = 'beta'
-        } else if(System.getenv("TRAVIS_TAG").contains("alpha")) {
+        } else if(System.getenv("TRAVIS_TAG") && System.getenv("TRAVIS_TAG").contains("alpha")) {
             track = 'alpha'
         } else {
             track = 'production'
         }
     }
 }
+
+task travisBuild(dependsOn: [':RoosterPGPlus:clean'])
+if(System.getenv("TRAVIS_TAG")) {
+    tasks.travisBuild.dependsOn(':RoosterPGPlus:publishApkRelease')
+}
+assembleRelease.mustRunAfter clean
