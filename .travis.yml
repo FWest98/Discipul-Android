@@ -22,7 +22,7 @@ android:
 
 before_install:
  - chmod +x gradlew
- - sudo apt-get update && sudo apt-get install oracle-7-installer && sudo apt-get install oracle-java8-installer
+ - sudo apt-get update && sudo apt-get install oracle-java8-installer
  - java -version
  - export JAVA7_HOME=/usr/lib/jvm/java-7-oracle
  - export JAVA8_HOME=/usr/lib/jvm/java-8-oracle
@@ -34,6 +34,6 @@ script:
 sudo: required
 
 jdk:
- - oraclejdk8
+ - oraclejdk7
 
 install: true
