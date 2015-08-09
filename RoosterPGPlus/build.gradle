@@ -110,6 +110,14 @@ dependencies {
     compile('com.mikepenz:materialdrawer:3.1.2@aar') { transitive = true }
 }
 
+task('travisBuild') << {
+    clean
+    assembleRelease
+    if(System.getenv("TRAVIS_TAG")) {
+        publishApkRelease
+    }
+}
+
 retrolambda {
     jdk System.getenv("JAVA_HOME")
     oldJdk System.getenv("JAVA7_HOME")

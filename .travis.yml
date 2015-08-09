@@ -29,7 +29,8 @@ before_install:
  - export JAVA_HOME=$JAVA8_HOME
  - chmod ugo+x ./travisScript.sh
 
-script: ./travisScript.sh
+script:
+ - ./gradlew :RoosterPGPlus:travisBuild
 
 
 sudo: required
