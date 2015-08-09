@@ -140,7 +140,7 @@ if(System.getenv("TRAVIS") && System.getenv("TRAVIS_TAG")) {
     }
 }
 
-task travisBuild(dependsOn: [':RoosterPGPlus:clean'])
+task travisBuild(dependsOn: [':RoosterPGPlus:clean', ':RoosterPGPlus:assembleRelease'])
 if(System.getenv("TRAVIS_TAG")) {
     tasks.travisBuild.dependsOn(':RoosterPGPlus:publishApkRelease')
 }
