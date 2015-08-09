@@ -19,6 +19,7 @@
             android:id="@+id/main_fragment_spinner_klas"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="50dp"
             android:dropDownWidth="100dp"
             style="@style/ToolbarSpinner"
             android:prompt="@string/rooster_klas_klasSpinner_placeholder"/>
@@ -37,13 +38,5 @@
             android:layout_height="match_parent" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/internet_connection_warning"
-        android:id="@+id/internet_connection_warning"
-        android:padding="10dp"
-        android:text="@string/internet_connection_warning" />
 
 </LinearLayout>

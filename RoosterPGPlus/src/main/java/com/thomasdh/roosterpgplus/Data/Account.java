@@ -61,6 +61,7 @@ public class Account {
 
     private Context context;
     private static int currentVersion = 0;
+    private static boolean isInitialized = false;
 
     private static Account instance;
 
@@ -73,8 +74,10 @@ public class Account {
     public static void initialize(Context context) {
         initialize(context, true);
     }
+    public static void initialize(Context context, boolean showUI) { initialize(context, showUI, false); }
+    public static void initialize(Context context, boolean showUI, boolean force) {
+        if(isInitialized && !force) return;
 
-    public static void initialize(Context context, boolean showUI) {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 
         currentVersion = 0;
@@ -211,6 +214,9 @@ public class Account {
 
             leraarCode = base.getString("code");
             pref.putString("code", leraarCode);
+
+            // remove klas
+            pref.remove("klas");
         } else {
             // LEERLING
             userType = UserType.LEERLING;
@@ -1126,10 +1132,10 @@ public class Account {
     //region Interfaces
 
     public interface WebRequestCallbacks {
-        public HttpURLConnection onCreateConnection() throws Exception;
-        public String onValidateResponse(String data, int status) throws Exception;
-        public void onProcessData(String data);
-        public void onError(Exception e);
+        HttpURLConnection onCreateConnection() throws Exception;
+        String onValidateResponse(String data, int status) throws Exception;
+        void onProcessData(String data);
+        void onError(Exception e);
     }
 
     //endregion

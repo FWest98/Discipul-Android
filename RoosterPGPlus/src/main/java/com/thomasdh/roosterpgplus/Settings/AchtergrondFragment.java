@@ -3,10 +3,12 @@ package com.thomasdh.roosterpgplus.Settings;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
+import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.MainApplication;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotificationActionReceiver;
@@ -24,9 +26,9 @@ public class AchtergrondFragment extends ThemedPreferenceFragment {
         tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_NOTIFICATIES);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
 
-        Preference mainSetting = findPreference("notificaties");
-        Preference notificationFirstShow = findPreference("notificationFirstShow");
-        Preference pushNotification = findPreference("pushNotificaties");
+        CheckBoxPreference mainSetting = (CheckBoxPreference) findPreference("notificaties");
+        ListPreference notificationFirstShow = (ListPreference) findPreference("notificationFirstShow");
+        CheckBoxPreference pushNotification = (CheckBoxPreference) findPreference("pushNotificaties");
 
         mainSetting.setOnPreferenceChangeListener((preference, newValue) -> {
             boolean choice = (boolean) newValue;
@@ -54,6 +56,12 @@ public class AchtergrondFragment extends ThemedPreferenceFragment {
             } else {
                 return true;
             }
+        });
+        pushNotification.setOnPreferenceChangeListener((preference, o) -> {
+            if((boolean) o) {
+                Account.getInstance(getActivity()).registerGCM(getActivity());
+            }
+            return true;
         });
     }
 }

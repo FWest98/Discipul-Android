@@ -1,9 +1,10 @@
 package com.thomasdh.roosterpgplus;
 
+import android.animation.ValueAnimator;
 import android.app.SearchManager;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -14,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -58,19 +60,20 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
     private static ActionBar actionBar;
     private static Toolbar toolbar;
     private static ActionBarSpinnerAdapter toolbarSpinnerAdapter;
-    private ActionBarDrawerToggle actionBarDrawerToggle;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem refreshItem;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem searchItem;
 
-    private DrawerLayout drawerLayout;
     private int currentSelection = 0;
-
     private RoosterViewFragment mainFragment;
     private Class<? extends RoosterViewFragment> roosterType;
     private boolean isRooster = true;
+    private boolean isShowingBackArrow = false;
     private Drawer drawer;
     private AccountHeader drawerHeader;
     private SearchBox searchBox;
+    private Snackbar internetConnectionSnackbar;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,11 +113,6 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
             setSelectedWeek(savedInstanceState.getInt("WEEK"));
             if(!isRooster) {
                 ((PGTVRoosterFragment) mainFragment).setType((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE"));
-                //toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.GONE);
-                //toolbar.findViewById(R.id.toolbar_title).setVisibility(View.VISIBLE);
-            } else {
-                //toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.VISIBLE);
-                //toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
             }
         }
 
@@ -122,8 +120,14 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         drawerHeader = new AccountHeaderBuilder()
                 .withActivity(this)
                 .addProfiles(
-                        new ProfileDrawerItem().withName(Account.getName()).withEmail("Klas " + Account.getLeerlingKlas())
+                        Account.isSet() ?
+                        new ProfileDrawerItem().withName(Account.getName()).withEmail(
+                                Account.getUserType() == Account.UserType.LEERLING ?
+                                    "Klas " + Account.getLeerlingKlas() :
+                                    "Docentcode: " + Account.getLeraarCode()
+                        ) : null
                 )
+                .withCompactStyle(!Account.isSet())
                 .withHeaderBackground(R.drawable.drawer_header_blurred)
                 .withHeaderBackgroundScaleType(ImageView.ScaleType.CENTER_CROP)
                 .withOnAccountHeaderListener((view, iProfile, b) -> false)
@@ -148,6 +152,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 .withAccountHeader(drawerHeader)
                 .withAnimateDrawerItems(true)
                 .withCloseOnClick(true)
+                .withActionBarDrawerToggleAnimated(true)
                 .withSavedInstance(savedInstanceState)
                 .withOnDrawerItemClickListener((adapterView, view, i, l, iDrawerItem) -> {
                     int firstDigit = iDrawerItem.getIdentifier() / 10; // first digit
@@ -164,7 +169,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                             toolbarSpinnerAdapter.setType(newType);
 
                         isRooster = true;
-                    } else if(firstDigit == 1) {
+                    } else if (firstDigit == 1) {
                         // PGTV group
                         Class<? extends RoosterViewFragment> newType = PGTVRoosterFragment.class;
 
@@ -183,7 +188,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                         isRooster = false;
                         mainFragment = fragment;
                         roosterType = newType;
-                    } else if(firstDigit == 2) {
+                    } else if (firstDigit == 2) {
                         // Settings
                         drawer.closeDrawer();
                         drawer.setSelectionByIdentifier(currentSelection);
@@ -192,9 +197,11 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                         return false;
                     }
 
+                    getSupportFragmentManager().popBackStackImmediate(); // voor zoeken
                     getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
                     drawer.closeDrawer();
                     currentSelection = iDrawerItem.getIdentifier();
+                    toggleHamburgerArrow(false);
 
                     return true;
                 });
@@ -226,30 +233,52 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
 
         drawerLayout = drawer.getDrawerLayout();
 
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
+            @Override
+            public void onDrawerOpened(View view) {
+                supportInvalidateOptionsMenu();
+            }
+
+            @Override
             public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                if(getSelectedWeek() == -1) return;
-                if(isRooster) {
+                if (getSelectedWeek() == -1) return;
+                if (isRooster) {
                     toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
                     toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.VISIBLE);
                 } else {
                     toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.GONE);
                     toolbar.findViewById(R.id.toolbar_title).setVisibility(View.VISIBLE);
-                    ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText("PGTV - "+((PGTVRoosterFragment) mainFragment).getType().toDesc());
+                    ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText("PGTV - " + ((PGTVRoosterFragment) mainFragment).getType().toDesc());
                 }
                 supportInvalidateOptionsMenu();
             }
 
-            public void onDrawerOpened(View view) {
-                super.onDrawerOpened(view);
-                supportInvalidateOptionsMenu();
+            @Override
+            public void onDrawerSlide(View view, float v) {
+                if (isShowingBackArrow) {
+                    super.onDrawerSlide(view, 1);
+                } else {
+                    super.onDrawerSlide(view, v);
+                }
             }
         };
+
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        View.OnClickListener toolbarOnClickListener = view -> {
+            if (roosterType == EntityRoosterFragment.class && isShowingBackArrow) {
+                onBackPressed();
+            } else {
+                if(drawer.isDrawerOpen()) {
+                    drawer.closeDrawer();
+                } else {
+                    drawer.openDrawer();
+                }
+            }
+        };
+
+        toolbar.setNavigationOnClickListener(toolbarOnClickListener);
+        actionBarDrawerToggle.setToolbarNavigationClickListener(toolbarOnClickListener);
 
         /* Search */
         searchBox = (SearchBox) findViewById(R.id.searchbox);
@@ -286,22 +315,19 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
             drawer.closeDrawer();
         } else if(searchBox != null && searchBox.isShown()) {
             searchBox.toggleSearch();
+        } else if(roosterType == EntityRoosterFragment.class) {
+            // actionbar goed maken
+            toggleHamburgerArrow(false);
+
+            // fragments goed maken
+            getSupportFragmentManager().popBackStackImmediate();
+            mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
+            roosterType = mainFragment.getClass();
+            toolbarSpinnerAdapter.setType(roosterType);
+            drawer.setSelectionByIdentifier(currentSelection);
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        actionBarDrawerToggle.syncState();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        actionBarDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -315,15 +341,13 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) return true;
-
         switch(item.getItemId()) {
             case R.id.menu_item_search: {
                 openSearch();
+                return true;
             }
+            default: return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public boolean onWeekSelected(int pos) {
@@ -416,7 +440,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 closeSearch();
                 /* Fragment dingen */
                 EntityRoosterFragment searchFragment;
-                if(((Object) mainFragment).getClass() != EntityRoosterFragment.class) {
+                if (roosterType != EntityRoosterFragment.class) {
                     // Set to entityrooster
                     roosterType = EntityRoosterFragment.class;
                     searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
@@ -426,6 +450,11 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                     searchFragment.setEntity(s);
 
                     getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).addToBackStack("search").commit();
+
+                    // actionbar & drawer
+                    toggleHamburgerArrow(true);
+                    drawer.getListView().setSelection(-1);
+                    drawer.getListView().setItemChecked(drawer.getCurrentSelection() + 1, false); // +1 for the header offset
                 } else {
                     searchFragment = (EntityRoosterFragment) mainFragment;
                     searchFragment.setEntity(s);
@@ -443,8 +472,31 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         overlay.setVisibility(View.GONE);
     }
 
+    public void toggleHamburgerArrow(boolean showBackArrow) {
+        float start = showBackArrow ? 0: 1;
+        float end = showBackArrow ? 1 : 0;
+
+        ValueAnimator animator = ValueAnimator.ofFloat(start, end);
+        animator.addUpdateListener(valueAnimator -> {
+            float slideOffset = (float) valueAnimator.getAnimatedValue();
+            drawer.getActionBarDrawerToggle().onDrawerSlide(drawerLayout, slideOffset);
+        });
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.setDuration(500);
+        animator.start();
+
+        isShowingBackArrow = showBackArrow;
+    }
+
     @Override
     public void internetConnectionChanged(boolean hasInternetConnection) {
+        if(!hasInternetConnection) {
+            internetConnectionSnackbar = Snackbar.make(findViewById(R.id.container), "Geen internetverbinding meer. Zodra er weer verbinding is zal de app het nieuwste rooster ophalen", Snackbar.LENGTH_LONG);
+            internetConnectionSnackbar.show();
+        } else {
+            if(internetConnectionSnackbar != null)
+                internetConnectionSnackbar.dismiss();
+        }
         mainFragment.setInternetConnectionState(hasInternetConnection);
     }
 

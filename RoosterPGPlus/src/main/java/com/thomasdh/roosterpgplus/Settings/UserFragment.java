@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceScreen;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -18,6 +19,12 @@ import java.util.ArrayList;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class UserFragment extends ThemedPreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private PreferenceScreen preferenceScreen;
+    private Preference myAccountPreference;
+    private Preference logInPreference;
+    private Preference extendPreference;
+    private ListPreferenceMultiSelect setClusterklassenPreference;
+    private Preference resetClusterklassenPreference;
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -43,63 +50,76 @@ public class UserFragment extends ThemedPreferenceFragment implements SharedPref
         tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_SETTINGS_USER);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
 
-        if(!Account.isSet()) {
-            findPreference("subklassen").setEnabled(false);
-            findPreference("clusterklassen_reload").setEnabled(false);
-            findPreference("account_upgraden").setEnabled(false);
-            Preference logIn = findPreference("log_in");
-            Preference details = findPreference("mijn_account");
+        preferenceScreen = getPreferenceScreen();
+        myAccountPreference = findPreference("mijn_account");
+        logInPreference = findPreference("log_in");
+        extendPreference = findPreference("account_upgraden");
+        setClusterklassenPreference = (ListPreferenceMultiSelect) findPreference("subklassen");
+        resetClusterklassenPreference = findPreference("clusterklassen_reload");
 
-            logIn.setOnPreferenceClickListener(preference -> {
+        if(!Account.isSet()) {
+            preferenceScreen.removePreference(extendPreference);
+            preferenceScreen.removePreference(setClusterklassenPreference);
+            preferenceScreen.removePreference(resetClusterklassenPreference);
+
+            logInPreference.setOnPreferenceClickListener(preference -> {
                 Account.getInstance(getActivity()).login(getActivity(), callback -> getActivity().recreate());
                 return true;
             });
-            logIn.setTitle("Log in");
-            logIn.setSummary("Je bent nog niet ingelogd");
+            logInPreference.setTitle("Log in");
+            logInPreference.setSummary("Log in om je persoonlijke rooster te tonen");
 
-            details.setTitle("Je bent nog niet ingelogd");
-            details.setSummary(null);
+            myAccountPreference.setTitle("Je bent nog niet ingelogd");
+            myAccountPreference.setSummary(null);
             return;
         }
 
         // Initialize subklassen
-        ListPreferenceMultiSelect subklassenPref = (ListPreferenceMultiSelect) findPreference("subklassen");
+        if(Account.getUserType() == Account.UserType.LEERLING) {
+            setClusterklassenPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+                ArrayList<String> newSubklassen = (ArrayList<String>) newValue;
+                Account.getInstance(getActivity()).setSubklassen(false, newSubklassen, result -> ExceptionHandler.handleException(new Exception("Clusterklassen bijgewerkt!"), getActivity(), ExceptionHandler.HandleType.SIMPLE));
 
-        subklassenPref.setOnPreferenceChangeListener((preference, newValue) -> {
-            ArrayList<String> newSubklassen = (ArrayList<String>) newValue;
-            Account.getInstance(getActivity()).setSubklassen(false, newSubklassen, result -> ExceptionHandler.handleException(new Exception("Clusterklassen bijgewerkt!"), getActivity(), ExceptionHandler.HandleType.SIMPLE));
+                return true;
+            });
 
-            return true;
-        });
+            Account.getInstance(getActivity()).getSubklassen(true, result -> {
+                ArrayList<Account.Subklas> subklasArray = (ArrayList<Account.Subklas>) result;
 
-        Account.getInstance(getActivity()).getSubklassen(true, result -> {
-            ArrayList<Account.Subklas> subklasArray = (ArrayList<Account.Subklas>) result;
+                if (subklasArray != null) {
+                    ArrayList<String> strings = new ArrayList<>();
+                    ArrayList<String> namen = new ArrayList<>();
+                    ArrayList<Boolean> enabled = new ArrayList<>();
 
-            if (subklasArray != null) {
-                ArrayList<String> strings = new ArrayList<>();
-                ArrayList<String> namen = new ArrayList<>();
-                ArrayList<Boolean> enabled = new ArrayList<>();
+                    for (Account.Subklas subklas : subklasArray) {
+                        strings.add(subklas.naam + ": " + subklas.vak + " van " + subklas.leraar);
+                        namen.add(subklas.naam);
+                        enabled.add(subklas.isIn);
+                    }
 
-                for (Account.Subklas subklas : subklasArray) {
-                    strings.add(subklas.naam + ": " + subklas.vak + " van " + subklas.leraar);
-                    namen.add(subklas.naam);
-                    enabled.add(subklas.isIn);
+                    boolean[] enabledNew = new boolean[enabled.size()];
+
+                    for (int i = 0; i < enabled.size(); i++) {
+                        enabledNew[i] = enabled.get(i);
+                    }
+
+                    setClusterklassenPreference.setEntries(strings.toArray(new String[strings.size()]), enabledNew);
+                    setClusterklassenPreference.setEntryValues(namen.toArray(new String[namen.size()]));
                 }
+            });
 
-                boolean[] enabledNew = new boolean[enabled.size()];
+            setClusterklassenPreference.setEnabled(!Account.isAppAccount());
+            resetClusterklassenPreference.setEnabled(!Account.isAppAccount());
 
-                for(int i = 0; i < enabled.size(); i++) {
-                    enabledNew[i] = enabled.get(i);
-                }
+            resetClusterklassenPreference.setOnPreferenceClickListener(preference -> {
+                Account.getInstance(getActivity()).setSubklassen(true, null, result -> ExceptionHandler.handleException(new Exception("Clusterklassen opnieuw ingesteld!"), getActivity(), ExceptionHandler.HandleType.SIMPLE));
 
-                subklassenPref.setEntries(strings.toArray(new String[strings.size()]), enabledNew);
-                subklassenPref.setEntryValues(namen.toArray(new String[namen.size()]));
-
-                subklassenPref.setEnabled(!Account.isAppAccount());
-            }
-        });
-
-        subklassenPref.setEnabled(!Account.isAppAccount());
+                return true;
+            });
+        } else {
+            preferenceScreen.removePreference(setClusterklassenPreference);
+            preferenceScreen.removePreference(resetClusterklassenPreference);
+        }
 
         // Create user and fill in account information
         getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
@@ -109,26 +129,19 @@ public class UserFragment extends ThemedPreferenceFragment implements SharedPref
         } else {
             summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
         }
-        findPreference("mijn_account").setSummary(summary);
+        myAccountPreference.setSummary(summary);
 
         // Configure login button
-        findPreference("log_in").setOnPreferenceClickListener(preference -> {
+        logInPreference.setOnPreferenceClickListener(preference -> {
             Account.getInstance(getActivity()).login(getActivity(), callback -> getActivity().recreate());
 
             return true;
         });
 
         /* account upgraden */
-        findPreference("account_upgraden").setEnabled(Account.isAppAccount());
-        findPreference("account_upgraden").setOnPreferenceClickListener(preference -> {
+        extendPreference.setEnabled(Account.isAppAccount());
+        extendPreference.setOnPreferenceClickListener(preference -> {
             Account.getInstance(getActivity()).extend();
-
-            return true;
-        });
-
-        findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
-        findPreference("clusterklassen_reload").setOnPreferenceClickListener(preference -> {
-            Account.getInstance(getActivity()).setSubklassen(true, null, result -> ExceptionHandler.handleException(new Exception("Clusterklassen opnieuw ingesteld!"), getActivity(), ExceptionHandler.HandleType.SIMPLE));
 
             return true;
         });

@@ -6,14 +6,10 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.fwest98.showcaseview.ShowcaseView;
-import com.fwest98.showcaseview.targets.ActionViewTarget;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
-import com.thomasdh.roosterpgplus.CustomUI.Animations;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
@@ -186,17 +182,6 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
                 buildRooster(0).build((List<Lesuur>) null);
             }
         });
-
-        if(HelperFunctions.showCaseView()) {
-            new ShowcaseView.Builder(getActivity())
-                    .setTarget(new ActionViewTarget(getActivity(), ActionViewTarget.Type.SPINNER))
-                    .setContentTitle(R.string.showcaseview_weekkeuze_title)
-                    .setContentText(R.string.showcaseview_weekkeuze_content)
-                    .doNotBlockTouches()
-                    .singleShot(1)
-                    .setStyle(R.style.ShowCaseTheme)
-                    .build();
-        }
     }
 
     RoosterBuilder buildRooster(int urenCount) {
@@ -218,16 +203,10 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     }
 
     public void setInternetConnectionState(boolean hasInternetConnection) {
-        TextView warning = (TextView) getRootView().findViewById(R.id.internet_connection_warning);
         if(!hadInternetConnection && hasInternetConnection) {
             loadRooster(true);
         }
         hadInternetConnection = hasInternetConnection;
-        if(hasInternetConnection) {
-            Animations.collapse(warning);
-        } else {
-            Animations.expand(warning);
-        }
     }
 
     //endregion

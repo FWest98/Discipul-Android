@@ -20,11 +20,6 @@ public class HelperFunctions {
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 
-    public static boolean showCaseView() {
-        return false; // TODO Fix Showcaseview
-        //return Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH;
-    }
-
     public static boolean checkPlayServices(Context context) {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
         if(resultCode != ConnectionResult.SUCCESS) {

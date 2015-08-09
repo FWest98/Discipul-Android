@@ -218,7 +218,10 @@ public class Rooster {
 
         if (HelperFunctions.hasInternetConnection(context)) {
             // Herladen van het rooster FTW
-            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data))), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)), true);
+            getRoosterFromInternet(query, true, context, (data, urenCount) -> {
+                RoosterInfo.setLoad("personal"+week, System.currentTimeMillis(), context);
+                callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data)));
+            }, e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)), true);
         } else {
             callback.onCallback(getNextLesuurInDayCallback(context, day, time, query));
         }
