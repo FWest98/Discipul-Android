@@ -125,7 +125,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                                 Account.getUserType() == Account.UserType.LEERLING ?
                                     "Klas " + Account.getLeerlingKlas() :
                                     "Docentcode: " + Account.getLeraarCode()
-                        ) : null
+                        ) : new ProfileDrawerItem().withName("Nog niet ingelogd")
                 )
                 .withCompactStyle(!Account.isSet())
                 .withHeaderBackground(R.drawable.drawer_header_blurred)

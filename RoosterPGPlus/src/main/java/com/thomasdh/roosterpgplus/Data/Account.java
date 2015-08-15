@@ -35,7 +35,7 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.Getter;
@@ -114,6 +114,7 @@ public class Account {
                                                 .putBoolean("pushNotificaties", true)
                                                 .commit();
                                         isHandlingNewVersion = false;
+                                        isInitialized = true;
                                     })
                                     .setNegativeButton("Negeren", (dialog, which) -> {
                                         Account.getInstance(context, true).registerGCM();
@@ -123,6 +124,7 @@ public class Account {
                                                 .putBoolean("pushNotificaties", false)
                                                 .commit();
                                         isHandlingNewVersion = false;
+                                        isInitialized = true;
                                     });
 
                             builder.show();
@@ -140,9 +142,10 @@ public class Account {
                                 pref.edit().putInt("oldVersion", currentVersion).putInt("userid", userID).apply();
 
                                 MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext())
-                                    .set("&uid", String.valueOf(userID));
+                                        .set("&uid", String.valueOf(userID));
 
                                 isHandlingNewVersion = false;
+                                isInitialized = true;
                             }, context);
                         }
                         case 19: {
@@ -152,6 +155,30 @@ public class Account {
                                 Account.getInstance(context, true).registerGCM();
                                 pref.edit().putInt("oldVersion", currentVersion).commit();
                                 isHandlingNewVersion = false;
+                                isInitialized = true;
+                            }
+                        }
+                        case 21: {
+                            // Nieuw jaar, herlaad informatie over leerling
+                            isHandlingNewVersion = true;
+                            if(HelperFunctions.hasInternetConnection(context)) {
+                                getAccountInfo(s -> {
+                                    JSONObject base = new JSONObject((String) s);
+
+                                    name = base.getString("naam");
+                                    if(base.has("code")) {
+                                        leraarCode = base.getString("code");
+                                        pref.edit().putInt("oldVersion", currentVersion).putString("naam", name).putString("code", leraarCode).commit();
+                                        isHandlingNewVersion = false;
+                                        isInitialized = true;
+                                    } else {
+                                        leerlingKlas = base.getJSONObject("klas").getString("klasnaam");
+                                        pref.edit().putInt("oldVersion", currentVersion).putString("naam", name).putString("klas", leerlingKlas).commit();
+                                        isHandlingNewVersion = false;
+                                        isInitialized = true;
+                                    }
+
+                                }, context);
                             }
                         }
                     }
@@ -183,6 +210,7 @@ public class Account {
                 leraarCode = pref.getString("code", null);
             }
         }
+        if(!isHandlingNewVersion) isInitialized = true;
     }
 
     private void processJSON(String JSON, boolean isAppAccount, Activity activity) throws JSONException {
@@ -212,7 +240,10 @@ public class Account {
             pref.putString("code", leraarCode);
 
             // remove klas
+            leerlingKlas = null;
+            isVertegenwoordiger = false;
             pref.remove("klas");
+            pref.remove("isVertegenwoordiger");
         } else {
             // LEERLING
             userType = UserType.LEERLING;
@@ -222,6 +253,9 @@ public class Account {
 
             isVertegenwoordiger = base.getBoolean("vertegenwoordiger");
             pref.putBoolean("isVertegenwoordiger", isVertegenwoordiger);
+
+            pref.remove("code");
+            leraarCode = null;
         }
 
         pref.apply();
@@ -382,9 +416,8 @@ public class Account {
                 List<NameValuePair> postParamaters = new ArrayList<>();
                 postParamaters.add(new BasicNameValuePair("username", username));
                 postParamaters.add(new BasicNameValuePair("password", password));
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParamaters);
 
-                return entity;
+                return new UrlEncodedFormEntity(postParamaters);
             }
 
             @Override
@@ -438,9 +471,8 @@ public class Account {
             public UrlEncodedFormEntity onDataNeeded() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("llnr", llnr));
-                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                return data;
+                return new UrlEncodedFormEntity(postParameters);
             }
 
             @Override
@@ -561,9 +593,8 @@ public class Account {
                 postParameters.add(new BasicNameValuePair("password", password));
                 postParameters.add(new BasicNameValuePair("llnr", llnr));
                 postParameters.add(new BasicNameValuePair("email", email));
-                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                return data;
+                return new UrlEncodedFormEntity(postParameters);
             }
 
             @Override
@@ -686,9 +717,8 @@ public class Account {
                 postParameters.add(new BasicNameValuePair("password", password));
                 postParameters.add(new BasicNameValuePair("email", email));
                 postParameters.add(new BasicNameValuePair("key", apiKey));
-                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                return data;
+                return new UrlEncodedFormEntity(postParameters);
             }
 
             @Override
@@ -805,9 +835,8 @@ public class Account {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("key", getApiKey()));
                 postParameters.add(new BasicNameValuePair("GCM", regKey));
-                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                return data;
+                return new UrlEncodedFormEntity(postParameters);
             }
 
             @Override
@@ -850,7 +879,7 @@ public class Account {
         InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
             public UrlEncodedFormEntity onDataNeeded() throws Exception {
-                return new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair("key", getApiKey())));
+                return new UrlEncodedFormEntity(Collections.singletonList(new BasicNameValuePair("key", getApiKey())));
             }
 
             @Override
@@ -956,9 +985,8 @@ public class Account {
                         postParameters.add(new BasicNameValuePair("klassen[" + i + "]", subklassen.get(i)));
                     }
                 }
-                UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                return data;
+                return new UrlEncodedFormEntity(postParameters);
             }
 
             @Override

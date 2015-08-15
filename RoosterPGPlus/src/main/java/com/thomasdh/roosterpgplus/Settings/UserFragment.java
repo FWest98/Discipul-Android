@@ -34,11 +34,11 @@ public class UserFragment extends ThemedPreferenceFragment implements SharedPref
         } else {
             summary = "Naam: " + Account.getName() + ", " + Account.getLeraarCode();
         }
-        findPreference("mijn_account").setSummary(summary);
+        myAccountPreference.setSummary(summary);
 
-        findPreference("account_upgraden").setEnabled(Account.isAppAccount());
-        findPreference("subklassen").setEnabled(!Account.isAppAccount());
-        findPreference("clusterklassen_reload").setEnabled(!Account.isAppAccount());
+        extendPreference.setEnabled(Account.isAppAccount());
+        setClusterklassenPreference.setEnabled(!Account.isAppAccount());
+        resetClusterklassenPreference.setEnabled(!Account.isAppAccount());
     }
 
     @Override
