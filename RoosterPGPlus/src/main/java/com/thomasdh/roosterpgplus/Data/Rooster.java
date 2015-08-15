@@ -64,7 +64,7 @@ public class Rooster {
                 if(!silent) ExceptionHandler.handleException(new Exception("Kon het rooster niet ophalen, geen rooster geladen. (" + ((Exception) exception).getMessage() + ")", (Exception) exception), context, ExceptionHandler.HandleType.SIMPLE);
                 exceptionCallback.onError(null);
             }
-        });
+        }, context);
     }
 
     private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback, boolean silent) {

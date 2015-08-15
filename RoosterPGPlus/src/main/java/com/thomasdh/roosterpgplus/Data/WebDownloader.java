@@ -1,9 +1,12 @@
 package com.thomasdh.roosterpgplus.Data;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
+import com.thomasdh.roosterpgplus.Helpers.InternetConnection;
 import com.thomasdh.roosterpgplus.Models.Klas;
 import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Leraar;
@@ -28,14 +31,17 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
     private static final String DATA_KEY = "data";
     private static final String ERROR_KEY = "exception";
 
+    private Context context;
     private AsyncCallback asyncAction;
     private AsyncActionCallback successCallback;
     private AsyncActionCallback errorCallback;
+    private boolean hasNewAPIVersion;
 
-    private WebDownloader(AsyncCallback asyncAction, AsyncActionCallback successCallback, AsyncActionCallback errorCallback) {
+    private WebDownloader(AsyncCallback asyncAction, AsyncActionCallback successCallback, AsyncActionCallback errorCallback, Context context) {
         this.asyncAction = asyncAction;
         this.successCallback = successCallback;
         this.errorCallback = errorCallback;
+        this.context = context;
     }
 
     @Override
@@ -43,6 +49,8 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
         try {
             URL url = new URL(Constants.HTTP_BASE + info[0]);
             HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+
+            connection.addRequestProperty("APIVersion", Constants.API_VERSION);
 
             String content = "";
             try {
@@ -53,6 +61,8 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             } finally {
                 connection.disconnect();
             }
+
+            hasNewAPIVersion = connection.getHeaderField("CurrentAPIVersion") != null;
 
             Object data = asyncAction.onBackground(connection.getResponseCode(), content);
 
@@ -77,6 +87,12 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             getter = ERROR_KEY;
         }
 
+        if(hasNewAPIVersion && !InternetConnection.isToastTriggered) {
+            /* Show warning */
+            Toast.makeText(context, "Er is een nieuwe versie van de app beschikbaar!", Toast.LENGTH_LONG).show();
+            InternetConnection.isToastTriggered = true;
+        }
+
         try {
             callback.onAsyncActionComplete(hashtable.get(getter));
         } catch (Exception e) {
@@ -85,7 +101,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
     }
 
     /* Lerarendownloader */
-    public static void getLeraren(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+    public static void getLeraren(AsyncActionCallback callback, AsyncActionCallback errorCallback, Context context) {
         String url = "rooster/info?leraren&sort";
 
         AsyncCallback AsyncCallback = (status, s) -> {
@@ -141,11 +157,11 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             return vakken;
         };
 
-        new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, callback, errorCallback, context).execute(url);
     }
 
     /* Klassen downloader */
-    public static void getKlassen(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+    public static void getKlassen(AsyncActionCallback callback, AsyncActionCallback errorCallback, Context context) {
         String url = "rooster/info?klassen";
 
         AsyncCallback AsyncCallback = (status, s) -> {
@@ -170,11 +186,11 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             return klassen;
         };
 
-        new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, callback, errorCallback, context).execute(url);
     }
 
     /* Lokalen downloader */
-    public static void getLokalen(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+    public static void getLokalen(AsyncActionCallback callback, AsyncActionCallback errorCallback, Context context) {
         String url = "rooster/info?lokalen";
 
         AsyncCallback AsyncCallback = (status, s) -> {
@@ -198,15 +214,15 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             return lokalen;
         };
 
-        new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, callback, errorCallback, context).execute(url);
     }
 
     /* Weken downloader */
-    public static void getWeken(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
-        getWeken(false, true, 10, callback, errorCallback);
+    public static void getWeken(AsyncActionCallback callback, AsyncActionCallback errorCallback, Context context) {
+        getWeken(false, true, 10, callback, errorCallback, context);
     }
 
-    public static void getWeken(boolean periode, boolean known, int limit, AsyncActionCallback parentCallback, AsyncActionCallback errorCallback) {
+    public static void getWeken(boolean periode, boolean known, int limit, AsyncActionCallback parentCallback, AsyncActionCallback errorCallback, Context context) {
         String url = "rooster/info?weken";
         if(periode) url += "&periode";
         if(known) url += "&known";
@@ -235,11 +251,11 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             return weken;
         };
 
-        new WebDownloader(AsyncCallback, parentCallback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, parentCallback, errorCallback, context).execute(url);
     }
 
     /* Leerlingen downloader */
-    public static void getLeerlingen(AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+    public static void getLeerlingen(AsyncActionCallback callback, AsyncActionCallback errorCallback, Context context) {
         String url = "rooster/info?leerlingen&sort";
 
         AsyncCallback asyncCallback = (status, s) -> {
@@ -277,11 +293,11 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             return klassen;
         };
 
-        new WebDownloader(asyncCallback, callback, errorCallback).execute(url);
+        new WebDownloader(asyncCallback, callback, errorCallback, context).execute(url);
     }
 
     /* Rooster downloader */
-    public static void getRooster(String url, AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+    public static void getRooster(String url, AsyncActionCallback callback, AsyncActionCallback errorCallback, Context context) {
         AsyncCallback AsyncCallback = (status, content) -> {
             switch(status) {
                 case 200: break;
@@ -294,11 +310,11 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             return content;
         };
 
-        new WebDownloader(AsyncCallback, callback, errorCallback).execute(url);
+        new WebDownloader(AsyncCallback, callback, errorCallback, context).execute(url);
     }
 
     /* PGTV downloader */
-    public static void getPGTVRooster(String query, AsyncActionCallback successCallback, AsyncActionCallback errorCallback) {
+    public static void getPGTVRooster(String query, AsyncActionCallback successCallback, AsyncActionCallback errorCallback, Context context) {
         String url = "pgtv/"+query;
 
         AsyncCallback callback = (status, content) -> {
@@ -323,7 +339,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             return pgtv;
         };
 
-        new WebDownloader(callback, successCallback, errorCallback).execute(url);
+        new WebDownloader(callback, successCallback, errorCallback, context).execute(url);
     }
 
 

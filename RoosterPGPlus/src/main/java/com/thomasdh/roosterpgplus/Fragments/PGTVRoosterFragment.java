@@ -110,7 +110,7 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
         }, e -> {
             swipeRefreshLayout.setRefreshing(false);
             new PGTVBuilder().build(null);
-        });
+        }, getActivity());
     }
 
     private class PGTVBuilder {

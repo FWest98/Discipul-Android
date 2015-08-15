@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +19,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
+import com.thomasdh.roosterpgplus.Helpers.InternetConnection;
 import com.thomasdh.roosterpgplus.Helpers.InternetConnectionManager;
 import com.thomasdh.roosterpgplus.MainApplication;
 import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
@@ -34,13 +34,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import lombok.Getter;
 
@@ -378,23 +374,17 @@ public class Account {
                         .setAction(Constants.ANALYTICS_ACTION_LOGIN)
                         .build());
 
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+        String url = Constants.HTTP_BASE + "account/login";
+
+        InternetConnection.RequestCallbacks requestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
                 List<NameValuePair> postParamaters = new ArrayList<>();
                 postParamaters.add(new BasicNameValuePair("username", username));
                 postParamaters.add(new BasicNameValuePair("password", password));
                 UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParamaters);
 
-                URL url = new URL(Constants.HTTP_BASE + "account/login");
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-
-                connection.setDoOutput(true);
-                connection.setFixedLengthStreamingMode((int) entity.getContentLength());
-
-                entity.writeTo(connection.getOutputStream());
-
-                return connection;
+                return entity;
             }
 
             @Override
@@ -431,7 +421,7 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.post(url, requestCallbacks, context);
     }
 
     private void login(Activity activity, String llnr, boolean force, AsyncActionCallback callback) {
@@ -441,22 +431,16 @@ public class Account {
                         .setAction(Constants.ANALYTICS_ACTION_LOGIN)
                         .build());
 
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+        String url = Constants.HTTP_BASE + "account/login" + (force ? "?force" : "");
+
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("llnr", llnr));
                 UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                URL url = new URL(Constants.HTTP_BASE + "account/login" + (force ? "?force" : ""));
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-
-                connection.setDoOutput(true);
-                connection.setFixedLengthStreamingMode((int) data.getContentLength());
-
-                data.writeTo(connection.getOutputStream());
-
-                return connection;
+                return data;
             }
 
             @Override
@@ -506,7 +490,7 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.post(url, webRequestCallbacks, context);
     }
 
     //endregion
@@ -567,9 +551,11 @@ public class Account {
                         .setAction(Constants.ANALYTICS_ACTION_REGISTER)
                         .build());
 
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+        String url = Constants.HTTP_BASE + "account/register" + (force ? "?force" : "");
+
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("username", username));
                 postParameters.add(new BasicNameValuePair("password", password));
@@ -577,15 +563,7 @@ public class Account {
                 postParameters.add(new BasicNameValuePair("email", email));
                 UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                URL url = new URL(Constants.HTTP_BASE + "account/register" + (force ? "?force" : ""));
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-
-                connection.setDoOutput(true);
-                connection.setFixedLengthStreamingMode((int) data.getContentLength());
-
-                data.writeTo(connection.getOutputStream());
-
-                return connection;
+                return data;
             }
 
             @Override
@@ -635,7 +613,7 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.post(url, webRequestCallbacks, context);
     }
 
     //endregion
@@ -698,9 +676,11 @@ public class Account {
                         .setAction(Constants.ANALYTICS_ACTION_EXTEND)
                         .build());
 
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+        String url = Constants.HTTP_BASE + "account/extend";
+
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("username", username));
                 postParameters.add(new BasicNameValuePair("password", password));
@@ -708,15 +688,7 @@ public class Account {
                 postParameters.add(new BasicNameValuePair("key", apiKey));
                 UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                URL url = new URL(Constants.HTTP_BASE + "account/extend");
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-
-                connection.setDoOutput(true);
-                connection.setFixedLengthStreamingMode((int) data.getContentLength());
-
-                data.writeTo(connection.getOutputStream());
-
-                return connection;
+                return data;
             }
 
             @Override
@@ -757,19 +729,19 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.post(url, webRequestCallbacks, context);
     }
 
     //endregion
     //region AccountInfo
 
     private static void getAccountInfo(AsyncActionCallback callback, Context context) {
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
-            @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
-                URL url = new URL(Constants.HTTP_BASE + "account/accountinfo?key=" + getApiKey());
+        String url = Constants.HTTP_BASE + "account/accountinfo?key=" + getApiKey();
 
-                return (HttpsURLConnection) url.openConnection();
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
+            @Override
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
+                return null;
             }
 
             @Override
@@ -805,7 +777,7 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.get(url, webRequestCallbacks, context);
     }
 
     //endregion
@@ -823,27 +795,19 @@ public class Account {
         }
 
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
+        String url = Constants.HTTP_BASE + "account/gcm";
 
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
                 String regKey = gcm.register(Constants.PLAY_SERVICES_SENDER_ID);
-
-                URL url = new URL(Constants.HTTP_BASE + "account/gcm");
 
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("key", getApiKey()));
                 postParameters.add(new BasicNameValuePair("GCM", regKey));
                 UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-
-                connection.setDoOutput(true);
-                connection.setFixedLengthStreamingMode((int) data.getContentLength());
-
-                data.writeTo(connection.getOutputStream());
-
-                return connection;
+                return data;
             }
 
             @Override
@@ -874,27 +838,19 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.post(url, webRequestCallbacks, context);
     }
 
     //endregion
     //region Logout
 
     public void logout(AsyncActionCallback callback) {
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+        String url = Constants.HTTP_BASE + "account/logout";
+
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
-                URL url = new URL(Constants.HTTP_BASE + "account/logout");
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-
-                UrlEncodedFormEntity data = new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair("key", getApiKey())));
-
-                connection.setFixedLengthStreamingMode((int) data.getContentLength());
-                connection.setDoOutput(true);
-
-                data.writeTo(connection.getOutputStream());
-
-                return connection;
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
+                return new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair("key", getApiKey())));
             }
 
             @Override
@@ -921,7 +877,7 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.post(url, webRequestCallbacks, context);
     }
 
     //endregion
@@ -930,11 +886,12 @@ public class Account {
     //region get
 
     public void getSubklassen(boolean all, AsyncActionCallback callback) {
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+        String url = Constants.HTTP_BASE + "account/clusterklassen?key=" + apiKey + (all ? "&all" : "");
+
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
-                URL url = new URL(Constants.HTTP_BASE + "account/clusterklassen?key=" + apiKey + (all ? "&all" : ""));
-                return (HttpURLConnection) url.openConnection();
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
+                return null;
             }
 
             @Override
@@ -980,16 +937,18 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.get(url, webRequestCallbacks, context);
     }
 
     //endregion
     //region set
 
     public void setSubklassen(boolean refresh, ArrayList<String> subklassen, AsyncActionCallback callback) {
-        WebRequestCallbacks webRequestCallbacks = new WebRequestCallbacks() {
+        String url = Constants.HTTP_BASE + "account/clusterklassen" + (refresh ? "?refresh" : "");
+
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
             @Override
-            public HttpURLConnection onCreateConnection() throws Exception {
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
                 List<NameValuePair> postParameters = new ArrayList<>();
                 postParameters.add(new BasicNameValuePair("key", apiKey));
                 if(subklassen != null) {
@@ -999,15 +958,7 @@ public class Account {
                 }
                 UrlEncodedFormEntity data = new UrlEncodedFormEntity(postParameters);
 
-                URL url = new URL(Constants.HTTP_BASE + "account/clusterklassen" + (refresh ? "?refresh" : ""));
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-
-                connection.setDoOutput(true);
-                connection.setFixedLengthStreamingMode((int) data.getContentLength());
-
-                data.writeTo(connection.getOutputStream());
-
-                return connection;
+                return data;
             }
 
             @Override
@@ -1047,67 +998,12 @@ public class Account {
             }
         };
 
-        new WebActions(context).execute(webRequestCallbacks);
+        InternetConnection.post(url, webRequestCallbacks, context);
     }
 
     //endregion
     //endregion
 
-
-    //region WebActions
-
-    private static class WebActions extends AsyncTask<Account.WebRequestCallbacks, Exception, String> {
-        private Context context;
-        private WebRequestCallbacks callbacks;
-
-        private WebActions(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        protected String doInBackground(WebRequestCallbacks... params) {
-            callbacks = params[0];
-            if (!HelperFunctions.hasInternetConnection(context)) {
-                publishProgress(new Exception("Geen internetverbinding"));
-                return null;
-            }
-            try {
-                HttpURLConnection connection = callbacks.onCreateConnection();
-
-                String content = "";
-                try {
-                    Scanner scanner = new Scanner(connection.getInputStream());
-                    while (scanner.hasNext()) {
-                        content += scanner.nextLine();
-                    }
-                } catch(Exception e) {
-                    // No content
-                    // continue normally
-                } finally {
-                    connection.disconnect();
-                }
-
-                return callbacks.onValidateResponse(content, connection.getResponseCode());
-            } catch (Exception e) {
-                publishProgress(e);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String o) {
-            callbacks.onProcessData(o);
-        }
-
-        @Override
-        protected void onProgressUpdate(Exception... values) {
-            Exception exception = values[0];
-            callbacks.onError(exception);
-            cancel(true);
-        }
-    }
-
-    //endregion
     //region Types
 
     public static class Subklas {
@@ -1126,16 +1022,6 @@ public class Account {
             jaarlaag = object.getInt("jaarlaag");
             isIn = object.getBoolean("isIn");
         }
-    }
-
-    //endregion
-    //region Interfaces
-
-    public interface WebRequestCallbacks {
-        HttpURLConnection onCreateConnection() throws Exception;
-        String onValidateResponse(String data, int status) throws Exception;
-        void onProcessData(String data);
-        void onError(Exception e);
     }
 
     //endregion
