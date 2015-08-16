@@ -28,20 +28,20 @@ public class GCMIntentService extends IntentService {
             switch (messageType) {
                 case GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE: {
                     // Handle notification
-                    createNotification(extras.getString("message"), this);
+                    createNotification(extras.getString("title"), extras.getString("message"), this);
                 }
             }
         }
         GCMBroadcastReceiver.completeWakefulIntent(intent);
     }
 
-    private static void createNotification(String message, Context context) {
+    private static void createNotification(String title, String message, Context context) {
         boolean pushNotificationsSetting = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("pushNotificaties", true);
         if(!pushNotificationsSetting) {
             return;
         }
 
-        String title = "Roosterwijziging";
+        title = title == null ? "Roosterwijziging" : title;
 
         Intent contentIntent = new Intent(context, RoosterActivity.class);
         PendingIntent contentPendingIntent = PendingIntent.getActivity(context, 0, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -57,7 +57,7 @@ public class GCMIntentService extends IntentService {
                 .setFullScreenIntent(contentPendingIntent, true)
                 .setContentIntent(contentPendingIntent)
                 .setLights(Color.RED, 300, 200)
-                .setVibrate(new long[] { 0, 2000, 500, 2000, 500, 2000 })
+                .setVibrate(new long[] { 0, 600, 500, 800, 500, 1000 })
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                 .setColor(Color.parseColor("#F7D507"));
 

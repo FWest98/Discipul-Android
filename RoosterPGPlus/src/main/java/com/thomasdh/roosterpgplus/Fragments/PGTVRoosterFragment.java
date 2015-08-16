@@ -6,6 +6,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
@@ -32,7 +33,7 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
         private String urlQuery;
         private String desc;
 
-        private PGTVType(String urlQuery, String desc) {
+        PGTVType(String urlQuery, String desc) {
             this.urlQuery = urlQuery;
             this.desc = desc;
         }
@@ -106,18 +107,18 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
         WebDownloader.getPGTVRooster(type.toString(), result -> {
             swipeRefreshLayout.setRefreshing(false);
             ArrayList<PGTVPage> data = (ArrayList<PGTVPage>) result;
-            new PGTVBuilder().build(data);
+            new PGTVBuilder().build(data, this);
         }, e -> {
             swipeRefreshLayout.setRefreshing(false);
-            new PGTVBuilder().build(null);
+            new PGTVBuilder().build(null, this);
         }, getActivity());
     }
 
     private class PGTVBuilder {
-        public void build(ArrayList<PGTVPage> data) {
+        public void build(ArrayList<PGTVPage> data, RoosterViewFragment fragment) {
             if(getViewPager() == null) return;
             if(getViewPager().getAdapter() == null) getViewPager().setAdapter(new AnimatedPagerAdapter());
-            getViewPager().setOnPageChangeListener(null);
+            getViewPager().addOnPageChangeListener(fragment);
 
             if(data == null || data.isEmpty()) {
                 View noContentView = LayoutInflater.from(getActivity()).inflate(R.layout.pgtv_null, null);
@@ -138,6 +139,15 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
 
                 TextView desc = (TextView) dagView.findViewById(R.id.pgtv_dag_content);
                 desc.setText(page.desc);
+
+                ScrollView scrollView = (ScrollView) dagView.findViewById(R.id.scrollview);
+                final int finalI = i;
+                scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                    int scrollY = scrollView.getScrollY();
+
+                    fragment.OnScroll(scrollY, finalI);
+                });
+
                 ((AnimatedPagerAdapter) getViewPager().getAdapter()).setView(dagView, i, getActivity());
             }
 

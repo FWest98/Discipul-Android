@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dialog_container"
+    android:layout_width="match_parent"
+    android:layout_height="500dip"
+    app:theme="@style/AlertDialogTheme"
+    android:orientation="vertical">
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabMode="fixed" />
+
+    <FrameLayout
+        android:id="@+id/tab_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
+
+        <LinearLayout
+            android:id="@+id/Tab_UserPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                android:paddingTop="6dp"
+                android:text="@string/logindialog_userpass_desc"
+                android:textSize="17sp"
+                android:textColor="@color/logindialog_textcolor"/>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent">
+
+                <android.support.v7.widget.AppCompatEditText
+                    android:id="@+id/logindialogusername"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:fontFamily="sans-serif"
+                    android:hint="@string/logindialog_username_hint"
+                    android:paddingLeft="10dp"
+                    android:paddingBottom="10dp"
+                    android:singleLine="true" />
+
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent">
+
+                <android.support.v7.widget.AppCompatEditText
+                    android:id="@+id/logindialogpassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:fontFamily="sans-serif"
+                    android:paddingLeft="10dp"
+                    android:hint="@string/logindialog_password_hint"
+                    android:inputType="textPassword" />
+
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/Tab_LLNR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                android:paddingTop="6dp"
+                android:text="@string/logindialog_llnr_desc"
+                android:textSize="17sp"
+                android:textColor="@color/logindialog_textcolor"/>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent">
+
+                <android.support.v7.widget.AppCompatEditText
+                    android:id="@+id/logindialogllnr"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="10dp"
+                    android:hint="@string/logindialog_llnr_hint"
+                    android:inputType="number" />
+
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

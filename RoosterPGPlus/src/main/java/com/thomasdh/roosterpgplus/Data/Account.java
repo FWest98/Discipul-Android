@@ -1,17 +1,18 @@
 package com.thomasdh.roosterpgplus.Data;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
+import android.support.design.widget.TabLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TabHost;
+import android.widget.FrameLayout;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -325,31 +326,46 @@ public class Account {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.logindialog, null);
-        TabHost tabHost = (TabHost) dialogView.findViewById(R.id.DialogTabs);
+        View dialogView = inflater.inflate(R.layout.dialog_login, null);
+        TabLayout tabLayout = (TabLayout) dialogView.findViewById(R.id.tabs);
+        FrameLayout tabs = (FrameLayout) dialogView.findViewById(R.id.tab_wrapper);
+        final TabLayout.Tab[] currentTab = { tabLayout.newTab().setText(R.string.logindialog_tabs_userpass).setTag(R.id.Tab_UserPass) };
 
-        tabHost.setup();
+        tabLayout.addTab(currentTab[0], true);
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.logindialog_tabs_llnr).setTag(R.id.Tab_LLNR), false);
 
-        TabHost.TabSpec userPassTab = tabHost.newTabSpec("userPassTab");
-        userPassTab.setContent(R.id.Tab_UserPass);
-        userPassTab.setIndicator(context.getResources().getString(R.string.logindialog_tabs_userpass));
-        tabHost.addTab(userPassTab);
+        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getTag() == null || !(tab.getTag() instanceof Integer)) return;
 
-        TabHost.TabSpec llnrTab = tabHost.newTabSpec("llnrTab");
-        llnrTab.setContent(R.id.Tab_LLNR);
-        llnrTab.setIndicator(context.getResources().getString(R.string.logindialog_tabs_llnr));
-        tabHost.addTab(llnrTab);
+                for (int i = 0; i < tabs.getChildCount(); i++) {
+                    View child = tabs.getChildAt(i);
+                    child.setVisibility(View.GONE);
+                }
+
+                dialogView.findViewById((int) tab.getTag()).setVisibility(View.VISIBLE);
+                currentTab[0] = tab;
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
 
         builder.setView(dialogView)
                 .setPositiveButton(R.string.logindialog_loginbutton, (dialogInterface, id) -> {})
-                .setNeutralButton(R.string.logindialog_registerbutton, (dialogInterface, id) -> {
-                })
+                /*.setNeutralButton(R.string.logindialog_registerbutton, (dialogInterface, id) -> {})*/
                 .setNegativeButton(R.string.logindialog_cancelbutton, (dialogInterface, id) -> {
                 });
 
         AlertDialog loginDialog = builder.create();
         loginDialog.show();
-        loginDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(v -> register(activity, result -> { loginDialog.dismiss(); callback.onAsyncActionComplete(result); }));
+        //loginDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(v -> register(activity, result -> { loginDialog.dismiss(); callback.onAsyncActionComplete(result); }));
         loginDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v -> {
             loginDialog.dismiss();
             try {
@@ -364,9 +380,8 @@ public class Account {
             String llnrString = ((EditText) dialogView.findViewById(R.id.logindialogllnr)).getText().toString();
 
             try {
-                int currentTab = tabHost.getCurrentTab();
-                switch (currentTab) {
-                    case 0:
+                switch ((int) currentTab[0].getTag()) {
+                    case R.id.Tab_UserPass:
                         if ("".equals(username)) throw new Exception("Gebruikersnaam is verplicht!");
                         if ("".equals(password)) throw new Exception("Wachtwoord is verplicht!");
 
@@ -376,7 +391,7 @@ public class Account {
                         });
 
                         break;
-                    case 1:
+                    case R.id.Tab_LLNR:
                         if ("".equals(llnrString)) throw new Exception("Leerlingnummer is verplicht!");
 
                         login(activity, llnrString, false, result -> {
@@ -666,7 +681,7 @@ public class Account {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.extenddialog, null);
+        View dialogView = inflater.inflate(R.layout.dialog_extend, null);
 
         builder.setTitle(R.string.extenddialog_title);
         builder.setView(dialogView)

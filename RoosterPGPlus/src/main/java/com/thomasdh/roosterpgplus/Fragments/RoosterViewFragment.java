@@ -29,7 +29,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class RoosterViewFragment extends android.support.v4.app.Fragment implements ViewPager.OnPageChangeListener {
+public abstract class RoosterViewFragment extends android.support.v4.app.Fragment implements ViewPager.OnPageChangeListener, RoosterBuilder.OnDagScrollListener {
     @Getter
     ViewPager viewPager;
     @Getter
@@ -41,7 +41,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     @Getter(value = AccessLevel.PACKAGE) private int week;
     @Getter @Setter private int dag = 0;
     private boolean isScrollingViewPager = false;
-    private boolean[] isScrollingScrollView = new boolean[5];
+    private boolean[] isScrollingScrollView = new boolean[10];
 
     private boolean hadInternetConnection = true;
 
@@ -95,6 +95,14 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
         if(swipeRefreshLayout != null) {
             swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent, R.color.colorPrimaryDark);
             swipeRefreshLayout.setOnRefreshListener(() -> loadRooster(true));
+        }
+    }
+
+    @Override
+    public void OnScroll(int scrollY, int dag) {
+        if (swipeRefreshLayout != null && dag == getDag()) {
+            isScrollingScrollView[dag] = scrollY != 0;
+            swipeRefreshLayout.setEnabled(!isScrollingViewPager && !isScrollingScrollView[dag]);
         }
     }
 
@@ -193,12 +201,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
                 .setShowDag(getDag())
                 .setShowVervangenUren(true)
                 .setLastLoad(getLoad())
-                .setOnDagScrollListener((scrollY, dag) -> {
-                    if (swipeRefreshLayout != null && dag == getDag()) {
-                        isScrollingScrollView[dag] = scrollY != 0;
-                        swipeRefreshLayout.setEnabled(!isScrollingViewPager && !isScrollingScrollView[dag]);
-                    }
-                })
+                .setOnDagScrollListener(this)
                 .setUrenCount(urenCount);
     }
 

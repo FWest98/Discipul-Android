@@ -10,6 +10,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:textColorLink">@color/colorPrimary</item>
+        <item name="android:textColorHighlight">@color/colorPrimary</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@android:color/background_light</item>
         <item name="actionBarWidgetTheme">@style/Theme.AppCompat.Light</item>
@@ -17,6 +19,8 @@
         <item name="colorControlActivated">@color/colorAccent</item>
         <item name="colorControlHighlight">@color/colorAccent</item>
         <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButtonStyle</item>
+        <item name="alertDialogTheme">@style/AlertDialogTheme</item>
+        <item name="android:alertDialogTheme">@style/AlertDialogTheme</item>
     </style>
 
     <style name="PreferenceTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -26,6 +30,9 @@
         <item name="windowActionModeOverlay">true</item>
         <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButtonStyle</item>
         <item name="android:actionBarStyle">@style/BackActionBar</item>
+        <item name="android:textColorLink">@color/colorPrimary</item>
+        <item name="android:textColorHighlight">@color/colorPrimary</item>
+        <item name="alertDialogTheme">@style/AlertDialogTheme</item>
     </style>
 
     <style name="BackActionBar" parent="Widget.AppCompat.Light.ActionBar">
@@ -52,6 +59,14 @@
     <style name="ToolbarNavigationButtonStyle" parent="Widget.AppCompat.Toolbar.Button.Navigation">
         <item name="android:minWidth">72dp</item>
         <item name="android:paddingRight">16dp</item>
+    </style>
+
+    <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:background">#fff</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
+        <item name="colorControlHighlight">@color/colorPrimary</item>
+        <item name="colorControlNormal">#808080</item>
     </style>
 
     <!-- Showcasetheme
