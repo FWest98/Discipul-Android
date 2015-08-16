@@ -1,29 +1,39 @@
 package com.thomasdh.roosterpgplus;
 
+import android.animation.ValueAnimator;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.provider.SearchRecentSuggestions;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.view.MenuItemCompat;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.widget.SearchView;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ExpandableListView;
+import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 
-import com.fwest98.showcaseview.ShowcaseView;
-import com.fwest98.showcaseview.targets.ViewTarget;
 import com.google.android.gms.analytics.HitBuilders;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.accountswitcher.AccountHeader;
+import com.mikepenz.materialdrawer.accountswitcher.AccountHeaderBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
+import com.mikepenz.materialdrawer.model.SectionDrawerItem;
+import com.quinny898.library.persistentsearch.SearchBox;
 import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
-import com.thomasdh.roosterpgplus.Adapters.NavigationDrawerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
-import com.thomasdh.roosterpgplus.Data.SearchRecentsProvider;
 import com.thomasdh.roosterpgplus.Fragments.EntityRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.PGTVRoosterFragment;
 import com.thomasdh.roosterpgplus.Fragments.PersoonlijkRoosterFragment;
@@ -40,39 +50,42 @@ import java.util.Calendar;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import roboguice.activity.RoboActionBarActivity;
-import roboguice.inject.InjectView;
 
-public class RoosterActivity extends RoboActionBarActivity implements ActionBar.OnNavigationListener, InternetConnectionManager.InternetConnectionChangeListener, RoosterViewFragment.onRoosterLoadStateChangedListener {
+public class RoosterActivity extends AppCompatActivity implements InternetConnectionManager.InternetConnectionChangeListener {
     private static final String ROOSTER_TYPE = "roosterType";
 
     @Getter
     private static int selectedWeek = -1;
 
     private static ActionBar actionBar;
-    private static ActionBarSpinnerAdapter actionBarSpinnerAdapter;
-    private ActionBarDrawerToggle actionBarDrawerToggle;
+    private static Toolbar toolbar;
+    private static ActionBarSpinnerAdapter toolbarSpinnerAdapter;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem refreshItem;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem searchItem;
 
-    @InjectView(R.id.drawerlayout)
-    private DrawerLayout drawerLayout;
-    @InjectView(R.id.drawer)
-    private ExpandableListView drawerList;
-
+    private int currentSelection = 0;
     private RoosterViewFragment mainFragment;
     private Class<? extends RoosterViewFragment> roosterType;
     private boolean isRooster = true;
+    private boolean isShowingBackArrow = false;
+    private Drawer drawer;
+    private AccountHeader drawerHeader;
+    private SearchBox searchBox;
+    private Snackbar internetConnectionSnackbar;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         /* Setup */
-        //databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
-        //GoogleAnalytics.getInstance(this).setDryRun(true);
         setContentView(R.layout.activity_rooster);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(false);
         Account.getInstance(this);
 
         new NextUurNotifications(this);
@@ -81,13 +94,13 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
             Intent intent = getIntent();
             if(intent.getAction() == Intent.ACTION_SEARCH) {
                 roosterType = EntityRoosterFragment.class;
-                EntityRoosterFragment searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
+                EntityRoosterFragment searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
                 mainFragment = searchFragment;
                 searchFragment.setEntity(intent.getStringExtra(SearchManager.QUERY));
             } else {
                 // Defaults
                 roosterType = PersoonlijkRoosterFragment.class;
-                mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
+                mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
             }
 
             getSupportFragmentManager().beginTransaction()
@@ -96,132 +109,189 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         } else {
             roosterType = (Class<? extends RoosterViewFragment>) savedInstanceState.getSerializable(ROOSTER_TYPE);
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
-            mainFragment.setRoosterLoadStateListener(this);
             isRooster = roosterType != PGTVRoosterFragment.class;
             setSelectedWeek(savedInstanceState.getInt("WEEK"));
             if(!isRooster) {
                 ((PGTVRoosterFragment) mainFragment).setType((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE"));
-                getSupportActionBar().setTitle("PGTV - " + ((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE")).toDesc());
             }
         }
 
         /* Navigation Drawer */
+        drawerHeader = new AccountHeaderBuilder()
+                .withActivity(this)
+                .addProfiles(
+                        Account.isSet() ?
+                        new ProfileDrawerItem().withName(Account.getName()).withEmail(
+                                Account.getUserType() == Account.UserType.LEERLING ?
+                                    "Klas " + Account.getLeerlingKlas() :
+                                    "Docentcode: " + Account.getLeraarCode()
+                        ) : new ProfileDrawerItem().withName("Nog niet ingelogd")
+                )
+                .withCompactStyle(!Account.isSet())
+                .withHeaderBackground(R.drawable.drawer_header_blurred)
+                .withHeaderBackgroundScaleType(ImageView.ScaleType.CENTER_CROP)
+                .withOnAccountHeaderListener((view, iProfile, b) -> false)
+                .withSavedInstance(savedInstanceState)
+                .withProfileImagesVisible(false)
+                .withSelectionListEnabled(false)
+                .build();
+
         ArrayList<String> groups = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_groups)));
-        ArrayList<ArrayList<String>> children = new ArrayList<ArrayList<String>>() {{
+        ArrayList<ArrayList<String>> itemTitles = new ArrayList<ArrayList<String>>() {{
             add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_roosters))));
             add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_items_pgtv))));
         }};
+        ArrayList<ArrayList<String>> itemIcons = new ArrayList<ArrayList<String>>() {{
+           add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_icons_rooster))));
+            add(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.drawer_icons_pgtv))));
+        }};
 
-        drawerList.setAdapter(new NavigationDrawerAdapter(this, groups, children));
-        drawerList.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
-            if (groupPosition == 0) {
-                Class<? extends RoosterViewFragment> newType = RoosterViewFragment.types[childPosition];
+        DrawerBuilder drawerBuilder = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withAccountHeader(drawerHeader)
+                .withAnimateDrawerItems(true)
+                .withCloseOnClick(true)
+                .withActionBarDrawerToggleAnimated(true)
+                .withSavedInstance(savedInstanceState)
+                .withOnDrawerItemClickListener((adapterView, view, i, l, iDrawerItem) -> {
+                    int firstDigit = iDrawerItem.getIdentifier() / 10; // first digit
+                    int secondDigit = iDrawerItem.getIdentifier() % 10; // second digit
 
-                // Nieuwe dingen
-                mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek(), this);
-                roosterType = newType;
+                    if (firstDigit == 0) {
+                        // Roostergroup
+                        Class<? extends RoosterViewFragment> newType = RoosterViewFragment.types[secondDigit];
 
-                if(actionBarSpinnerAdapter != null)
-                    actionBarSpinnerAdapter.setType(newType);
+                        mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek());
+                        roosterType = newType;
 
-                getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
-                isRooster = true;
+                        if (toolbarSpinnerAdapter != null)
+                            toolbarSpinnerAdapter.setType(newType);
 
-                drawerLayout.closeDrawer(drawerList);
-            } else {
-                Class<? extends RoosterViewFragment> newType = PGTVRoosterFragment.class;
+                        isRooster = true;
+                    } else if (firstDigit == 1) {
+                        // PGTV group
+                        Class<? extends RoosterViewFragment> newType = PGTVRoosterFragment.class;
 
-                PGTVRoosterFragment fragment = RoosterViewFragment.newInstance(PGTVRoosterFragment.class, getSelectedWeek(), this);
+                        PGTVRoosterFragment fragment = RoosterViewFragment.newInstance(PGTVRoosterFragment.class, getSelectedWeek());
 
-                switch (childPosition) {
-                    case 0:
-                        fragment.setType(PGTVRoosterFragment.PGTVType.ROOSTER);
-                        break;
-                    case 1:
-                        fragment.setType(PGTVRoosterFragment.PGTVType.MEDEDELINGEN);
-                        break;
-                    default:
-                        break;
-                }
-                mainFragment = fragment;
-                roosterType = newType;
+                        switch (secondDigit) {
+                            case 0:
+                                fragment.setType(PGTVRoosterFragment.PGTVType.ROOSTER);
+                                break;
+                            case 1:
+                                fragment.setType(PGTVRoosterFragment.PGTVType.MEDEDELINGEN);
+                                break;
+                            default:
+                                break;
+                        }
+                        isRooster = false;
+                        mainFragment = fragment;
+                        roosterType = newType;
+                    } else if (firstDigit == 2) {
+                        // Settings
+                        drawer.closeDrawer();
+                        drawer.setSelectionByIdentifier(currentSelection);
+                        Intent preferencesIntent = new Intent(this, PreferencesActivity.class);
+                        startActivity(preferencesIntent);
+                        return false;
+                    }
 
-                getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
-                isRooster = false;
+                    getSupportFragmentManager().popBackStackImmediate(); // voor zoeken
+                    getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
+                    drawer.closeDrawer();
+                    currentSelection = iDrawerItem.getIdentifier();
+                    toggleHamburgerArrow(false);
 
-                drawerLayout.closeDrawer(drawerList);
-                actionBar.setTitle("PGTV - "+fragment.getType().toDesc());
+                    return true;
+                });
+
+        int i = 0;
+        for(String groupName : groups) {
+            drawerBuilder.addDrawerItems(new SectionDrawerItem().setDivider(i != 0).withName(groupName));
+            int u = 0;
+            for(String childName : itemTitles.get(i)) {
+                int resource = HelperFunctions.getResId(itemIcons.get(i).get(u), R.drawable.class);
+                drawerBuilder.addDrawerItems(
+                        new PrimaryDrawerItem()
+                                .withName(childName)
+                                .withIdentifier(Integer.parseInt(i + "" + u))
+                                .withIcon(resource)
+                );
+                u++;
             }
-            return true;
-        });
-
-        // Open alle groepen
-        for (int pos = 0; pos < drawerList.getExpandableListAdapter().getGroupCount(); pos++) {
-            drawerList.expandGroup(pos);
+            i++;
         }
 
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
+        drawer = drawerBuilder
+                .addDrawerItems(
+                        new DividerDrawerItem(),
+                        new PrimaryDrawerItem().withName("Instellingen").withIcon(R.drawable.ic_settings_grey).withIdentifier(20)
+                )
+                .withSelectedItem(1)
+                .build();
+
+        drawerLayout = drawer.getDrawerLayout();
+
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
+            @Override
+            public void onDrawerOpened(View view) {
+                supportInvalidateOptionsMenu();
+            }
+
+            @Override
             public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                if(getSelectedWeek() == -1) return;
-                if(isRooster) {
-                    if(actionBarSpinnerAdapter.getCount() >= 1) {
-                        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-                        getSupportActionBar().setDisplayShowTitleEnabled(false);
-                    } else {
-                        getSupportActionBar().setTitle(R.string.app_name);
-                        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-                        getSupportActionBar().setDisplayShowTitleEnabled(true);
-                    }
+                if (getSelectedWeek() == -1) return;
+                if (isRooster) {
+                    toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
+                    toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.VISIBLE);
                 } else {
-                    getSupportActionBar().setTitle("PGTV - "+((PGTVRoosterFragment) mainFragment).getType().toDesc());
+                    toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.GONE);
+                    toolbar.findViewById(R.id.toolbar_title).setVisibility(View.VISIBLE);
+                    ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText("PGTV - " + ((PGTVRoosterFragment) mainFragment).getType().toDesc());
                 }
                 supportInvalidateOptionsMenu();
             }
 
-            public void onDrawerOpened(View view) {
-                super.onDrawerOpened(view);
-                getSupportActionBar().setTitle(R.string.app_name);
-                getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-                getSupportActionBar().setDisplayShowTitleEnabled(true);
-                supportInvalidateOptionsMenu();
+            @Override
+            public void onDrawerSlide(View view, float v) {
+                if (isShowingBackArrow) {
+                    super.onDrawerSlide(view, 1);
+                } else {
+                    super.onDrawerSlide(view, v);
+                }
             }
         };
+
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        View.OnClickListener toolbarOnClickListener = view -> {
+            if (roosterType == EntityRoosterFragment.class && isShowingBackArrow) {
+                onBackPressed();
+            } else {
+                if(drawer.isDrawerOpen()) {
+                    drawer.closeDrawer();
+                } else {
+                    drawer.openDrawer();
+                }
+            }
+        };
+
+        toolbar.setNavigationOnClickListener(toolbarOnClickListener);
+        actionBarDrawerToggle.setToolbarNavigationClickListener(toolbarOnClickListener);
+
+        /* Search */
+        searchBox = (SearchBox) findViewById(R.id.searchbox);
+        searchBox.enableVoiceRecognition(this);
 
         RoosterInfo.getWeken(this, this::addWekenToActionBar); // hier gebeurt de rest
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        setIntent(intent);
-        if(!Intent.ACTION_SEARCH.equals(intent.getAction())) return;
-
-        if(((Object) mainFragment).getClass() != EntityRoosterFragment.class) {
-            roosterType = EntityRoosterFragment.class;
-            EntityRoosterFragment searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek(), this);
-            actionBarSpinnerAdapter.setType(roosterType);
-
-            mainFragment = searchFragment;
-            searchFragment.setEntity(intent.getStringExtra(SearchManager.QUERY));
-
-            getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
-
-            new SearchRecentSuggestions(this, SearchRecentsProvider.AUTHORITY, SearchRecentsProvider.MODE).saveRecentQuery(searchFragment.getEntity(), null);
-        } else {
-            ((EntityRoosterFragment) mainFragment).setEntity(intent.getStringExtra(SearchManager.QUERY));
-            mainFragment.loadRooster();
-        }
-
-        MenuItemCompat.collapseActionView(searchItem);
-        ((SearchView) MenuItemCompat.getActionView(searchItem)).onActionViewCollapsed();
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState = drawer.saveInstanceState(savedInstanceState);
+        savedInstanceState = drawerHeader.saveInstanceState(savedInstanceState);
+
         savedInstanceState.putSerializable(ROOSTER_TYPE, roosterType);
         savedInstanceState.putInt("WEEK", getSelectedWeek());
         if(!isRooster) {
@@ -240,100 +310,48 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
     }
 
     @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        actionBarDrawerToggle.syncState();
-    }
+    public void onBackPressed() {
+        if(drawer != null && drawer.isDrawerOpen()) {
+            drawer.closeDrawer();
+        } else if(searchBox != null && searchBox.isShown()) {
+            searchBox.toggleSearch();
+        } else if(roosterType == EntityRoosterFragment.class) {
+            // actionbar goed maken
+            toggleHamburgerArrow(false);
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        actionBarDrawerToggle.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        boolean drawerOpen = drawerLayout.isDrawerOpen(drawerList);
-        menu.findItem(R.id.menu_item_refresh).setVisible(!drawerOpen);
-        return super.onPrepareOptionsMenu(menu);
+            // fragments goed maken
+            getSupportFragmentManager().popBackStackImmediate();
+            mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
+            roosterType = mainFragment.getClass();
+            toolbarSpinnerAdapter.setType(roosterType);
+            drawer.setSelectionByIdentifier(currentSelection);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Menu maken
         getMenuInflater().inflate(R.menu.main, menu);
-        MenuItem refresh = menu.findItem(R.id.menu_item_refresh);
 
-        // Search
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_item_search));
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(true);
-        searchView.setQueryRefinementEnabled(true);
-
-        refreshItem = refresh;
         searchItem = menu.findItem(R.id.menu_item_search);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) return true;
-
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                Intent preferencesIntent = new Intent(this, PreferencesActivity.class);
-                startActivity(preferencesIntent);
+        switch(item.getItemId()) {
+            case R.id.menu_item_search: {
+                openSearch();
                 return true;
-            case R.id.menu_item_refresh:
-                mainFragment.loadRooster(true);
-                return true;
-            case R.id.menu_item_search:
-                if(HelperFunctions.showCaseView()) {
-                    new ShowcaseView.Builder(this)
-                            .setTarget(new ViewTarget(MenuItemCompat.getActionView(searchItem)))
-                            .setContentTitle(R.string.showcaseview_zoeken_title)
-                            .setContentText(R.string.showcaseview_zoeken_content)
-                            .hideOnTouchOutside()
-                            .singleShot(2)
-                            .setStyle(R.style.ShowCaseTheme)
-                            .build();
-                }
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onRoosterLoadEnd() {
-        setRefreshButtonState(false);
-    }
-
-    @Override
-    public void onRoosterLoadStart() {
-        setRefreshButtonState(true);
-    }
-
-    @Override
-    public void onRoosterLoadCancel() {
-        setRefreshButtonState(false);
-        drawerLayout.openDrawer(drawerList);
-    }
-
-    void setRefreshButtonState(boolean loading) {
-        MenuItem refreshItem = getRefreshItem();
-        if(refreshItem != null) {
-            if(loading) {
-                MenuItemCompat.setActionView(refreshItem, R.layout.actionbar_refresh_progress);
-            } else {
-                MenuItemCompat.setActionView(refreshItem, null);
             }
+            default: return super.onOptionsItemSelected(item);
         }
     }
 
-    @Override
-    public boolean onNavigationItemSelected(int pos, long item) {
-        String itemString = (String) actionBarSpinnerAdapter.getItem(pos);
+    public boolean onWeekSelected(int pos) {
+        String itemString = (String) toolbarSpinnerAdapter.getItem(pos);
         int week = Integer.parseInt(itemString.substring(5));
 
         MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getApplicationContext())
@@ -358,16 +376,30 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
                 strings.add("Week " + wekenArray.get(c).week);
             }
         }
-        actionBarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, ((Object) mainFragment).getClass());
-        actionBar.setListNavigationCallbacks(actionBarSpinnerAdapter, this);
 
-        if(isRooster) {
-            actionBar.setDisplayShowTitleEnabled(false);
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-        }
+        View spinnerContainer = LayoutInflater.from(this).inflate(R.layout.toolbar_spinner, toolbar, false);
+        ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        toolbar.addView(spinnerContainer, layoutParams);
+        toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
+
+        toolbarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, ((Object) mainFragment).getClass());
+
+        Spinner spinner = (Spinner) spinnerContainer.findViewById(R.id.toolbar_spinner);
+        spinner.setAdapter(toolbarSpinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                onWeekSelected(i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         if(getSelectedWeek() != -1) {
-            actionBar.setSelectedNavigationItem(strings.indexOf("Week "+getSelectedWeek()));
+            spinner.setSelection(strings.indexOf("Week " + getSelectedWeek()));
         }
     }
 
@@ -376,8 +408,95 @@ public class RoosterActivity extends RoboActionBarActivity implements ActionBar.
         mainFragment.setWeek(week);
     }
 
+    public void openSearch() {
+        searchBox.revealFromMenuItem(R.id.menu_item_search, this);
+        searchBox.setLogoText(getString(R.string.search_hint));
+        searchBox.setSearchListener(new SearchBox.SearchListener() {
+            @Override
+            public void onSearchOpened() {
+                // Show tint
+                View overlay = findViewById(R.id.search_overlay);
+                overlay.setVisibility(View.VISIBLE);
+                overlay.setOnClickListener(view -> searchBox.toggleSearch());
+            }
+
+            @Override
+            public void onSearchCleared() {
+
+            }
+
+            @Override
+            public void onSearchClosed() {
+                closeSearch();
+            }
+
+            @Override
+            public void onSearchTermChanged() {
+
+            }
+
+            @Override
+            public void onSearch(String s) {
+                closeSearch();
+                /* Fragment dingen */
+                EntityRoosterFragment searchFragment;
+                if (roosterType != EntityRoosterFragment.class) {
+                    // Set to entityrooster
+                    roosterType = EntityRoosterFragment.class;
+                    searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
+                    toolbarSpinnerAdapter.setType(roosterType);
+
+                    mainFragment = searchFragment;
+                    searchFragment.setEntity(s);
+
+                    getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).addToBackStack("search").commit();
+
+                    // actionbar & drawer
+                    toggleHamburgerArrow(true);
+                    drawer.getListView().setSelection(-1);
+                    drawer.getListView().setItemChecked(drawer.getCurrentSelection() + 1, false); // +1 for the header offset
+                } else {
+                    searchFragment = (EntityRoosterFragment) mainFragment;
+                    searchFragment.setEntity(s);
+                    searchFragment.loadRooster();
+                }
+
+                // Save search query
+            }
+        });
+    }
+
+    public void closeSearch() {
+        searchBox.hideCircularly(this);
+        View overlay = findViewById(R.id.search_overlay);
+        overlay.setVisibility(View.GONE);
+    }
+
+    public void toggleHamburgerArrow(boolean showBackArrow) {
+        float start = showBackArrow ? 0: 1;
+        float end = showBackArrow ? 1 : 0;
+
+        ValueAnimator animator = ValueAnimator.ofFloat(start, end);
+        animator.addUpdateListener(valueAnimator -> {
+            float slideOffset = (float) valueAnimator.getAnimatedValue();
+            drawer.getActionBarDrawerToggle().onDrawerSlide(drawerLayout, slideOffset);
+        });
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.setDuration(500);
+        animator.start();
+
+        isShowingBackArrow = showBackArrow;
+    }
+
     @Override
     public void internetConnectionChanged(boolean hasInternetConnection) {
+        if(!hasInternetConnection) {
+            internetConnectionSnackbar = Snackbar.make(findViewById(R.id.container), "Geen internetverbinding meer. Zodra er weer verbinding is zal de app het nieuwste rooster ophalen", Snackbar.LENGTH_LONG);
+            internetConnectionSnackbar.show();
+        } else {
+            if(internetConnectionSnackbar != null)
+                internetConnectionSnackbar.dismiss();
+        }
         mainFragment.setInternetConnectionState(hasInternetConnection);
     }
 

@@ -1,31 +1,29 @@
 package com.thomasdh.roosterpgplus.Adapters;
 
-import android.content.Context;
+import android.app.Activity;
 import android.database.DataSetObserver;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SpinnerAdapter;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
 
-public class ActionBarSpinnerAdapter implements SpinnerAdapter {
+public class ActionBarSpinnerAdapter extends BaseAdapter {
     @Getter
     private Class<?> type;
-    private final WeakReference<Context> context;
+    private final Activity activity;
     private final List<String> data;
     private ArrayList<DataSetObserver> observers = new ArrayList<>();
 
-    public ActionBarSpinnerAdapter(Context context, List<String> data, Class<?> type) {
-        this.context = new WeakReference<>(context);
+    public ActionBarSpinnerAdapter(Activity activity, List<String> data, Class<?> type) {
+        this.activity = activity;
         this.data = data;
         setType(type);
     }
@@ -74,25 +72,24 @@ public class ActionBarSpinnerAdapter implements SpinnerAdapter {
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null && context.get() != null) {
-            LayoutInflater vi = (LayoutInflater) context.get().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = vi.inflate(android.R.layout.simple_spinner_dropdown_item, parent, false);
+        if(convertView == null || !convertView.getTag().toString().equals("DROPDOWN")) {
+            convertView = activity.getLayoutInflater().inflate(R.layout.toolbar_spinner_item_dropdown, parent, false);
+            convertView.setTag("DROPDOWN");
         }
-        if (convertView != null) {
-            ((TextView) convertView).setText(data.get(position));
-        }
-        return convertView;
 
+        TextView textView = (TextView) convertView.findViewById(android.R.id.text1);
+        textView.setText(data.get(position));
+
+        return convertView;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (context.get() != null) {
-            View view = View.inflate(context.get(), R.layout.action_bar_list_view, null);
+        if (activity != null) {
+            View view = View.inflate(activity, R.layout.action_bar_list_view, null);
             ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
 
             int typeRes = type.getAnnotation(FragmentTitle.class).title();
-            ((TextView) view.findViewById(R.id.action_bar_dropdown_type)).setText(context.get().getString(typeRes));
             return view;
         }
         return null;

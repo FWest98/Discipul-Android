@@ -2,9 +2,11 @@ package com.thomasdh.roosterpgplus.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
@@ -31,7 +33,7 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
         private String urlQuery;
         private String desc;
 
-        private PGTVType(String urlQuery, String desc) {
+        PGTVType(String urlQuery, String desc) {
             this.urlQuery = urlQuery;
             this.desc = desc;
         }
@@ -57,16 +59,38 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        if(savedInstanceState != null) {
+            type = (PGTVType) savedInstanceState.getSerializable("TYPE");
+        } else if(type == null) {
+            type = PGTVType.ROOSTER;
+        }
+
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 
         setRootView(inflater.inflate(R.layout.fragment_main, container, false));
+
+        swipeRefreshLayout = (SwipeRefreshLayout) getRootView().findViewById(R.id.rooster_swiperefresh);
+        setupSwipeRefreshLayout();
+
         viewPager = (ViewPager) getRootView().findViewById(R.id.rooster_viewPager);
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
         loadRooster();
 
         return getRootView();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable("TYPE", type);
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -96,23 +120,23 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
     public void loadRooster(boolean reload) {
         // PGTV laden
         if(type == null) return;
-        roosterLoadStateListener.onRoosterLoadStart();
+        if(swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(true);
 
         WebDownloader.getPGTVRooster(type.toString(), result -> {
-            roosterLoadStateListener.onRoosterLoadEnd();
+            swipeRefreshLayout.setRefreshing(false);
             ArrayList<PGTVPage> data = (ArrayList<PGTVPage>) result;
-            new PGTVBuilder().build(data);
+            new PGTVBuilder().build(data, this);
         }, e -> {
-            roosterLoadStateListener.onRoosterLoadEnd();
-            new PGTVBuilder().build(null);
-        });
+            swipeRefreshLayout.setRefreshing(false);
+            new PGTVBuilder().build(null, this);
+        }, getActivity());
     }
 
     private class PGTVBuilder {
-        public void build(ArrayList<PGTVPage> data) {
+        public void build(ArrayList<PGTVPage> data, RoosterViewFragment fragment) {
             if(getViewPager() == null) return;
             if(getViewPager().getAdapter() == null) getViewPager().setAdapter(new AnimatedPagerAdapter());
-            getViewPager().setOnPageChangeListener(null);
+            getViewPager().addOnPageChangeListener(fragment);
 
             if(data == null || data.isEmpty()) {
                 View noContentView = LayoutInflater.from(getActivity()).inflate(R.layout.pgtv_null, null);
@@ -133,6 +157,15 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
 
                 TextView desc = (TextView) dagView.findViewById(R.id.pgtv_dag_content);
                 desc.setText(page.desc);
+
+                ScrollView scrollView = (ScrollView) dagView.findViewById(R.id.scrollview);
+                final int finalI = i;
+                scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                    int scrollY = scrollView.getScrollY();
+
+                    fragment.OnScroll(scrollY, finalI);
+                });
+
                 ((AnimatedPagerAdapter) getViewPager().getAdapter()).setView(dagView, i, getActivity());
             }
 

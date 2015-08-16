@@ -64,7 +64,7 @@ public class Rooster {
                 if(!silent) ExceptionHandler.handleException(new Exception("Kon het rooster niet ophalen, geen rooster geladen. (" + ((Exception) exception).getMessage() + ")", (Exception) exception), context, ExceptionHandler.HandleType.SIMPLE);
                 exceptionCallback.onError(null);
             }
-        });
+        }, context);
     }
 
     private static void getRoosterFromDatabase(List<NameValuePair> query, Context context, RoosterCallback callback, ExceptionCallback exceptionCallback, boolean silent) {
@@ -218,7 +218,10 @@ public class Rooster {
 
         if (HelperFunctions.hasInternetConnection(context)) {
             // Herladen van het rooster FTW
-            getRoosterFromInternet(query, true, context, (data, urenCount) -> callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data))), e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)), true);
+            getRoosterFromInternet(query, true, context, (data, urenCount) -> {
+                RoosterInfo.setLoad("personal"+week, System.currentTimeMillis(), context);
+                callback.onCallback(getNextLesuurInDayCallback(day, time, Array.iterableArray((ArrayList<Lesuur>) data)));
+            }, e -> callback.onCallback(getNextLesuurInDayCallback(context, day, time, query)), true);
         } else {
             callback.onCallback(getNextLesuurInDayCallback(context, day, time, query));
         }

@@ -13,8 +13,8 @@ repositories {
 }
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1.0"
+    compileSdkVersion 20
+    buildToolsVersion "21.1.2"
 
     defaultConfig {
         //applicationId "com.fwest98.quickReturnHeader"

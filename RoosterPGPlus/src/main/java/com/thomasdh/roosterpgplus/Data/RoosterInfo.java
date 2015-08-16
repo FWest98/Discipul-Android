@@ -42,7 +42,7 @@ public class RoosterInfo {
                 Log.e("WebDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 RoosterInfo.<ArrayList<Week>>getOnError(WEKEN_FILENAME, context, callback);
-            });
+            }, context);
         } else {
             RoosterInfo.<ArrayList<Week>>getOnError(WEKEN_FILENAME, context, callback);
         }
@@ -84,7 +84,7 @@ public class RoosterInfo {
                 Log.e("WebDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 RoosterInfo.<ArrayList<String>>getOnError(KLASSEN_FILENAME, context, callback);
-            });
+            }, context);
         } else {
             RoosterInfo.<ArrayList<String>>getOnError(KLASSEN_FILENAME, context, callback);
         }
@@ -102,7 +102,7 @@ public class RoosterInfo {
                 Log.e("WebDownloader", "Er ging iets mis met het ophalen van de leraren", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 RoosterInfo.<ArrayList<Vak>>getOnError(LERAREN_FILENAME, context, callback);
-            });
+            }, context);
         } else {
             RoosterInfo.<ArrayList<Vak>>getOnError(LERAREN_FILENAME, context, callback);
         }
@@ -120,7 +120,7 @@ public class RoosterInfo {
                 Log.e("WebDownloader", "Er ging iets mis het het ophalen van de lokalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 RoosterInfo.<ArrayList<String>>getOnError(LOKALEN_FILENAME, context, callback);
-            });
+            }, context);
         } else {
             RoosterInfo.<ArrayList<String>>getOnError(LOKALEN_FILENAME, context, callback);
         }
@@ -138,7 +138,7 @@ public class RoosterInfo {
                 Log.e("WebDownloader", "Er ging iets met het het ophalen van de leerlingen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
                 RoosterInfo.<ArrayList<Leerling>>getOnError(LEERLINGEN_FILENAME, context, callback);
-            });
+            }, context);
         } else {
             RoosterInfo.<ArrayList<Leerling>>getOnError(LEERLINGEN_FILENAME, context, callback);
         }

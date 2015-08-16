@@ -3,10 +3,12 @@ package com.thomasdh.roosterpgplus.Data;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
@@ -58,6 +60,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
         return lesView;
     };
+    @Setter private OnDagScrollListener onDagScrollListener = (scrollY, dag) -> {};
 
     private Array<Lesuur> lessen;
     private boolean weekView;
@@ -107,7 +110,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
         boolean isWide = context.getResources().getBoolean(R.bool.isWideWeekview);
         boolean isHigh = context.getResources().getBoolean(R.bool.isHighWeekview);
-        weekView = (isWide || isHigh) && !PreferenceManager.getDefaultSharedPreferences(context).getBoolean("forcePhonelayout", false);
+        weekView = (isWide || isHigh);
 
         int week = lessen.get(0).week;
         Calendar calendar = Calendar.getInstance();
@@ -180,10 +183,38 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             if (weekViewNoScroll || isWide) {
                 ScrollView scrollView = new ScrollView(context);
                 scrollView.addView(container);
+                scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                    int scrollY = scrollView.getScrollY();
+
+                    for(int i = 0; i < 10; i++) {
+                        onDagScrollListener.OnScroll(scrollY, i); // weekdag naar kolomconversie, alle dagen om problemen te voorkomen
+                    }
+                });
                 adapter.setView(scrollView, 0, context);
             } else if (isHigh) {
+                final float[] prevX = {0};
+                final int touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+
                 HorizontalScrollView scrollView = new HorizontalScrollView(context);
                 scrollView.addView(container);
+                scrollView.setOnTouchListener((view, motionEvent) -> {
+                    if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                        prevX[0] = MotionEvent.obtain(motionEvent).getX();
+                    } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
+                        float eventX = motionEvent.getX();
+                        float xDiff = Math.abs(eventX - prevX[0]);
+                        if(xDiff > touchSlop) {
+                            for (int i = 0; i < 10; i++) {
+                                onDagScrollListener.OnScroll(1, i);
+                            }
+                        }
+                    } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                        for (int i = 0; i < 10; i++) {
+                            onDagScrollListener.OnScroll(0, i);
+                        }
+                    }
+                    return false;
+                });
                 adapter.setView(scrollView, 0, context);
             }
         } else {
@@ -212,6 +243,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
         @Setter private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");
 
         private LinearLayout linearLayout;
+        private ScrollView scrollView;
 
         public View build() {
             linearLayout = (LinearLayout) parentView.findViewById(R.id.rooster_dag_linearlayout);
@@ -302,6 +334,13 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                 int pxPadding = converter.DPtoPX(10);
                 linearLayout.addView(getUpdateText(lastLoad));
                 linearLayout.setPadding(pxPadding, pxPadding, pxPadding, pxPadding);
+
+                scrollView = (ScrollView) parentView.findViewById(R.id.scrollView);
+                scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                    int scrollY = scrollView.getScrollY();
+
+                    onDagScrollListener.OnScroll(scrollY, dag - 2); // weekdag naar kolomconversie
+                });
             }
 
             return parentView;
@@ -397,5 +436,9 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
 
     public interface BuilderFunctions {
         View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater);
+    }
+
+    public interface OnDagScrollListener {
+        void OnScroll(int scrollY, int dag);
     }
 }
