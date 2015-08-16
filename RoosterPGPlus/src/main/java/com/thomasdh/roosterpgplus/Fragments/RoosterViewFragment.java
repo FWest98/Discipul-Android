@@ -123,6 +123,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
         this.week = week;
         if(week == Calendar.getInstance().get(Calendar.WEEK_OF_YEAR)) {
             setDag(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 2);
+            if(getDag() < 0) setDag(0); // voor weekenden
         } else {
             setDag(0);
         }
@@ -137,7 +138,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     @Override
     public void onPageScrollStateChanged(int i) {
         isScrollingViewPager = i != ViewPager.SCROLL_STATE_IDLE;
-        if(swipeRefreshLayout != null)
+        if(swipeRefreshLayout != null && getDag() >= 0)
             swipeRefreshLayout.setEnabled(!isScrollingViewPager && !isScrollingScrollView[getDag()]);
     }
 

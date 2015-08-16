@@ -3,13 +3,13 @@ package com.thomasdh.roosterpgplus.Data;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -192,15 +192,24 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                 });
                 adapter.setView(scrollView, 0, context);
             } else if (isHigh) {
+                final float[] prevX = {0};
+                final int touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+
                 HorizontalScrollView scrollView = new HorizontalScrollView(context);
                 scrollView.addView(container);
                 scrollView.setOnTouchListener((view, motionEvent) -> {
-                    if(motionEvent.getAction() == MotionEvent.ACTION_SCROLL) {
-                        for(int i = 0; i < 10; i++) {
-                            onDagScrollListener.OnScroll(1, i);
+                    if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                        prevX[0] = MotionEvent.obtain(motionEvent).getX();
+                    } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
+                        float eventX = motionEvent.getX();
+                        float xDiff = Math.abs(eventX - prevX[0]);
+                        if(xDiff > touchSlop) {
+                            for (int i = 0; i < 10; i++) {
+                                onDagScrollListener.OnScroll(1, i);
+                            }
                         }
-                    } else if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                        for(int i = 0; i < 10; i++) {
+                    } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                        for (int i = 0; i < 10; i++) {
                             onDagScrollListener.OnScroll(0, i);
                         }
                     }
