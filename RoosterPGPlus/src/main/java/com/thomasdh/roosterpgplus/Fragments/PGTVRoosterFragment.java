@@ -59,6 +59,17 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        if(savedInstanceState != null) {
+            type = (PGTVType) savedInstanceState.getSerializable("TYPE");
+        } else if(type == null) {
+            type = PGTVType.ROOSTER;
+        }
+
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 
@@ -73,6 +84,13 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
         loadRooster();
 
         return getRootView();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable("TYPE", type);
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -102,7 +120,7 @@ public class PGTVRoosterFragment extends RoosterViewFragment {
     public void loadRooster(boolean reload) {
         // PGTV laden
         if(type == null) return;
-        swipeRefreshLayout.setRefreshing(true);
+        if(swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(true);
 
         WebDownloader.getPGTVRooster(type.toString(), result -> {
             swipeRefreshLayout.setRefreshing(false);
