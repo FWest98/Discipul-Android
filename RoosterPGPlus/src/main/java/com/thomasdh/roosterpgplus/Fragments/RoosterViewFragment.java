@@ -12,14 +12,13 @@ import com.google.android.gms.analytics.Tracker;
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Data.Rooster;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
+import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.MainApplication;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -81,7 +80,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity());
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getContext());
         tracker.setScreenName(getAnalyticsTitle());
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
@@ -109,7 +108,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     @Override
     public void onResume() {
         super.onResume();
-        setInternetConnectionState(HelperFunctions.hasInternetConnection(getActivity()));
+        setInternetConnectionState(HelperFunctions.hasInternetConnection(getContext()));
     }
 
     //endregion
@@ -162,7 +161,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
     public void loadRooster(boolean reload) {
         if(!canLoadRooster() || getWeek() == -1 || getActivity() == null) return;
 
-        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getActivity().getApplicationContext());
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, getContext().getApplicationContext());
         tracker.send(new HitBuilders.EventBuilder()
                 .setCategory(Constants.ANALYTICS_CATEGORIES_ROOSTER)
                 .setAction(reload ? Constants.ANALYTICS_ACTIVITY_ROOSTER_ACTION_REFRESH : Constants.ANALYTICS_ACTIVITY_ROOSTER_ACTION_LOAD)
@@ -178,9 +177,9 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
 
         LoadType loadType = reload ? LoadType.REFRESH : getLoadType();
 
-        Rooster.getRooster(query, loadType, getActivity(), (result, urenCount) -> {
+        Rooster.getRooster(query, loadType, getContext(), (result, urenCount) -> {
             if (getActivity() == null) return; // oude context
-            if (loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getActivity())) {
+            if (loadType == LoadType.ONLINE || loadType == LoadType.REFRESH || loadType == LoadType.NEWONLINE && HelperFunctions.hasInternetConnection(getContext())) {
                 setLoad();
             }
             if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
@@ -197,7 +196,7 @@ public abstract class RoosterViewFragment extends android.support.v4.app.Fragmen
         if(getViewPager().getAdapter() == null) getViewPager().setAdapter(new AnimatedPagerAdapter());
         getViewPager().getAdapter().notifyDataSetChanged();
         getViewPager().addOnPageChangeListener(this);
-        return new RoosterBuilder(getActivity())
+        return new RoosterBuilder(getContext())
                 .in(getViewPager())
                 .setShowDag(getDag())
                 .setShowVervangenUren(true)

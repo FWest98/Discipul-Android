@@ -8,7 +8,6 @@ import com.thomasdh.roosterpgplus.R;
 
 public class InfoFragment extends LibsFragment {
     public InfoFragment() {
-        super();
 
         Bundle bundle = new Bundle();
 

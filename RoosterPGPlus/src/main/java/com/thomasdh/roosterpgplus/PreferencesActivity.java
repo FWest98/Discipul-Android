@@ -62,7 +62,7 @@ public class PreferencesActivity extends PreferenceActivity {
             ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText(getTitle());
             root.addView(toolbar, 0);
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+                getWindow().setStatusBarColor(getColor(R.color.colorPrimaryDark));
             }
         } else {
             ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
@@ -87,7 +87,7 @@ public class PreferencesActivity extends PreferenceActivity {
             root.addView(toolbar);
         }
 
-        toolbar.setNavigationOnClickListener((v) -> finish());
+        toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     @Override
@@ -99,7 +99,7 @@ public class PreferencesActivity extends PreferenceActivity {
     @Nullable
     @Override
     public View onCreateView(String name, Context context, AttributeSet attrs) {
-        final View result = super.onCreateView(name, context, attrs);
+        View result = super.onCreateView(name, context, attrs);
         if(result != null) return result;
 
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {

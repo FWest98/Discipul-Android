@@ -15,14 +15,14 @@ import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
         klasSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_klas);
 
-        RoosterInfo.getKlassen(getActivity(), s -> onKlassenLoaded((ArrayList<String>) s));
+        RoosterInfo.getKlassen(getContext(), s -> onKlassenLoaded((ArrayList<String>) s));
 
         return getRootView();
     }
@@ -70,13 +70,13 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
         if(klassen == null) return;
 
-        ArrayAdapter<String> klasAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, klassen);
+        ArrayAdapter<String> klasAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_title, klassen);
         klasAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         klasSpinner.setAdapter(klasAdapter);
 
         klasSpinner.setOnItemSelectedListener(this);
 
-        String lastChosenKlas = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(CHOSEN_KLAS_KEY, null);
+        String lastChosenKlas = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(CHOSEN_KLAS_KEY, null);
         if(lastChosenKlas == null) return;
         setKlas(lastChosenKlas);
         klasSpinner.setSelection(klasAdapter.getPosition(lastChosenKlas));
@@ -85,7 +85,7 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         setKlas(((TextView) view).getText().toString());
-        PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(CHOSEN_KLAS_KEY, getKlas()).commit();
+        PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString(CHOSEN_KLAS_KEY, getKlas()).commit();
 
         loadRooster();
     }
@@ -107,10 +107,10 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     }
 
     @Override
-    public long getLoad() { return RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getActivity()); }
+    public long getLoad() { return RoosterInfo.getLoad("klas"+getKlas()+getWeek(), getContext()); }
 
     @Override
-    public void setLoad() { RoosterInfo.setLoad("klas" + getKlas() + getWeek(), System.currentTimeMillis(), getActivity()); }
+    public void setLoad() { RoosterInfo.setLoad("klas" + getKlas() + getWeek(), System.currentTimeMillis(), getContext()); }
 
     @Override
     public LoadType getLoadType() {

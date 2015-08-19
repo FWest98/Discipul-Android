@@ -11,12 +11,11 @@ import android.widget.TextView;
 
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Data.WebDownloader;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.PGTVPage;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
-
-import org.apache.http.NameValuePair;
 
 import java.util.ArrayList;
 import java.util.List;

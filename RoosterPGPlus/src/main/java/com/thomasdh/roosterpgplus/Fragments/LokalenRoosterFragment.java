@@ -15,14 +15,14 @@ import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
 
         lokaalSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_lokaal);
 
-        RoosterInfo.getLokalen(getActivity(), this::onLokalenLoaded);
+        RoosterInfo.getLokalen(getContext(), this::onLokalenLoaded);
 
         return getRootView();
     }
@@ -69,13 +69,13 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
         if(lok == null) return;
         ArrayList<String> lokalen = (ArrayList<String>) lok;
 
-        ArrayAdapter<String> lokaalAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, lokalen);
+        ArrayAdapter<String> lokaalAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_title, lokalen);
         lokaalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         lokaalSpinner.setAdapter(lokaalAdapter);
 
         lokaalSpinner.setOnItemSelectedListener(this);
 
-        String lastChosenLokaal = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(CHOSEN_LOKAAL_KEY, null);
+        String lastChosenLokaal = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(CHOSEN_LOKAAL_KEY, null);
         if(lastChosenLokaal == null) return;
         setLokaal(lastChosenLokaal);
         lokaalSpinner.setSelection(lokaalAdapter.getPosition(lastChosenLokaal));
@@ -84,7 +84,7 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         setLokaal(((TextView) view).getText().toString());
-        PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(CHOSEN_LOKAAL_KEY, getLokaal()).commit();
+        PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString(CHOSEN_LOKAAL_KEY, getLokaal()).commit();
 
         loadRooster();
     }
@@ -106,7 +106,7 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("lokaal"+getLokaal()+getWeek(), getActivity());
+        Long lastLoad = RoosterInfo.getLoad("lokaal"+getLokaal()+getWeek(), getContext());
         if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
@@ -117,11 +117,11 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
     }
 
     @Override
-    public long getLoad() { return RoosterInfo.getLoad("lokaal"+getLokaal()+getWeek(), getActivity()); }
+    public long getLoad() { return RoosterInfo.getLoad("lokaal"+getLokaal()+getWeek(), getContext()); }
 
     @Override
     public void setLoad() {
-        RoosterInfo.setLoad("lokaal"+getLokaal()+getWeek(), System.currentTimeMillis(), getActivity());
+        RoosterInfo.setLoad("lokaal"+getLokaal()+getWeek(), System.currentTimeMillis(), getContext());
     }
 
     //endregion

@@ -3,6 +3,7 @@ package com.thomasdh.roosterpgplus.Data;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -105,7 +106,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             urenCount = lessen.foldLeft((a, b) -> b.uur > a ? b.uur : a, 0);
         }
 
-        context.getResources().getDrawable(R.drawable.diagonal_stripes_optioneeluur).setAlpha(100);
+        ContextCompat.getDrawable(context, R.drawable.diagonal_stripes_optioneeluur).setAlpha(100);
         converter = new Converter(context);
 
         boolean isWide = context.getResources().getBoolean(R.bool.isWideWeekview);

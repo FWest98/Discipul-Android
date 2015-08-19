@@ -14,6 +14,8 @@ import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.CustomUI.DefaultSpinner;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Leraar;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
@@ -22,8 +24,6 @@ import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,11 +66,11 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         vakSpinner = (DefaultSpinner) getRootView().findViewById(R.id.main_fragment_spinner_docent_vak);
 
         if(savedInstanceState == null) {
-            RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s));
+            RoosterInfo.getLeraren(getContext(), s -> onLerarenLoaded((ArrayList<Vak>) s));
         } else {
             setVak((Vak) savedInstanceState.getSerializable("VAK"));
             setLeraar(savedInstanceState.getString("LERAAR"));
-            RoosterInfo.getLeraren(getActivity(), s -> onLerarenLoaded((ArrayList<Vak>) s, getLeraar(), getVak()));
+            RoosterInfo.getLeraren(getContext(), s -> onLerarenLoaded((ArrayList<Vak>) s, getLeraar(), getVak()));
         }
 
         return getRootView();
@@ -97,7 +97,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         ArrayList<String> vakNamen = new ArrayList<>();
         for(Vak vak : vakken) { vakNamen.add(vak.getNaam()); }
 
-        ArrayAdapter<String> vakAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, vakNamen.toArray(new String[vakNamen.size()]));
+        ArrayAdapter<String> vakAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_title, vakNamen.toArray(new String[vakNamen.size()]));
         vakAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         vakSpinner.setAdapter(vakAdapter);
         vakSpinner.setOnItemSelectedListener(this);
@@ -115,7 +115,7 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
         ArrayList<String> leraarNamen = new ArrayList<>();
         for(Leraar leraar : getVak().leraren) { leraarNamen.add(leraar.naam); }
 
-        ArrayAdapter<String> leraarAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_title, leraarNamen.toArray(new String[leraarNamen.size()]));
+        ArrayAdapter<String> leraarAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_title, leraarNamen.toArray(new String[leraarNamen.size()]));
         leraarAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         leraarSpinner.setAdapter(leraarAdapter);
 
@@ -155,14 +155,14 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
     }
 
     @Override
-    public long getLoad() { return RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity()); }
+    public long getLoad() { return RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getContext()); }
 
     @Override
-    public void setLoad() { RoosterInfo.setLoad("docent" + getLeraar() + getWeek(), System.currentTimeMillis(), getActivity()); }
+    public void setLoad() { RoosterInfo.setLoad("docent" + getLeraar() + getWeek(), System.currentTimeMillis(), getContext()); }
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getActivity());
+        Long lastLoad = RoosterInfo.getLoad("docent"+getLeraar()+getWeek(), getContext());
         if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {

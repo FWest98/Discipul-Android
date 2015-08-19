@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
 
 import java.util.ArrayList;
@@ -89,7 +88,7 @@ public class ActionBarSpinnerAdapter extends BaseAdapter {
             View view = View.inflate(activity, R.layout.action_bar_list_view, null);
             ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
 
-            int typeRes = type.getAnnotation(FragmentTitle.class).title();
+            //int typeRes = type.getAnnotation(FragmentTitle.class).title();
             return view;
         }
         return null;

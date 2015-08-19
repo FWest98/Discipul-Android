@@ -1,13 +1,13 @@
 package com.thomasdh.roosterpgplus.Data;
 
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +17,9 @@ import android.widget.FrameLayout;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
+import com.thomasdh.roosterpgplus.Helpers.Apache.UrlEncodedFormEntity;
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
@@ -27,9 +30,6 @@ import com.thomasdh.roosterpgplus.Notifications.NextUurNotifications;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

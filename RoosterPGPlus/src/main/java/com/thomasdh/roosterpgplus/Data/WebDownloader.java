@@ -51,6 +51,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 
             connection.addRequestProperty("APIVersion", Constants.API_VERSION);
+            connection.setConnectTimeout(Constants.TIMEOUT_MILLIS);
 
             String content = "";
             try {
@@ -345,7 +346,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
 
 
     private interface AsyncCallback {
-        public Object onBackground(int statusCode, String result) throws Exception;
+        Object onBackground(int statusCode, String result) throws Exception;
     }
 
 }

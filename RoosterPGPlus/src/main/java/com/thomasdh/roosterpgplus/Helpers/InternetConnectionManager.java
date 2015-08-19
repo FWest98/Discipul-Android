@@ -43,6 +43,6 @@ public class InternetConnectionManager {
     }
 
     public interface InternetConnectionChangeListener {
-        public void internetConnectionChanged(boolean hasInternetConnection);
+        void internetConnectionChanged(boolean hasInternetConnection);
     }
 }

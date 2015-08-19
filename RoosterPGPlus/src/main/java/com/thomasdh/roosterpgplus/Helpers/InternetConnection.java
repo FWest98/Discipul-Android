@@ -4,9 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import com.thomasdh.roosterpgplus.Helpers.Apache.UrlEncodedFormEntity;
 import com.thomasdh.roosterpgplus.Settings.Constants;
-
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 
 import java.net.URL;
 import java.util.Scanner;
@@ -20,12 +19,13 @@ public class InternetConnection {
         new WebTask(context).execute(new InternetCallbacks() {
             @Override
             public HttpsURLConnection onAsynchronous(HttpsURLConnection connection) throws Exception {
-                connection = (HttpsURLConnection) (new URL(url)).openConnection();
+                connection = (HttpsURLConnection) new URL(url).openConnection();
                 connection.addRequestProperty("APIVersion", Constants.API_VERSION);
 
                 UrlEncodedFormEntity data = callbacks.onDataNeeded();
 
                 connection.setDoOutput(true);
+                connection.setConnectTimeout(Constants.TIMEOUT_MILLIS);
                 connection.setFixedLengthStreamingMode((int) data.getContentLength());
 
                 data.writeTo(connection.getOutputStream());
@@ -54,7 +54,7 @@ public class InternetConnection {
         new WebTask(context).execute(new InternetCallbacks() {
             @Override
             public HttpsURLConnection onAsynchronous(HttpsURLConnection connection) throws Exception {
-                connection = (HttpsURLConnection) (new URL(url)).openConnection();
+                connection = (HttpsURLConnection) new URL(url).openConnection();
                 connection.addRequestProperty("APIVersion", Constants.API_VERSION);
 
                 return connection;
