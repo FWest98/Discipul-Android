@@ -32,8 +32,14 @@ public class WidgetProvider extends AppWidgetProvider {
     @SuppressWarnings("deprecation")
     private void createWidgetView(Context context, AppWidgetManager appWidgetManager, int widgetID, Lesuur nextLes) {
         RemoteViews views;
+        DateTime notificationDate;
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
         if(nextLes == null) {
             views = new RemoteViews(context.getPackageName(), R.layout.rooster_null);
+
+            /* Try again over een een dag */
+            notificationDate = DateTime.now().plusDays(1);
         } else {
             if (nextLes.verandering) {
                 views = new RemoteViews(context.getPackageName(), R.layout.rooster_uur_gewijzigd_widget);
@@ -58,6 +64,18 @@ public class WidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.rooster_leraar, StringUtils.join(nextLes.leraren, " & "));
             views.setTextViewText(R.id.rooster_lokaal, nextLes.lokaal);
             views.setTextViewText(R.id.rooster_tijden, format.format(nextLes.lesStart) + " - " + format.format(nextLes.lesEind));
+
+            int year = nextLes.week < Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) ? /* nieuw jaar */ DateTime.now().getYear() + 1 : DateTime.now().getYear();
+            notificationDate = DateTime.now()
+                    .withYear(year)
+                    .withWeekOfWeekyear(nextLes.week)
+                    .withDayOfWeek(nextLes.dag)
+                    .withTime(
+                            nextLes.lesEind.getHours(),
+                            nextLes.lesEind.getMinutes(),
+                            nextLes.lesEind.getSeconds(), 0
+                    )
+                    .plusMinutes(6);
         }
 
         Intent intent = new Intent(context, RoosterActivity.class);
@@ -71,19 +89,6 @@ public class WidgetProvider extends AppWidgetProvider {
         PendingIntent refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.widget_refresh, refreshPendingIntent);
 
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        int year = nextLes.week < Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) ? /* nieuw jaar */ DateTime.now().getYear() + 1 : DateTime.now().getYear();
-
-        DateTime notificationDate = DateTime.now()
-                .withYear(year)
-                .withWeekOfWeekyear(nextLes.week)
-                .withDayOfWeek(nextLes.dag)
-                .withTime(
-                        nextLes.lesEind.getHours(),
-                        nextLes.lesEind.getMinutes(),
-                        nextLes.lesEind.getSeconds(), 0
-                )
-                .plusMinutes(6);
         alarmManager.set(AlarmManager.RTC_WAKEUP, notificationDate.getMillis(), pendingIntent);
 
         appWidgetManager.updateAppWidget(widgetID, views);
