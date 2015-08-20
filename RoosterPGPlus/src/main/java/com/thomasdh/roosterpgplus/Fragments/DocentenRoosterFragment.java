@@ -1,5 +1,6 @@
 package com.thomasdh.roosterpgplus.Fragments;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -184,7 +185,12 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
 
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
-        lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // Background doorzichtig, geen speciale uren
+        // No bg
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            lesView.findViewById(R.id.optioneel_container).setBackground(null);
+        } else {
+            lesView.findViewById(R.id.optioneel_container).setBackgroundResource(0);
+        }
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
         TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);

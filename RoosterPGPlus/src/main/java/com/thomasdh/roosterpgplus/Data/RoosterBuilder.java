@@ -3,6 +3,7 @@ package com.thomasdh.roosterpgplus.Data;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -46,7 +47,11 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
     @Setter private long lastLoad = -1;
     @Setter private int urenCount = -1;
     @Setter private BuilderFunctions builderFunctions = (lesuur, lesView, inflater) -> {
-        lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // Background doorzichtig, geen speciale uren
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            lesView.findViewById(R.id.optioneel_container).setBackground(null);
+        } else {
+            lesView.findViewById(R.id.optioneel_container).setBackgroundResource(0);
+        }
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
         TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
