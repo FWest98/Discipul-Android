@@ -491,7 +491,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
     @Override
     public void internetConnectionChanged(boolean hasInternetConnection) {
         if(!hasInternetConnection) {
-            internetConnectionSnackbar = Snackbar.make(findViewById(R.id.container), "Geen internetverbinding meer. Zodra er weer verbinding is zal de app het nieuwste rooster ophalen", Snackbar.LENGTH_LONG);
+            internetConnectionSnackbar = Snackbar.make(findViewById(R.id.container), "Geen internetverbinding!", Snackbar.LENGTH_INDEFINITE);
             internetConnectionSnackbar.show();
         } else {
             if(internetConnectionSnackbar != null)

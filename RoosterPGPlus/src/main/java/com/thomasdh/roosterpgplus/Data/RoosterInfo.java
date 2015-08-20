@@ -34,17 +34,23 @@ public class RoosterInfo {
     //region Weken
 
     public static void getWeken(Context context, AsyncActionCallback callback) {
+        ArrayList<Week> weken;
+        if((weken = RoosterInfo.getFromStorage(WEKEN_FILENAME, context)) != null) {
+            try {
+                callback.onAsyncActionComplete(weken);
+            } catch (Exception e) {
+                Log.e("RoosterInfo", "Er ging iets mis in de wekenCallback");
+            }
+        }
+
         if(HelperFunctions.hasInternetConnection(context)) {
             WebDownloader.getWeken(result -> {
-                callback.onAsyncActionComplete(result);
                 saveInStorage(WEKEN_FILENAME, context, result);
+                if(weken == null) callback.onAsyncActionComplete(result);
             }, exception -> {
                 Log.e("WebDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
-                RoosterInfo.<ArrayList<Week>>getOnError(WEKEN_FILENAME, context, callback);
             }, context);
-        } else {
-            RoosterInfo.<ArrayList<Week>>getOnError(WEKEN_FILENAME, context, callback);
         }
     }
 
