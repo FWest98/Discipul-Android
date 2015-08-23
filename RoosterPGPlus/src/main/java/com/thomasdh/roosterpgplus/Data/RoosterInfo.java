@@ -6,8 +6,6 @@ import android.util.Log;
 import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
-import com.thomasdh.roosterpgplus.Models.Leerling;
-import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
 
 import java.io.FileOutputStream;
@@ -31,22 +29,36 @@ public class RoosterInfo {
     private static final String LOADS_FILENAME = "loadshashtable";
     private static final String WEKEN_UREN_FILENAME = "wekenhashtable";
 
+    private static final String WEKEN_LOADS = "wekenLoads";
+    private static final String KLASSEN_LOADS = "klassenLoads";
+    private static final String LERAREN_LOADS = "lerarenLoads";
+    private static final String LOKALEN_LOADS = "lokalenLoads";
+    private static final String LEERLINGEN_LOADS = "leerlingenLoads";
+
+    private static final Long WEKEN_MAX_AGE = (long) 86400000; // 24 uur
+    private static final Long KLASSEN_MAX_AGE = (long) 86400000; // 24 uur
+    private static final Long LERAREN_MAX_AGE = (long) 86400000;
+    private static final Long LOKALEN_MAX_AGE = (long) 86400000;
+    private static final Long LEERLINGEN_MAX_AGE = (long) 86400000;
+
     //region Weken
 
     public static void getWeken(Context context, AsyncActionCallback callback) {
         ArrayList<Week> weken;
-        if((weken = RoosterInfo.getFromStorage(WEKEN_FILENAME, context)) != null) {
+        Long lastLoad = getLoad(WEKEN_LOADS, context);
+        if((weken = getFromStorage(WEKEN_FILENAME, context)) != null) {
             try {
                 callback.onAsyncActionComplete(weken);
             } catch (Exception e) {
-                Log.e("RoosterInfo", "Er ging iets mis in de wekenCallback");
+                Log.e("RoosterInfo", "Er ging iets mis in de wekenCallback", e);
             }
         }
 
-        if(HelperFunctions.hasInternetConnection(context)) {
+        if(HelperFunctions.hasInternetConnection(context) && !(weken != null && System.currentTimeMillis() < lastLoad + WEKEN_MAX_AGE)) {
             WebDownloader.getWeken(result -> {
-                saveInStorage(WEKEN_FILENAME, context, result);
                 if(weken == null) callback.onAsyncActionComplete(result);
+                saveInStorage(WEKEN_FILENAME, context, result);
+                setLoad(WEKEN_LOADS, System.currentTimeMillis(), context);
             }, exception -> {
                 Log.e("WebDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
@@ -82,17 +94,25 @@ public class RoosterInfo {
     //region Klassen
 
     public static void getKlassen(Context context, AsyncActionCallback callback) {
-        if(HelperFunctions.hasInternetConnection(context)) {
-            WebDownloader.getKlassen(klassen -> {
+        Object klassen;
+        Long lastLoad = getLoad(KLASSEN_LOADS, context);
+        if((klassen = getFromStorage(KLASSEN_FILENAME, context)) != null) {
+            try {
                 callback.onAsyncActionComplete(klassen);
+            } catch(Exception e) {
+                Log.e("RoosterInfo", "Er ging iets mis in de klassenCallback", e);
+            }
+        }
+
+        if(HelperFunctions.hasInternetConnection(context) && !(klassen != null && System.currentTimeMillis() < lastLoad + KLASSEN_MAX_AGE)) {
+            WebDownloader.getKlassen(result -> {
+                if(klassen == null) callback.onAsyncActionComplete(result);
                 saveInStorage(KLASSEN_FILENAME, context, klassen);
+                setLoad(KLASSEN_LOADS, System.currentTimeMillis(), context);
             }, exception -> {
                 Log.e("WebDownloader", "Er ging iets mis met het ophalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
-                RoosterInfo.<ArrayList<String>>getOnError(KLASSEN_FILENAME, context, callback);
             }, context);
-        } else {
-            RoosterInfo.<ArrayList<String>>getOnError(KLASSEN_FILENAME, context, callback);
         }
     }
 
@@ -100,17 +120,25 @@ public class RoosterInfo {
     //region Leraren
 
     public static void getLeraren(Context context, AsyncActionCallback callback) {
-        if(HelperFunctions.hasInternetConnection(context)) {
-            WebDownloader.getLeraren(leraren -> {
+        Object leraren;
+        Long lastLoad = getLoad(LERAREN_LOADS, context);
+        if((leraren = getFromStorage(LERAREN_FILENAME, context)) != null) {
+            try {
                 callback.onAsyncActionComplete(leraren);
-                saveInStorage(LERAREN_FILENAME, context, leraren);
+            } catch (Exception e) {
+                Log.e("RoosterInfo", "Er ging iets mis in de lerarenCallback", e);
+            }
+        }
+
+        if(HelperFunctions.hasInternetConnection(context) && !(leraren != null && System.currentTimeMillis() < lastLoad + LERAREN_MAX_AGE)) {
+            WebDownloader.getLeraren(result -> {
+                if (leraren == null) callback.onAsyncActionComplete(result);
+                saveInStorage(LERAREN_FILENAME, context, result);
+                setLoad(LERAREN_LOADS, System.currentTimeMillis(), context);
             }, exception -> {
                 Log.e("WebDownloader", "Er ging iets mis met het ophalen van de leraren", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
-                RoosterInfo.<ArrayList<Vak>>getOnError(LERAREN_FILENAME, context, callback);
             }, context);
-        } else {
-            RoosterInfo.<ArrayList<Vak>>getOnError(LERAREN_FILENAME, context, callback);
         }
     }
 
@@ -118,17 +146,25 @@ public class RoosterInfo {
     //region Lokalen
 
     public static void getLokalen(Context context, AsyncActionCallback callback) {
-        if(HelperFunctions.hasInternetConnection(context)) {
-            WebDownloader.getLokalen(lokalen -> {
+        Object lokalen;
+        Long lastLoad = getLoad(LOKALEN_LOADS, context);
+        if((lokalen = getFromStorage(LOKALEN_FILENAME, context)) != null) {
+            try {
                 callback.onAsyncActionComplete(lokalen);
-                saveInStorage(LOKALEN_FILENAME, context, lokalen);
+            } catch(Exception e) {
+                Log.e("RoosterInfo", "Er ging iets mis in de lokalenCallback", e);
+            }
+        }
+
+        if(HelperFunctions.hasInternetConnection(context) && !(lokalen != null && System.currentTimeMillis() < lastLoad + LOKALEN_MAX_AGE)) {
+            WebDownloader.getLokalen(result -> {
+                if(lokalen == null) callback.onAsyncActionComplete(result);
+                saveInStorage(LOKALEN_FILENAME, context, result);
+                setLoad(LOKALEN_LOADS, System.currentTimeMillis(), context);
             }, exception -> {
                 Log.e("WebDownloader", "Er ging iets mis het het ophalen van de lokalen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
-                RoosterInfo.<ArrayList<String>>getOnError(LOKALEN_FILENAME, context, callback);
             }, context);
-        } else {
-            RoosterInfo.<ArrayList<String>>getOnError(LOKALEN_FILENAME, context, callback);
         }
     }
 
@@ -136,17 +172,25 @@ public class RoosterInfo {
     //region Leerlingen
 
     public static void getLeerlingen(Context context, AsyncActionCallback callback) {
-        if(HelperFunctions.hasInternetConnection(context)) {
-            WebDownloader.getLeerlingen(leerlingen -> {
+        Object leerlingen;
+        Long lastLoad = getLoad(LEERLINGEN_LOADS, context);
+        if((leerlingen = getFromStorage(LEERLINGEN_FILENAME, context)) != null) {
+            try {
                 callback.onAsyncActionComplete(leerlingen);
-                saveInStorage(LEERLINGEN_FILENAME, context, leerlingen);
+            } catch(Exception e) {
+                Log.e("RoosterInfo", "Er ging iets mis in de leerlingenCallback", e);
+            }
+        }
+
+        if(HelperFunctions.hasInternetConnection(context) && !(leerlingen != null && System.currentTimeMillis() < lastLoad + LEERLINGEN_MAX_AGE)) {
+            WebDownloader.getLeerlingen(result -> {
+                if(leerlingen == null) callback.onAsyncActionComplete(result);
+                saveInStorage(LEERLINGEN_FILENAME, context, result);
+                setLoad(LEERLINGEN_LOADS, System.currentTimeMillis(), context);
             }, exception -> {
                 Log.e("WebDownloader", "Er ging iets met het het ophalen van de leerlingen", (Exception) exception);
                 ExceptionHandler.handleException((Exception) exception, context, ExceptionHandler.HandleType.SIMPLE);
-                RoosterInfo.<ArrayList<Leerling>>getOnError(LEERLINGEN_FILENAME, context, callback);
             }, context);
-        } else {
-            RoosterInfo.<ArrayList<Leerling>>getOnError(LEERLINGEN_FILENAME, context, callback);
         }
     }
 
@@ -173,15 +217,6 @@ public class RoosterInfo {
 
     //endregion
     //region Helpers
-
-    private static <T> void getOnError(String fileName, Context context, AsyncActionCallback callback) {
-        T result = getFromStorage(fileName, context);
-        try {
-            callback.onAsyncActionComplete(result);
-        } catch(Exception e) {
-            Log.e(Thread.currentThread().getStackTrace()[2].getClassName(), "De callback aan getLeraren gaf een fout", e);
-        }
-    }
 
     private static <T> T getFromStorage(String fileName, Context context) {
         try {
