@@ -83,6 +83,8 @@ public class RoosterInfo {
 
     public static int getCurrentWeek(Context context) {
         ArrayList<Week> weken = RoosterInfo.<ArrayList<Week>>getFromStorage(WEKEN_FILENAME, context);
+        if(weken == null) return Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+
         Array<Integer> weekNummers = Array.iterableArray(weken).map(s -> s.week);
         Integer currentWeek = Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
         if(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) currentWeek++;
