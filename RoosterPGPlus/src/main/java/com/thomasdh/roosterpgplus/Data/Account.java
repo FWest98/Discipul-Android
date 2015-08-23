@@ -17,6 +17,7 @@ import android.widget.FrameLayout;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.thomasdh.roosterpgplus.CustomUI.ProgressDialog;
 import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.Apache.UrlEncodedFormEntity;
@@ -380,13 +381,18 @@ public class Account {
             String llnrString = ((EditText) dialogView.findViewById(R.id.logindialogllnr)).getText().toString();
 
             try {
+                AlertDialog progressDialog = ProgressDialog.create("Inloggen", "Even geduld...", context);
                 switch ((int) currentTab[0].getTag()) {
                     case R.id.Tab_UserPass:
                         if ("".equals(username)) throw new Exception("Gebruikersnaam is verplicht!");
                         if ("".equals(password)) throw new Exception("Wachtwoord is verplicht!");
 
+                        // Show progressdialog
+                        progressDialog.show();
+
                         login(activity, username, password, result -> {
                             loginDialog.dismiss();
+                            progressDialog.dismiss();
                             callback.onAsyncActionComplete(result);
                         });
 
@@ -394,8 +400,12 @@ public class Account {
                     case R.id.Tab_LLNR:
                         if ("".equals(llnrString)) throw new Exception("Leerlingnummer is verplicht!");
 
+                        // Show progressdialog
+                        progressDialog.show();
+
                         login(activity, llnrString, false, result -> {
                             loginDialog.dismiss();
+                            progressDialog.dismiss();
                             callback.onAsyncActionComplete(result);
                         });
 
@@ -695,14 +705,18 @@ public class Account {
             String password = ((EditText) dialogView.findViewById(R.id.extenddialog_password)).getText().toString();
             String repass = ((EditText) dialogView.findViewById(R.id.extenddialog_passwordcheck)).getText().toString();
             String email = ((EditText) dialogView.findViewById(R.id.extenddialog_email)).getText().toString();
+            AlertDialog progressDialog = ProgressDialog.create("Registreren", "Even geduld...", context);
 
             try {
                 if("".equals(username)) throw new Exception("Gebruikersnaam is verplicht!");
                 if("".equals(password)) throw new Exception("Wachtwoord is verplicht!");
                 if(!password.equals(repass)) throw new Exception("Wachtwoorden moeten gelijk zijn!");
 
+                progressDialog.show();
+
                 extend(username, password, email, result -> {
                     extendDialog.dismiss();
+                    progressDialog.dismiss();
                     callback.onAsyncActionComplete(result);
                 });
             } catch (Exception e) {

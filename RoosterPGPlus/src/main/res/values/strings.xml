@@ -63,9 +63,9 @@
     <string name="logindialog_llnr_desc">Log in met je leerlingnummer</string>
     <string name="logindialog_llnr_hint">Leerlingnummer</string>
     <string name="logindialog_warning_title">Doorgaan?</string>
-    <string name="logindialog_warning_text">Er bestaat al een RoosterPG+-account met dit leerlingnummer. Wilt u daarmee inloggen?</string>
-    <string name="logindialog_warning_submitButton">Doorgaan</string>
-    <string name="logindialog_warning_cancelButton">Daarnee inloggen</string>
+    <string name="logindialog_warning_text">Er bestaat al een RoosterPG+-account met dit leerlingnummer. Wilt u alsnog een nieuw account aanmaken?</string>
+    <string name="logindialog_warning_submitButton">Nieuw account</string>
+    <string name="logindialog_warning_cancelButton">Inloggen op account</string>
 
     <!-- Registerdialog -->
     <string name="registerdialog_leerling_text">Registreer je als leerling</string>

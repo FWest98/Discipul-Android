@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatCheckedTextView;
 import android.support.v7.widget.AppCompatEditText;
@@ -62,7 +63,7 @@ public class PreferencesActivity extends PreferenceActivity {
             ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText(getTitle());
             root.addView(toolbar, 0);
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                getWindow().setStatusBarColor(getColor(R.color.colorPrimaryDark));
+                getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
             }
         } else {
             ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
