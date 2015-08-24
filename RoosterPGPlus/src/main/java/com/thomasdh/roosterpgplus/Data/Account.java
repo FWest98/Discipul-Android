@@ -7,12 +7,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatEditText;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -47,6 +50,7 @@ public class Account {
     @Getter private static int userID = 0;
     @Getter private static boolean isSet;
     @Getter private static boolean isHandlingNewVersion;
+    @Getter private static String username;
     @Getter private static String name;
     @Getter private static String apiKey;
     @Getter private static boolean isAppAccount;
@@ -66,6 +70,8 @@ public class Account {
     private static final String loginInternetListenerName = "loginDialog";
     private static final String registerInternetListenerName = "registerDialog";
     private static final String extendInternetListenerName = "extendDialog";
+    private static final String changeUsernameInternetListenerName = "changeUsernameDialog";
+    private static final String changePasswordInternetListenerName = "changePasswordDialog";
 
     //region Initialize
 
@@ -86,6 +92,13 @@ public class Account {
         } catch (PackageManager.NameNotFoundException e) {
             Log.e("Account", e.getMessage(), e);
         }
+
+        /*
+        NIEUWE BREAKING RELEASES:
+        - AndroidManifest versiecode ophogen
+        - Hieronder nieuwe versie definiëren
+        - In arrays.xml de versie definiëren als breaking(!!!!!)
+         */
 
         if((oldVersion = pref.getInt("oldVersion", currentVersion)) != currentVersion && !isHandlingNewVersion) {
             // Er was een updatesel
@@ -162,6 +175,8 @@ public class Account {
                         }
                         case 21: {
                             // Nieuw jaar, herlaad informatie over leerling
+                            if((apiKey = pref.getString("key", null)) == null) break;
+
                             isHandlingNewVersion = true;
                             if(HelperFunctions.hasInternetConnection(context)) {
                                 getAccountInfo(s -> {
@@ -183,6 +198,22 @@ public class Account {
                                 }, context);
                             }
                         }
+                        case 25: {
+                            // Username laden
+                            if((apiKey = pref.getString("key", null)) == null) break;
+
+                            isHandlingNewVersion = true;
+                            if(HelperFunctions.hasInternetConnection(context)) {
+                                getAccountInfo(s -> {
+                                    JSONObject base = new JSONObject((String) s);
+
+                                    username = base.getString("username");
+                                    pref.edit().putString("username", username).putInt("oldVersion", currentVersion).commit();
+                                    isHandlingNewVersion = false;
+                                    isInitialized = true;
+                                }, context);
+                            }
+                        }
                     }
                 }
             }
@@ -197,6 +228,7 @@ public class Account {
             isSet = true;
             userID = pref.getInt("userid", 0);
             name = pref.getString("naam", null);
+            username = pref.getString("username", null);
             apiKey = key;
             isAppAccount = pref.getBoolean("appaccount", false);
 
@@ -273,7 +305,8 @@ public class Account {
             JSONObject json = new JSONObject((String) p);
 
             userID = json.getInt("id");
-            PreferenceManager.getDefaultSharedPreferences(context).edit().putInt("userid", userID).apply();
+            username = json.getString("username");
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putInt("userid", userID).putString("username", username).apply();
 
             MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext())
                     .set("&uid", String.valueOf(userID));
@@ -394,6 +427,8 @@ public class Account {
                             loginDialog.dismiss();
                             progressDialog.dismiss();
                             callback.onAsyncActionComplete(result);
+                        }, error -> {
+                            progressDialog.dismiss();
                         });
 
                         break;
@@ -407,6 +442,8 @@ public class Account {
                             loginDialog.dismiss();
                             progressDialog.dismiss();
                             callback.onAsyncActionComplete(result);
+                        }, error -> {
+                            progressDialog.dismiss();
                         });
 
                         break;
@@ -426,7 +463,7 @@ public class Account {
         loginDialog.setOnDismissListener(dialog -> InternetConnectionManager.unregisterListener(loginInternetListenerName));
     }
 
-    private void login(Activity activity, String username, String password, AsyncActionCallback callback) {
+    private void login(Activity activity, String username, String password, AsyncActionCallback callback, AsyncActionCallback errorCallback) {
         MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
                 .send(new HitBuilders.EventBuilder()
                         .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
@@ -470,19 +507,29 @@ public class Account {
                     callback.onAsyncActionComplete(data);
                 } catch(Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij het inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
+                    try {
+                        errorCallback.onAsyncActionComplete(e);
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
                 }
             }
 
             @Override
             public void onError(Exception e) {
-                ExceptionHandler.handleException(new Exception("Fout bij het inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
+                ExceptionHandler.handleException(new Exception("Fout bij het inloggen: " + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+                try {
+                    errorCallback.onAsyncActionComplete(e);
+                } catch (Exception e1) {
+
+                }
             }
         };
 
         InternetConnection.post(url, requestCallbacks, context);
     }
 
-    private void login(Activity activity, String llnr, boolean force, AsyncActionCallback callback) {
+    private void login(Activity activity, String llnr, boolean force, AsyncActionCallback callback, AsyncActionCallback errorCallback) {
         MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
                 .send(new HitBuilders.EventBuilder()
                         .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
@@ -525,6 +572,9 @@ public class Account {
                     callback.onAsyncActionComplete(data);
                 } catch(Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij het inloggen", e), context, ExceptionHandler.HandleType.SIMPLE);
+                    try {
+                        errorCallback.onAsyncActionComplete(e);
+                    } catch (Exception e1) {}
                 }
             }
 
@@ -537,12 +587,15 @@ public class Account {
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
                     builder.setTitle(R.string.logindialog_warning_title);
                     builder.setMessage(R.string.logindialog_warning_text);
-                    builder.setPositiveButton(R.string.logindialog_warning_submitButton, (dialog, which) -> login(activity, llnr, true, callback));
+                    builder.setPositiveButton(R.string.logindialog_warning_submitButton, (dialog, which) -> login(activity, llnr, true, callback, errorCallback));
                     builder.setNegativeButton(R.string.logindialog_warning_cancelButton, (dialog, which) -> {});
 
                     builder.show();
                 } catch(Exception e) {
                     ExceptionHandler.handleException(new Exception("Fout bij het inloggen:" + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+                    try {
+                        errorCallback.onAsyncActionComplete(e);
+                    } catch (Exception e1) {}
                 }
             }
         };
@@ -718,7 +771,7 @@ public class Account {
                     extendDialog.dismiss();
                     progressDialog.dismiss();
                     callback.onAsyncActionComplete(result);
-                });
+                }, error -> { progressDialog.dismiss(); });
             } catch (Exception e) {
                 ExceptionHandler.handleException(e, context, ExceptionHandler.HandleType.SIMPLE);
             }
@@ -729,7 +782,7 @@ public class Account {
         extendDialog.setOnDismissListener(dialog -> InternetConnectionManager.unregisterListener(extendInternetListenerName));
     }
 
-    private void extend(String username, String password, String email, AsyncActionCallback callback) {
+    private void extend(String username, String password, String email, AsyncActionCallback callback, AsyncActionCallback errorCallback) {
         MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
                 .send(new HitBuilders.EventBuilder()
                         .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
@@ -785,6 +838,9 @@ public class Account {
             @Override
             public void onError(Exception e) {
                 ExceptionHandler.handleException(new Exception("Fout bij verwerken: " + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+                try {
+                    errorCallback.onAsyncActionComplete(e);
+                } catch (Exception e1) {}
             }
         };
 
@@ -940,10 +996,230 @@ public class Account {
 
     //endregion
 
-    //region Subklassen
+    //region Change Username
+
+    public void changeUsername() { extend(s -> {}); }
+
+    public void changeUsername(AsyncActionCallback callback) {
+        if(isAppAccount()) {
+            ExceptionHandler.handleException(new Exception("Je moet eerst een account aanmaken!"), context, ExceptionHandler.HandleType.SIMPLE);
+            return;
+        }
+
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext());
+        tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_CHANGEUSERNAME);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dialog_change_username, null);
+
+        ((TextView) dialogView.findViewById(R.id.dialog_username_text)).setText(context.getString(R.string.dialog_changeUsername_desc) + getUsername());
+
+        builder.setTitle(context.getString(R.string.dialog_changeUsername_title))
+                .setView(dialogView)
+                .setPositiveButton(context.getString(R.string.dialog_changeUsername_button_change), (dialog, which) -> {})
+                .setNegativeButton(context.getString(R.string.dialog_changeUsername_button_cancel), (dialog, which) -> dialog.dismiss());
+
+        AlertDialog changeUsernameDialog = builder.create();
+        changeUsernameDialog.show();
+        changeUsernameDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+            TextInputLayout usernameEditor = (TextInputLayout) dialogView.findViewById(R.id.dialog_username_inputLayout);
+            String newUsername = usernameEditor.getEditText().getText().toString();
+
+            AlertDialog progressDialog = ProgressDialog.create("Gebruikersnaam wijzigen", "Even geduld...", context);
+            try {
+                if ("".equals(newUsername)) throw new Exception("Dit veld is verplicht!");
+                if (newUsername.equals(getUsername())) throw new Exception("Nieuwe gebruikersnaam mag niet gelijk zijn aan de oude!");
+
+                progressDialog.show();
+
+                changeUsername(newUsername, result -> {
+                    changeUsernameDialog.dismiss();
+                    progressDialog.dismiss();
+                    callback.onAsyncActionComplete(result);
+                }, e -> progressDialog.dismiss());
+
+            } catch (Exception e) {
+                ExceptionHandler.handleException(e, context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        });
+
+        /* Internetdingen */
+        InternetConnectionManager.registerListener(changeUsernameInternetListenerName, hasInternetConnection -> changeUsernameDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(hasInternetConnection));
+        changeUsernameDialog.setOnDismissListener(dialog -> InternetConnectionManager.unregisterListener(changeUsernameInternetListenerName));
+    }
+
+    private void changeUsername(String newUsername, AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+        MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
+                .send(new HitBuilders.EventBuilder()
+                        .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
+                        .setAction(Constants.ANALYTICS_ACTION_CHANGEUSERNAME)
+                        .build());
+
+        String url = Constants.HTTP_BASE + "account/changeUsername";
+
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
+            @Override
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
+                List<NameValuePair> postParameters = new ArrayList<>();
+                postParameters.add(new BasicNameValuePair("newUsername", newUsername));
+                postParameters.add(new BasicNameValuePair("key", getApiKey()));
+
+                return new UrlEncodedFormEntity(postParameters);
+            }
+
+            @Override
+            public String onValidateResponse(String data, int status) throws Exception {
+                switch (status) {
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
+                        throw new Exception("Fout bij wijzigen. Log opnieuw in en probeer het opnieuw");
+                    case HttpURLConnection.HTTP_NOT_FOUND:
+                        throw new Exception("Kon account niet (meer) vinden. Log opnieuw in en probeer het opnieuw");
+                    case HttpURLConnection.HTTP_NO_CONTENT:
+                        return data;
+                    default:
+                        throw new Exception("Onbekende fout: " + status);
+                }
+            }
+
+            @Override
+            public void onProcessData(String data) {
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("username", newUsername).commit();
+                username = newUsername;
+                try {
+                    callback.onAsyncActionComplete(data);
+                } catch(Exception e) {
+                    ExceptionHandler.handleException(new Exception("Fout bij verwerken. Herstart de app en kijk of alles goed werkt", e), context, ExceptionHandler.HandleType.SIMPLE);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                ExceptionHandler.handleException(new Exception("Fout bij verwerken: " + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+                try {
+                    errorCallback.onAsyncActionComplete(e);
+                } catch (Exception e1) {}
+            }
+        };
+
+        InternetConnection.post(url, webRequestCallbacks, context);
+    }
+
+    //endregion
+    //region Change Password
+
+    public void changePassword() { changePassword(s -> {}); }
+    public void changePassword(AsyncActionCallback callback) {
+        if(isAppAccount()) {
+            ExceptionHandler.handleException(new Exception("Je moet eerst een account aanmaken!"), context, ExceptionHandler.HandleType.SIMPLE);
+            return;
+        }
+
+        Tracker tracker = MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context.getApplicationContext());
+        tracker.setScreenName(Constants.ANALYTICS_FRAGMENT_CHANGEPASSWORD);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dialog_change_password, null);
+
+        builder.setTitle("Wachtwoord wijzigen")
+                .setView(dialogView)
+                .setPositiveButton("Wijzig", (dialog, which) -> {})
+                .setNegativeButton("Annuleer", (dialog, which) -> dialog.dismiss());
+
+        AlertDialog changePasswordDialog = builder.create();
+        changePasswordDialog.show();
+        changePasswordDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String oldPassword = ((AppCompatEditText) dialogView.findViewById(R.id.dialog_password_oldPassword)).getText().toString();
+            String newPassword = ((AppCompatEditText) dialogView.findViewById(R.id.dialog_password_newPassword)).getText().toString();
+            String confirmPass = ((AppCompatEditText) dialogView.findViewById(R.id.dialog_password_confirmPassword)).getText().toString();
+            AlertDialog progressDialog = ProgressDialog.create("Wachtwoord wijzigen", "Even geduld...", context);
+
+            try {
+                if ("".equals(oldPassword)) throw new Exception("Oud wachtwoord is verplicht!");
+                if ("".equals(newPassword)) throw new Exception("Nieuw wachtwoord is verplicht!");
+                if (!newPassword.equals(confirmPass))
+                    throw new Exception("Nieuwe wachtwoorden moeten gelijk zijn!");
+
+                progressDialog.show();
+
+                changePassword(oldPassword, newPassword, result -> {
+                    changePasswordDialog.dismiss();
+                    progressDialog.dismiss();
+                    callback.onAsyncActionComplete(result);
+                }, e -> progressDialog.dismiss());
+
+            } catch (Exception e) {
+                ExceptionHandler.handleException(e, context, ExceptionHandler.HandleType.SIMPLE);
+            }
+        });
+    }
+
+    public void changePassword(String oldPassword, String newPassword, AsyncActionCallback callback, AsyncActionCallback errorCallback) {
+        MainApplication.getTracker(MainApplication.TrackerName.APP_TRACKER, context)
+                .send(new HitBuilders.EventBuilder()
+                        .setCategory(Constants.ANALYTICS_CATEGORIES_SETTINGS)
+                        .setAction(Constants.ANALYTICS_ACTION_CHANGEPASS)
+                        .build());
+
+        String url = Constants.HTTP_BASE + "account/changePassword";
+
+        InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
+            @Override
+            public UrlEncodedFormEntity onDataNeeded() throws Exception {
+                List<NameValuePair> postParamaters = new ArrayList<>();
+                postParamaters.add(new BasicNameValuePair("oldPassword", oldPassword));
+                postParamaters.add(new BasicNameValuePair("newPassword", newPassword));
+                postParamaters.add(new BasicNameValuePair("key", getApiKey()));
+
+                return new UrlEncodedFormEntity(postParamaters);
+            }
+
+            @Override
+            public String onValidateResponse(String data, int status) throws Exception {
+                switch(status) {
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
+                        throw new Exception("Fout bij wijzigen. Log opnieuw in en probeer het opnieuw");
+                    case HttpURLConnection.HTTP_NOT_FOUND:
+                        throw new Exception("Kon account niet (meer) vinden. Log opnieuw in en probeer het opnieuw");
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
+                        throw new Exception("Fout wachtwoord. Probeer het opnieuw");
+                    case HttpURLConnection.HTTP_NO_CONTENT:
+                        return data;
+                    default:
+                        throw new Exception("Onbekende fout: " + status);
+                }
+            }
+
+            @Override
+            public void onProcessData(String data) {
+                try {
+                    callback.onAsyncActionComplete(data);
+                } catch (Exception e) {
+                    ExceptionHandler.handleException(new Exception("Fout bij verwerken. Herstarty de app en kijk of alles goed werkt", e), context, ExceptionHandler.HandleType.SIMPLE);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                ExceptionHandler.handleException(new Exception("Fout bij wijzigen: " + e.getMessage(), e), context, ExceptionHandler.HandleType.SIMPLE);
+                try {
+                    errorCallback.onAsyncActionComplete(e);
+                } catch(Exception ex) {}
+            }
+        };
+
+        InternetConnection.post(url, webRequestCallbacks, context);
+    }
+
+    //endregion
+
+    //region Clusterklassen
     //region get
 
-    public void getSubklassen(boolean all, AsyncActionCallback callback) {
+    public void getClusterklassen(boolean all, AsyncActionCallback callback) {
         String url = Constants.HTTP_BASE + "account/clusterklassen?key=" + apiKey + (all ? "&all" : "");
 
         InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {
@@ -1001,7 +1277,7 @@ public class Account {
     //endregion
     //region set
 
-    public void setSubklassen(boolean refresh, ArrayList<String> subklassen, AsyncActionCallback callback) {
+    public void setClusterklassen(boolean refresh, ArrayList<String> subklassen, AsyncActionCallback callback) {
         String url = Constants.HTTP_BASE + "account/clusterklassen" + (refresh ? "?refresh" : "");
 
         InternetConnection.RequestCallbacks webRequestCallbacks = new InternetConnection.RequestCallbacks() {

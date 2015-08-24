@@ -100,7 +100,9 @@
     <string name="settings_user_relogin_summary">Log in als een andere gebruiker</string>
     <string name="settings_user_relogin_title">Andere gebruiker</string>
     <string name="settings_user_resetClusterklassenSummary">Herstel je clusterklassen naar het origineel</string>
-    <string name="settings_user_resetClusterklassenTitle">Reset clusterklassen</string>
+    <string name="settings_user_resetClusterklassenTitle">Herstel clusterklassen</string>
+    <string name="settings_user_changeUsername_title">Gebruikersnaam wijzigen</string>
+    <string name="settings_user_changePassword_title">Wachtwoord wijzigen</string>
     <string name="settings_about_app_desc">Dit is een app om het rooster van Infoweb op een handige en makkelijke manier te tonen op Android</string>
 
     <!-- Showcaseviews -->
@@ -135,5 +137,10 @@
 
     <!-- DashClock -->
     <string name="next_uur_dashclock_title">RoosterPG+ Volgende uur</string>
+    <string name="dialog_changeUsername_desc">Verander je gebruikersnaam. Huidige gebruikersnaam:</string>
+    <string name="dialog_changeUsername_hint">Nieuwe gebruikersnaam</string>
+    <string name="dialog_changeUsername_title">Wijzig gebruikersnaam</string>
+    <string name="dialog_changeUsername_button_change">Wijzig</string>
+    <string name="dialog_changeUsername_button_cancel">Annuleer</string>
 
 </resources>

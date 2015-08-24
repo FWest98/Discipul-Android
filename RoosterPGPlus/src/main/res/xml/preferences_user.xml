@@ -1,32 +1,65 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:thomasdhprefs="http://schemas.android.com/apk/res/com.thomasdh.roosterpgplus">
 
-    <Preference
-        android:key="mijn_account"
-        android:title="Mijn account" />
+    <PreferenceCategory
+        android:title="Account"
+        android:key="account_category">
 
-    <Preference
-        android:key="log_in"
-        android:summary="@string/settings_user_relogin_summary"
-        android:title="@string/settings_user_relogin_title" />
+        <Preference
+            android:key="about_user"
+            android:title="Mijn account"/>
 
-    <Preference
-        android:key="account_upgraden"
-        android:summary="@string/settings_user_upgrade_summary"
-        android:title="@string/settings_user_upgrade_title" />
+        <Preference
+            android:key="log_in"
+            android:summary="@string/settings_user_relogin_summary"
+            android:title="@string/settings_user_relogin_title" />
 
-    <com.thomasdh.roosterpgplus.CustomUI.ListPreferenceMultiSelect
-        android:defaultValue="#ALL#"
-        android:dialogTitle="Subklassen"
-        android:key="subklassen"
-        android:summary="@string/settings_user_clusterklassen_summary"
-        android:title="@string/settings_user_clusterklassen_title"
-        thomasdhprefs:checkAll="check"
-        thomasdhprefs:separator="|" />
+        <Preference
+            android:key="account_upgraden"
+            android:summary="@string/settings_user_upgrade_summary"
+            android:title="@string/settings_user_upgrade_title" />
 
-    <Preference
-        android:key="clusterklassen_reload"
-        android:summary="@string/settings_user_resetClusterklassenSummary"
-        android:title="@string/settings_user_resetClusterklassenTitle" />
+        <Preference
+            android:key="change_username"
+            android:title="@string/settings_user_changeUsername_title" />
 
+        <Preference
+            android:key="change_password"
+            android:title="@string/settings_user_changePassword_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Leerlinggegevens"
+        android:key="leerling_category">
+
+        <Preference
+            android:key="about_leerling"
+            android:title="Over mij" />
+
+        <com.thomasdh.roosterpgplus.CustomUI.ListPreferenceMultiSelect
+            android:defaultValue="#ALL#"
+            android:dialogTitle="Clusterklassen"
+            android:key="clusterklassen"
+            android:summary="@string/settings_user_clusterklassen_summary"
+            android:title="@string/settings_user_clusterklassen_title"
+            thomasdhprefs:checkAll="check"
+            thomasdhprefs:separator="|" />
+
+        <Preference
+            android:key="clusterklassen_reload"
+            android:summary="@string/settings_user_resetClusterklassenSummary"
+            android:title="@string/settings_user_resetClusterklassenTitle" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Leraargegevens"
+        android:key="leraar_category">
+
+        <Preference
+            android:key="about_leraar"
+            android:title="Over mij" />
+
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -5,7 +5,7 @@ package com.thomasdh.roosterpgplus.Settings;
 public class Constants {
     public static final String HTTP_BASE = "https://api.roosterpgplus.nl/";
     public static final int WEEKS_IN_SPINNER = 10;
-    public static final String API_VERSION = "1";
+    public static final String API_VERSION = "2";
     public static final int TIMEOUT_MILLIS = 5000;
 
     public static final String PLAY_SERVICES_APP_VERSION = "VERSION_1.0";
@@ -21,6 +21,8 @@ public class Constants {
     public static final String ANALYTICS_ACTION_LOGIN = "Login";
     public static final String ANALYTICS_ACTION_REGISTER = "Registreer";
     public static final String ANALYTICS_ACTION_EXTEND = "Uitbreidscherm";
+    public static final String ANALYTICS_ACTION_CHANGEUSERNAME = "Gebruikersnaam wijzigen";
+    public static final String ANALYTICS_ACTION_CHANGEPASS = "Wachtwoord wijzigen";
 
     public static final String ANALYTICS_FRAGMENT_PERSROOSTER = "Persoonlijk rooster";
     public static final String ANALYTICS_FRAGMENT_DOCROOSTER = "Lerarenrooster";
@@ -40,4 +42,6 @@ public class Constants {
     public static final String ANALYTICS_FRAGMENT_LOGIN = "Inlogscherm";
     public static final String ANALYTICS_FRAGMENT_REGISTER = "Registreerscherm";
     public static final String ANALYTICS_FRAGMENT_EXTEND = "Uitbreidscherm";
+    public static final String ANALYTICS_FRAGMENT_CHANGEUSERNAME = "Gebruikersnaamwijzigscherm";
+    public static final String ANALYTICS_FRAGMENT_CHANGEPASSWORD = "Wachtwoordwijzigscherm";
 }

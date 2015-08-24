@@ -20,6 +20,7 @@ import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
+import com.thomasdh.roosterpgplus.Models.Lokaal;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
 
@@ -27,8 +28,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import fj.data.Array;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -38,7 +41,8 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
     private static final String CHOSEN_LOKAAL_KEY = "lastChosenLokaal";
     private static final Long MIN_REFRESH_WAIT_TIME = (long) 3600000;
 
-    @Getter @Setter private String lokaal;
+    @Getter @Setter private Lokaal lokaal;
+    @Getter @Setter private ArrayList<Lokaal> lokalen;
 
     private DefaultSpinner lokaalSpinner;
 
@@ -68,24 +72,29 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
 
     void onLokalenLoaded(Object lok) {
         if(lok == null) return;
-        ArrayList<String> lokalen = (ArrayList<String>) lok;
+        lokalen = (ArrayList<Lokaal>) lok;
 
-        ArrayAdapter<String> lokaalAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_title, lokalen);
+        String[] lokaalNamen = Array.iterableArray(lokalen).map(Lokaal::getNaam).array(String[].class);
+        String[] lokaalCodes = Array.iterableArray(lokalen).map(Lokaal::getCode).array(String[].class);
+
+        ArrayAdapter<String> lokaalAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_title, lokaalNamen);
         lokaalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         lokaalSpinner.setAdapter(lokaalAdapter);
 
         lokaalSpinner.setOnItemSelectedListener(this);
 
         String lastChosenLokaal = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(CHOSEN_LOKAAL_KEY, null);
-        if(lastChosenLokaal == null) return;
-        setLokaal(lastChosenLokaal);
-        lokaalSpinner.setSelection(lokaalAdapter.getPosition(lastChosenLokaal));
+        if(lastChosenLokaal == null || !Arrays.asList(lokaalCodes).contains(lastChosenLokaal)) return;
+
+        int lokaalIndex = Arrays.asList(lokaalCodes).indexOf(lastChosenLokaal);
+        setLokaal(lokalen.get(lokaalIndex));
+        lokaalSpinner.setSelection(lokaalIndex);
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        setLokaal(((TextView) view).getText().toString());
-        PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString(CHOSEN_LOKAAL_KEY, getLokaal()).commit();
+        setLokaal(getLokalen().get(position));
+        PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString(CHOSEN_LOKAAL_KEY, getLokaal().getCode()).commit();
 
         loadRooster();
     }
@@ -101,7 +110,7 @@ public class LokalenRoosterFragment extends RoosterViewFragment implements Adapt
 
     @Override
     public List<NameValuePair> getURLQuery(List<NameValuePair> query) {
-        query.add(new BasicNameValuePair("lokaal", getLokaal()));
+        query.add(new BasicNameValuePair("lokaal", getLokaal().getCode()));
         return query;
     }
 

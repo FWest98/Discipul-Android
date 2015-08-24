@@ -7,6 +7,7 @@ import com.thomasdh.roosterpgplus.Helpers.AsyncActionCallback;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
 import com.thomasdh.roosterpgplus.Models.Week;
+import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
@@ -21,19 +22,19 @@ import fj.data.Array;
  * Ophalen van roosterinfo uit opslag of van internet
  */
 public class RoosterInfo {
-    private static final String WEKEN_FILENAME = "wekenarray";
-    private static final String KLASSEN_FILENAME = "klassenarray";
-    private static final String LERAREN_FILENAME = "lerarenarray";
-    private static final String LOKALEN_FILENAME = "lokalenarray";
-    private static final String LEERLINGEN_FILENAME = "leerlingenarray";
+    private static final String WEKEN_FILENAME = "wekenarray_v" + Constants.API_VERSION;
+    private static final String KLASSEN_FILENAME = "klassenarray_v" + Constants.API_VERSION;
+    private static final String LERAREN_FILENAME = "lerarenarray_v" + Constants.API_VERSION;
+    private static final String LOKALEN_FILENAME = "lokalenarray_v" + Constants.API_VERSION;
+    private static final String LEERLINGEN_FILENAME = "leerlingenarray_v" + Constants.API_VERSION;
     private static final String LOADS_FILENAME = "loadshashtable";
-    private static final String WEKEN_UREN_FILENAME = "wekenhashtable";
+    private static final String WEKEN_UREN_FILENAME = "wekenhashtable_v" + Constants.API_VERSION;
 
-    private static final String WEKEN_LOADS = "wekenLoads";
-    private static final String KLASSEN_LOADS = "klassenLoads";
-    private static final String LERAREN_LOADS = "lerarenLoads";
-    private static final String LOKALEN_LOADS = "lokalenLoads";
-    private static final String LEERLINGEN_LOADS = "leerlingenLoads";
+    private static final String WEKEN_LOADS = "wekenLoads_v" + Constants.API_VERSION;
+    private static final String KLASSEN_LOADS = "klassenLoads_v" + Constants.API_VERSION;
+    private static final String LERAREN_LOADS = "lerarenLoads_v" + Constants.API_VERSION;
+    private static final String LOKALEN_LOADS = "lokalenLoads_v" + Constants.API_VERSION;
+    private static final String LEERLINGEN_LOADS = "leerlingenLoads_v" + Constants.API_VERSION;
 
     private static final Long WEKEN_MAX_AGE = (long) 86400000; // 24 uur
     private static final Long KLASSEN_MAX_AGE = (long) 86400000; // 24 uur
