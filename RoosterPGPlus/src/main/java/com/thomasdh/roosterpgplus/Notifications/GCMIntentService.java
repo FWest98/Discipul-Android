@@ -37,7 +37,7 @@ public class GCMIntentService extends IntentService {
 
     private static void createNotification(String title, String message, Context context) {
         boolean pushNotificationsSetting = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("pushNotificaties", true);
-        if(!pushNotificationsSetting) {
+        if(!pushNotificationsSetting || "".equals(message)) {
             return;
         }
 

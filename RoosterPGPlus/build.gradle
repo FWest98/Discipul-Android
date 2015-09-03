@@ -28,6 +28,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 23
         multiDexEnabled true
+        applicationId 'com.thomasdh.roosterpgplus'
     }
 
     compileOptions {
@@ -71,6 +72,7 @@ android {
     buildTypes {
         debug {
             buildConfigField "boolean", "GRADLE_DEBUG", "true"
+            applicationIdSuffix ".debug"
         }
 
         prerelease {
@@ -117,7 +119,8 @@ dependencies {
     compile 'ch.acra:acra:4.6.1'
     compile 'me.zhanghai.android.materialprogressbar:library:1.0.2'
     compile 'com.quinny898.library.persistentsearch:library:1.0.0-SNAPSHOT'
-    compile('com.mikepenz:materialdrawer:3.1.2@aar') { transitive = true }
+    compile('com.mikepenz:crossfader:1.0.3@aar') { transitive = true }
+    compile('com.mikepenz:materialdrawer:4.0.5@aar') { transitive = true }
 }
 
 retrolambda {

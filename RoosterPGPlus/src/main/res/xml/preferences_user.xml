@@ -1,5 +1,5 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:thomasdhprefs="http://schemas.android.com/apk/res/com.thomasdh.roosterpgplus">
+    xmlns:thomasdhprefs="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
         android:title="Account"

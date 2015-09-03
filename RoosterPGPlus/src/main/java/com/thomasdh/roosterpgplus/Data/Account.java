@@ -339,6 +339,8 @@ public class Account {
 
     //endregion
 
+    //region Manage
+
     //region Login
 
     public void login(AsyncActionCallback callback) {
@@ -1335,6 +1337,8 @@ public class Account {
     }
 
     //endregion
+    //endregion
+
     //endregion
 
     //region Types

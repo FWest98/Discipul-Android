@@ -21,10 +21,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.gms.analytics.HitBuilders;
+import com.mikepenz.materialdrawer.AccountHeader;
+import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
-import com.mikepenz.materialdrawer.accountswitcher.AccountHeader;
-import com.mikepenz.materialdrawer.accountswitcher.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
@@ -67,8 +67,10 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
     private Class<? extends RoosterViewFragment> roosterType;
     private boolean isRooster = true;
     private boolean isShowingBackArrow = false;
+
     private Drawer drawer;
     private AccountHeader drawerHeader;
+    private ProfileDrawerItem profileDrawerItem;
     private SearchBox searchBox;
     private Snackbar internetConnectionSnackbar;
     private DrawerLayout drawerLayout;
@@ -109,6 +111,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
             isShowingBackArrow = savedInstanceState.getBoolean("isShowingBackArrow");
             shouldUpdateToolbar = true;
             setSelectedWeek(savedInstanceState.getInt("WEEK"));
+            currentSelection = savedInstanceState.getInt("drawerSelection");
             if(!isRooster) {
                 ((PGTVRoosterFragment) mainFragment).setType((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE"));
             }
@@ -119,11 +122,11 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 .withActivity(this)
                 .addProfiles(
                         Account.isSet() ?
-                        new ProfileDrawerItem().withName(Account.getName()).withEmail(
-                                Account.getUserType() == Account.UserType.LEERLING ?
-                                    "Klas " + Account.getLeerlingKlas() :
-                                    "Docentcode: " + Account.getLeraarCode()
-                        ) : new ProfileDrawerItem().withName("Nog niet ingelogd")
+                            (profileDrawerItem = new ProfileDrawerItem().withName(Account.getName()).withEmail(
+                            Account.getUserType() == Account.UserType.LEERLING ?
+                                "Klas " + Account.getLeerlingKlas() :
+                                "Docentcode: " + Account.getLeraarCode()
+                            )) : (profileDrawerItem = new ProfileDrawerItem().withName("Nog niet ingelogd"))
                 )
                 .withCompactStyle(!Account.isSet())
                 .withHeaderBackground(R.drawable.drawer_header_blurred)
@@ -148,11 +151,12 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .withAccountHeader(drawerHeader)
-                .withAnimateDrawerItems(true)
                 .withCloseOnClick(true)
                 .withActionBarDrawerToggleAnimated(true)
                 .withSavedInstance(savedInstanceState)
-                .withOnDrawerItemClickListener((adapterView, view, i, l, iDrawerItem) -> {
+                .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
+                    if(iDrawerItem == null) return false;
+
                     int firstDigit = iDrawerItem.getIdentifier() / 10; // first digit
                     int secondDigit = iDrawerItem.getIdentifier() % 10; // second digit
 
@@ -182,7 +186,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                     } else if (firstDigit == 2) {
                         // Settings
                         drawer.closeDrawer();
-                        drawer.setSelectionByIdentifier(currentSelection);
+                        drawer.setSelection(currentSelection);
                         Intent preferencesIntent = new Intent(this, PreferencesActivity.class);
                         startActivity(preferencesIntent);
                         return false;
@@ -203,7 +207,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 drawerBuilder.addDrawerItems(
                         new PrimaryDrawerItem()
                                 .withName(childName)
-                                .withIdentifier(Integer.parseInt(i + "" + u))
+                                .withIdentifier(10*i + u)
                                 .withIcon(resource)
                 );
                 u++;
@@ -216,9 +220,9 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                         new DividerDrawerItem(),
                         new PrimaryDrawerItem().withName("Instellingen").withIcon(R.drawable.ic_settings_grey).withIdentifier(20)
                 )
-                .withSelectedItem(1)
                 .build();
 
+        drawer.setSelection(currentSelection);
         drawerLayout = drawer.getDrawerLayout();
 
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
@@ -259,6 +263,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         toolbar.setNavigationOnClickListener(toolbarOnClickListener);
         actionBarDrawerToggle.setToolbarNavigationClickListener(toolbarOnClickListener);
 
+
         /* Search */
         searchBox = (SearchBox) findViewById(R.id.searchbox);
         searchBox.enableVoiceRecognition(this);
@@ -278,6 +283,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         savedInstanceState.putBoolean("isShowingBackArrow", isShowingBackArrow);
         savedInstanceState.putBoolean("isRooster", isRooster);
         savedInstanceState.putInt("WEEK", getSelectedWeek());
+        savedInstanceState.putInt("drawerSelection", currentSelection);
         if(!isRooster) {
             savedInstanceState.putSerializable("PGTVTYPE", ((PGTVRoosterFragment) mainFragment).getType());
         }
@@ -296,6 +302,16 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
     public void onResume() {
         super.onResume();
         InternetConnectionManager.registerListener("main", this);
+
+        // Update profile item
+        if(Account.isSet()) {
+            profileDrawerItem.withName(Account.getName()).withEmail(
+                    Account.getUserType() == Account.UserType.LEERLING ?
+                            "Klas " + Account.getLeerlingKlas() :
+                            "Docentcode: " + Account.getLeraarCode());
+        } else {
+            profileDrawerItem.withEmail("").withName("Nog niet ingelogd");
+        }
     }
 
     public void onPause() {
@@ -321,7 +337,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
             roosterType = mainFragment.getClass();
             isRooster = roosterType != PGTVRoosterFragment.class;
-            drawer.setSelectionByIdentifier(currentSelection);
+            drawer.setSelection(currentSelection);
 
             // toolbar goed maken
             updateToolbarViews();
@@ -507,8 +523,13 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 closeSearch();
 
                 setRoosterType(EntityRoosterFragment.class, s);
-                drawer.getListView().setSelection(-1);
-                drawer.getListView().setItemChecked(drawer.getCurrentSelection() + 1, false);
+/*                IDrawerItem drawerItem = drawer.getDrawerItem(drawer.getCurrentSelection());
+                if(drawerItem != null) {
+                    drawerItem.withSetSelected(false);
+                    drawer.updateItem(drawerItem);
+                    //drawer.getAdapter().notifyItemChanged(drawer.getCurrentSelectedPosition());
+                }*/
+                drawer.setSelectionAtPosition(-1);
 
                 updateToolbarViews();
 
