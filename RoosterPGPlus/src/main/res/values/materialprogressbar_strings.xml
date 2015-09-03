@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="define_materialprogressbar"></string>
+    <string name="library_materialprogressbar_author">Zhang Hai</string>
+    <string name="library_materialprogressbar_authorWebsite">blok.zhanghai.me</string>
+    <string name="library_materialprogressbar_libraryName">Material Progressbar</string>
+    <string name="library_materialprogressbar_libraryDescription">Material design ProgressBar with consistent appearance</string>
+    <string name="library_materialprogressbar_libraryVersion">1.0.2</string>
+    <string name="library_materialprogressbar_isOpenSource">true</string>
+    <string name="library_materialprogressbar_repositoryLink">https://github.com/DreaminginCodeZH/MaterialProgressBar</string>
+    <string name="library_materialprogressbar_classPath">me.zhanghai.android.materialprogressbar</string>
+    <string name="library_materialprogressbar_licenseId">apache_2_0</string>
+</resources>

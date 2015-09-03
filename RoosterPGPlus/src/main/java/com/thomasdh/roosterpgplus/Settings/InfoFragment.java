@@ -16,7 +16,7 @@ public class InfoFragment extends LibsFragment {
 
         bundle.putStringArray(Libs.BUNDLE_FIELDS, Libs.toStringArray(R.string.class.getFields()));
         bundle.putStringArray(Libs.BUNDLE_LIBS, new String[]{
-                "projectlombok", "ormlite", "functionaljava", "acra", "rxjava"
+                "projectlombok", "ormlite", "functionaljava", "acra", "rxjava", "dashclock", "materialprogressbar", "persistentsearch"
         });
 
         bundle.putBoolean(Libs.BUNDLE_VERSION, true);

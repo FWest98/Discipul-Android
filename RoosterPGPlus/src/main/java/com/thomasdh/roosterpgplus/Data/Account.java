@@ -363,6 +363,8 @@ public class Account {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.dialog_login, null);
+
+        /* Tabs */
         TabLayout tabLayout = (TabLayout) dialogView.findViewById(R.id.tabs);
         FrameLayout tabs = (FrameLayout) dialogView.findViewById(R.id.tab_wrapper);
         final TabLayout.Tab[] currentTab = { tabLayout.newTab().setText(R.string.logindialog_tabs_userpass).setTag(R.id.Tab_UserPass) };
@@ -393,6 +395,7 @@ public class Account {
             }
         });
 
+        /* Dialog buttons */
         builder.setView(dialogView)
                 .setPositiveButton(R.string.logindialog_loginbutton, (dialogInterface, id) -> {})
                 /*.setNeutralButton(R.string.logindialog_registerbutton, (dialogInterface, id) -> {})*/
