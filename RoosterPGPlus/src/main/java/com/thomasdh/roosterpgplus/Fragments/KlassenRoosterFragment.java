@@ -1,6 +1,6 @@
 package com.thomasdh.roosterpgplus.Fragments;
 
-import android.os.Build;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
@@ -128,7 +128,6 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
     //endregion
     //region Rooster
 
-
     @Override
     public RoosterBuilder buildRooster(int urenCount) {
         return super.buildRooster(urenCount)
@@ -137,12 +136,8 @@ public class KlassenRoosterFragment extends RoosterViewFragment implements Adapt
 
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
-        if(lesuur.klassen.contains(getKlas())) { // niet optioneel
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                lesView.findViewById(R.id.optioneel_container).setBackground(null);
-            } else {
-                lesView.findViewById(R.id.optioneel_container).setBackgroundResource(0);
-            }
+        if(!lesuur.klassen.contains(getKlas())) { // optioneel
+            lesView.findViewById(R.id.optioneel_container).setBackgroundColor(Color.parseColor("#FAFAFA"));
         }
 
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");

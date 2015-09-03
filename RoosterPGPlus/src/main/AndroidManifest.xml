@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.thomasdh.roosterpgplus"
     android:installLocation="auto"
-    android:versionCode="25"
-    android:versionName="2.4.0 bèta 2">
+    android:versionCode="26"
+    android:versionName="2.4.0 bèta 3">
 
     <permission android:name="${applicationId}.permission.SEARCH" android:protectionLevel="signature"/>
     <permission android:name="${applicationId}.permission.C2D_MESSAGE" android:protectionLevel="signature"/>

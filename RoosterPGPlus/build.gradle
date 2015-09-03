@@ -15,6 +15,7 @@ apply plugin: 'com.github.triplet.play'
 
 repositories {
     mavenCentral()
+    jcenter()
     maven { url 'http://dl.bintray.com/populov/maven' }
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
@@ -119,6 +120,7 @@ dependencies {
     compile 'ch.acra:acra:4.6.1'
     compile 'me.zhanghai.android.materialprogressbar:library:1.0.2'
     compile 'com.quinny898.library.persistentsearch:library:1.0.0-SNAPSHOT'
+    compile 'com.h6ah4i.android.materialshadowninepatch:materialshadowninepatch:0.6.3'
     compile('com.mikepenz:crossfader:1.0.3@aar') { transitive = true }
     compile('com.mikepenz:materialdrawer:4.0.5@aar') { transitive = true }
 }

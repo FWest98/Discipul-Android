@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="define_materialshadow"></string>
+    <string name="library_materialshadow_author">Haruki Hasegawa</string>
+    <string name="library_materialshadow_authorWebsite">h6a4i.com</string>
+    <string name="library_materialshadow_libraryName">Material Shadow</string>
+    <string name="library_materialshadow_libraryDescription">Provides 9-path based drop shadow for view elements</string>
+    <string name="library_materialshadow_libraryVersion">0.6.3</string>
+    <string name="library_materialshadow_isOpenSource">true</string>
+    <string name="library_materialshadow_repositoryLink">https://github.com/h6a4i/android-materialshadowninepatch</string>
+    <string name="library_materialshadow_classPath">com.h6a4i.android.materialshadowninepatch</string>
+    <string name="library_materialshadow_licenseId">apache_2_0</string>
+</resources>

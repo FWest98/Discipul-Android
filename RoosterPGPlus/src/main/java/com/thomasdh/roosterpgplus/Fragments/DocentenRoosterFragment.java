@@ -185,12 +185,6 @@ public class DocentenRoosterFragment extends RoosterViewFragment implements Adap
 
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
-        // No bg
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            lesView.findViewById(R.id.optioneel_container).setBackground(null);
-        } else {
-            lesView.findViewById(R.id.optioneel_container).setBackgroundResource(0);
-        }
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
         TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
