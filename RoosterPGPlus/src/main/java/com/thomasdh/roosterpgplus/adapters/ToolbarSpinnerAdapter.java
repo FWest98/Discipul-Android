@@ -7,32 +7,19 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
-
-public class ActionBarSpinnerAdapter extends BaseAdapter {
-    @Getter
-    private Class<?> type;
+public class ToolbarSpinnerAdapter extends BaseAdapter {
     private final Activity activity;
     private final List<String> data;
     private ArrayList<DataSetObserver> observers = new ArrayList<>();
 
-    public ActionBarSpinnerAdapter(Activity activity, List<String> data, Class<?> type) {
+    public ToolbarSpinnerAdapter(Activity activity, List<String> data) {
         this.activity = activity;
         this.data = data;
-        setType(type);
-    }
-
-    public void setType (Class<?> type) {
-        this.type = type;
-        for(DataSetObserver observer : observers) {
-            observer.onChanged();
-        }
     }
 
     @Override
@@ -89,7 +76,6 @@ public class ActionBarSpinnerAdapter extends BaseAdapter {
             View view = View.inflate(activity, R.layout.action_bar_list_view, null);
             ((TextView) view.findViewById(R.id.action_bar_text_field)).setText(data.get(position));
 
-            int typeRes = type.getAnnotation(FragmentTitle.class).title();
             return view;
         }
         return null;

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="define_dashclock"></string>
+    <string name="library_dashclock_author">Roman Nurik</string>
+    <string name="library_dashclock_authorWebsite">roman.nurik.net</string>
+    <string name="library_dashclock_libraryName">DashClock API</string>
+    <string name="library_dashclock_libraryDescription">DashClock is a replacement lock screen and home screen clock widget for Android 4.2+. It also exposes additional status items called extensions.</string>
+    <string name="library_dashclock_libraryWebsite">dashclock.com</string>
+    <string name="library_dashclock_libraryVersion">2.0.0</string>
+    <string name="library_dashclock_isOpenSource">true</string>
+    <string name="library_dashclock_repositoryLink">https://github.com/romannurik/dashclock</string>
+    <string name="library_dashclock_classPath">com.google.android.apps.dashclock</string>
+</resources>

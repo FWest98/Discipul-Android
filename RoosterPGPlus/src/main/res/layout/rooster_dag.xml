@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingBottom="@dimen/weekdag_marginSize"
+        android:paddingBottom="4dp"
         android:paddingTop="@dimen/weekdag_marginSize">
 
         <TextView
@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:textColor="#000"
+
             android:text="@string/rooster_weekdag"
             android:textSize="@dimen/weekdag_fontSize" />
 
@@ -33,10 +33,10 @@
             android:textSize="@dimen/weekdag_datum_textSize" />
     </RelativeLayout>
 
-    <View
+    <!--<View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#CCC" />
+        android:background="#CCC" />-->
 
     <ScrollView
         android:id="@+id/scrollView"

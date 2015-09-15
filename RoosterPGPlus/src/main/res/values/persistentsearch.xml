@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="define_persistentsearch"></string>
+    <string name="library_persistentsearch_author">Kieron Quinn</string>
+    <string name="library_persistentsearch_authorWebsite">quinny898.co.uk</string>
+    <string name="library_persistentsearch_libraryName">Android Persistent Search</string>
+    <string name="library_persistentsearch_libraryDescription">A library that implements the persistent search bar seen on apps such as Google Now, Google Maps and Google Play</string>
+    <string name="library_persistentsearch_libraryWebsite">quinny898.co.uk/PersistentSearch</string>
+    <string name="library_persistentsearch_libraryVersion">1.0.0</string>
+    <string name="library_persistentsearch_isOpenSource">true</string>
+    <string name="library_persistentsearch_repositoryLink">https://github.com/Quinny898/PersistentSearch</string>
+    <string name="library_persistentsearch_classPath">com.quinny898.library.persistentsearch</string>
+    <string name="library_persistentsearch_licenseId">apache_2_0</string>
+</resources>

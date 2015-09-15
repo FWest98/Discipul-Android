@@ -3,6 +3,9 @@ package com.thomasdh.roosterpgplus.Data;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,7 +48,6 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
     @Setter private long lastLoad = -1;
     @Setter private int urenCount = -1;
     @Setter private BuilderFunctions builderFunctions = (lesuur, lesView, inflater) -> {
-        lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // Background doorzichtig, geen speciale uren
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
         TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);
@@ -105,7 +107,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
             urenCount = lessen.foldLeft((a, b) -> b.uur > a ? b.uur : a, 0);
         }
 
-        context.getResources().getDrawable(R.drawable.diagonal_stripes_optioneeluur).setAlpha(100);
+        ContextCompat.getDrawable(context, R.drawable.diagonal_stripes_optioneeluur).setAlpha(100);
         converter = new Converter(context);
 
         boolean isWide = context.getResources().getBoolean(R.bool.isWideWeekview);
@@ -263,13 +265,15 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                 Array<Lesuur> lessenInUur = lessen.filter(s -> s.uur == uur);
                 ArrayList<RelativeLayout> lesViews = new ArrayList<>();
                 RelativeLayout urenContainer = null;
+                RelativeLayout.LayoutParams urenContainerParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                urenContainerParams.setMargins(0, 0, 0, converter.DPtoPX(10));
 
                 if(lessenInUur == null || lessenInUur.isEmpty()) { // Geen lessen -> vrij
                     View lesView = LayoutInflater.from(context).inflate(R.layout.rooster_tussenuur, null);
                     lesView.setMinimumHeight(converter.SPtoPX(89));
                     if(uur == urenCount) {
-                        lesView.setBackgroundResource(R.drawable.basic_rect);
-                        lesView.setPadding(0,0,0,converter.DPtoPX(1));
+                        /*lesView.setBackgroundResource(R.drawable.basic_rect);
+                        lesView.setPadding(0,0,0,converter.DPtoPX(1));*/
                     }
                     linearLayout.addView(lesView);
 
@@ -293,7 +297,6 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                 boolean multipleViews = lesViews.size() > 1;
                 if(multipleViews) {
                     urenContainer = new RelativeLayout(context);
-                    urenContainer.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 }
 
                 int reverseCounter = lesViews.size() + 1;
@@ -315,13 +318,16 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                     if(multipleViews) {
                         urenContainer.addView(lesView);
                     } else {
-                        linearLayout.addView(lesView);
+                        lesView.setLayoutParams(urenContainerParams);
+                        linearLayout.addView(lesView, urenContainerParams);
                     }
                 }
 
                 if(multipleViews) {
                     urenContainer.setOnClickListener(new MultipleUrenClickListener(lesViews, context));
-                    linearLayout.addView(urenContainer);
+                    urenContainer.setLayoutParams(urenContainerParams);
+
+                    linearLayout.addView(urenContainer, urenContainerParams);
                 }
             }
 
@@ -402,7 +408,7 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
                 lesView = inflater.inflate(R.layout.rooster_uur_gewijzigd, null);
             } else if(lesuur.verplaatsing) {
                 lesView = inflater.inflate(R.layout.rooster_uur, null);
-                ((TextView) lesView.findViewById(R.id.rooster_lokaal)).setTextColor(Color.parseColor("#FF0000"));
+                ((TextView) lesView.findViewById(R.id.rooster_lokaal)).setTextColor(Color.parseColor("#FE4A49"));
             } else if(lesuur.isNew) {
                 lesView = inflater.inflate(R.layout.rooster_uur, null);
                 ((TextView) lesView.findViewById(R.id.rooster_notes)).setText("Nieuwe les");
@@ -413,10 +419,11 @@ public class RoosterBuilder extends AsyncTask<Void, Void, Void> {
         }
 
         if (lessen.get(0).uur == urenCount) {
-            lesView.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
+            //lesView.findViewById(R.id.rooster_uur_linearlayout).setBackgroundResource(R.drawable.basic_rect);
         }
 
         lesView.setMinimumHeight(converter.SPtoPX(90));
+        ViewCompat.setElevation(lesView, converter.DPtoPX(1));
         return lesView;
     }
 

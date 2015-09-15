@@ -1,7 +1,6 @@
 package com.thomasdh.roosterpgplus;
 
 import android.animation.ValueAnimator;
-import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -22,16 +21,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.gms.analytics.HitBuilders;
+import com.mikepenz.materialdrawer.AccountHeader;
+import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
-import com.mikepenz.materialdrawer.accountswitcher.AccountHeader;
-import com.mikepenz.materialdrawer.accountswitcher.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.quinny898.library.persistentsearch.SearchBox;
-import com.thomasdh.roosterpgplus.Adapters.ActionBarSpinnerAdapter;
+import com.thomasdh.roosterpgplus.Adapters.ToolbarSpinnerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
 import com.thomasdh.roosterpgplus.Fragments.EntityRoosterFragment;
@@ -59,7 +58,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
 
     private static ActionBar actionBar;
     private static Toolbar toolbar;
-    private static ActionBarSpinnerAdapter toolbarSpinnerAdapter;
+    private static ToolbarSpinnerAdapter toolbarSpinnerAdapter;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem refreshItem;
     @Getter(value = AccessLevel.PRIVATE) private static MenuItem searchItem;
 
@@ -68,18 +67,23 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
     private Class<? extends RoosterViewFragment> roosterType;
     private boolean isRooster = true;
     private boolean isShowingBackArrow = false;
+
     private Drawer drawer;
     private AccountHeader drawerHeader;
+    private ProfileDrawerItem profileDrawerItem;
     private SearchBox searchBox;
     private Snackbar internetConnectionSnackbar;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
+
+    //region Lifecycle
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         /* Setup */
+        boolean shouldUpdateToolbar = false;
         setContentView(R.layout.activity_rooster);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -91,17 +95,11 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         new NextUurNotifications(this);
 
         if (savedInstanceState == null) {
-            Intent intent = getIntent();
-            if(intent.getAction() == Intent.ACTION_SEARCH) {
-                roosterType = EntityRoosterFragment.class;
-                EntityRoosterFragment searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
-                mainFragment = searchFragment;
-                searchFragment.setEntity(intent.getStringExtra(SearchManager.QUERY));
-            } else {
-                // Defaults
-                roosterType = PersoonlijkRoosterFragment.class;
-                mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
-            }
+            // Defaults
+            roosterType = PersoonlijkRoosterFragment.class;
+            mainFragment = RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
+            isRooster = true;
+            isShowingBackArrow = false;
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, mainFragment)
@@ -109,8 +107,11 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         } else {
             roosterType = (Class<? extends RoosterViewFragment>) savedInstanceState.getSerializable(ROOSTER_TYPE);
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
-            isRooster = roosterType != PGTVRoosterFragment.class;
+            isRooster = savedInstanceState.getBoolean("isRooster");
+            isShowingBackArrow = savedInstanceState.getBoolean("isShowingBackArrow");
+            shouldUpdateToolbar = true;
             setSelectedWeek(savedInstanceState.getInt("WEEK"));
+            currentSelection = savedInstanceState.getInt("drawerSelection");
             if(!isRooster) {
                 ((PGTVRoosterFragment) mainFragment).setType((PGTVRoosterFragment.PGTVType) savedInstanceState.getSerializable("PGTVTYPE"));
             }
@@ -121,11 +122,11 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 .withActivity(this)
                 .addProfiles(
                         Account.isSet() ?
-                        new ProfileDrawerItem().withName(Account.getName()).withEmail(
-                                Account.getUserType() == Account.UserType.LEERLING ?
-                                    "Klas " + Account.getLeerlingKlas() :
-                                    "Docentcode: " + Account.getLeraarCode()
-                        ) : new ProfileDrawerItem().withName("Nog niet ingelogd")
+                            (profileDrawerItem = new ProfileDrawerItem().withName(Account.getName()).withEmail(
+                            Account.getUserType() == Account.UserType.LEERLING ?
+                                "Klas " + Account.getLeerlingKlas() :
+                                "Docentcode: " + Account.getLeraarCode()
+                            )) : (profileDrawerItem = new ProfileDrawerItem().withName("Nog niet ingelogd"))
                 )
                 .withCompactStyle(!Account.isSet())
                 .withHeaderBackground(R.drawable.drawer_header_blurred)
@@ -150,58 +151,49 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .withAccountHeader(drawerHeader)
-                .withAnimateDrawerItems(true)
                 .withCloseOnClick(true)
                 .withActionBarDrawerToggleAnimated(true)
                 .withSavedInstance(savedInstanceState)
-                .withOnDrawerItemClickListener((adapterView, view, i, l, iDrawerItem) -> {
+                .withOnDrawerItemClickListener((view, i, iDrawerItem) -> {
+                    if(iDrawerItem == null) return false;
+
                     int firstDigit = iDrawerItem.getIdentifier() / 10; // first digit
                     int secondDigit = iDrawerItem.getIdentifier() % 10; // second digit
 
+                    Class<? extends RoosterViewFragment> newType;
+
                     if (firstDigit == 0) {
-                        // Roostergroup
-                        Class<? extends RoosterViewFragment> newType = RoosterViewFragment.types[secondDigit];
-
-                        mainFragment = RoosterViewFragment.newInstance(newType, getSelectedWeek());
-                        roosterType = newType;
-
-                        if (toolbarSpinnerAdapter != null)
-                            toolbarSpinnerAdapter.setType(newType);
-
-                        isRooster = true;
+                        newType = RoosterViewFragment.types[secondDigit];
+                        setRoosterType(newType);
                     } else if (firstDigit == 1) {
                         // PGTV group
-                        Class<? extends RoosterViewFragment> newType = PGTVRoosterFragment.class;
-
-                        PGTVRoosterFragment fragment = RoosterViewFragment.newInstance(PGTVRoosterFragment.class, getSelectedWeek());
+                        newType = PGTVRoosterFragment.class;
+                        PGTVRoosterFragment.PGTVType pgtvType;
 
                         switch (secondDigit) {
                             case 0:
-                                fragment.setType(PGTVRoosterFragment.PGTVType.ROOSTER);
+                                pgtvType = PGTVRoosterFragment.PGTVType.ROOSTER;
                                 break;
                             case 1:
-                                fragment.setType(PGTVRoosterFragment.PGTVType.MEDEDELINGEN);
+                                pgtvType = PGTVRoosterFragment.PGTVType.MEDEDELINGEN;
                                 break;
                             default:
+                                pgtvType = PGTVRoosterFragment.PGTVType.ROOSTER;
                                 break;
                         }
-                        isRooster = false;
-                        mainFragment = fragment;
-                        roosterType = newType;
+
+                        setRoosterType(newType, pgtvType);
                     } else if (firstDigit == 2) {
                         // Settings
                         drawer.closeDrawer();
-                        drawer.setSelectionByIdentifier(currentSelection);
+                        drawer.setSelection(currentSelection);
                         Intent preferencesIntent = new Intent(this, PreferencesActivity.class);
                         startActivity(preferencesIntent);
                         return false;
                     }
 
-                    getSupportFragmentManager().popBackStackImmediate(); // voor zoeken
-                    getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
                     drawer.closeDrawer();
                     currentSelection = iDrawerItem.getIdentifier();
-                    toggleHamburgerArrow(false);
 
                     return true;
                 });
@@ -215,7 +207,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                 drawerBuilder.addDrawerItems(
                         new PrimaryDrawerItem()
                                 .withName(childName)
-                                .withIdentifier(Integer.parseInt(i + "" + u))
+                                .withIdentifier(10*i + u)
                                 .withIcon(resource)
                 );
                 u++;
@@ -228,9 +220,9 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
                         new DividerDrawerItem(),
                         new PrimaryDrawerItem().withName("Instellingen").withIcon(R.drawable.ic_settings_grey).withIdentifier(20)
                 )
-                .withSelectedItem(1)
                 .build();
 
+        drawer.setSelection(currentSelection);
         drawerLayout = drawer.getDrawerLayout();
 
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
@@ -241,16 +233,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
 
             @Override
             public void onDrawerClosed(View view) {
-                if (getSelectedWeek() == -1) return;
-                if (isRooster) {
-                    toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
-                    toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.VISIBLE);
-                } else {
-                    toolbar.findViewById(R.id.toolbar_spinner).setVisibility(View.GONE);
-                    toolbar.findViewById(R.id.toolbar_title).setVisibility(View.VISIBLE);
-                    ((TextView) toolbar.findViewById(R.id.toolbar_title)).setText("PGTV - " + ((PGTVRoosterFragment) mainFragment).getType().toDesc());
-                }
-                supportInvalidateOptionsMenu();
+                updateToolbarViews();
             }
 
             @Override
@@ -280,11 +263,15 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         toolbar.setNavigationOnClickListener(toolbarOnClickListener);
         actionBarDrawerToggle.setToolbarNavigationClickListener(toolbarOnClickListener);
 
+
         /* Search */
         searchBox = (SearchBox) findViewById(R.id.searchbox);
         searchBox.enableVoiceRecognition(this);
 
-        RoosterInfo.getWeken(this, this::addWekenToActionBar); // hier gebeurt de rest
+        if(shouldUpdateToolbar)
+            setShowBackArrow(isShowingBackArrow);
+
+        RoosterInfo.getWeken(this, this::addWekenToToolbar); // hier gebeurt de rest
     }
 
     @Override
@@ -293,7 +280,10 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         savedInstanceState = drawerHeader.saveInstanceState(savedInstanceState);
 
         savedInstanceState.putSerializable(ROOSTER_TYPE, roosterType);
+        savedInstanceState.putBoolean("isShowingBackArrow", isShowingBackArrow);
+        savedInstanceState.putBoolean("isRooster", isRooster);
         savedInstanceState.putInt("WEEK", getSelectedWeek());
+        savedInstanceState.putInt("drawerSelection", currentSelection);
         if(!isRooster) {
             savedInstanceState.putSerializable("PGTVTYPE", ((PGTVRoosterFragment) mainFragment).getType());
         }
@@ -309,6 +299,29 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         }
     }
 
+    public void onResume() {
+        super.onResume();
+        InternetConnectionManager.registerListener("main", this);
+
+        // Update profile item
+        if(Account.isSet()) {
+            profileDrawerItem.withName(Account.getName()).withEmail(
+                    Account.getUserType() == Account.UserType.LEERLING ?
+                            "Klas " + Account.getLeerlingKlas() :
+                            "Docentcode: " + Account.getLeraarCode());
+        } else {
+            profileDrawerItem.withEmail("").withName("Nog niet ingelogd");
+        }
+    }
+
+    public void onPause() {
+        super.onPause();
+        InternetConnectionManager.unregisterListener("main");
+    }
+
+    //endregion
+    //region Fragmentmanagement
+
     @Override
     public void onBackPressed() {
         if(drawer != null && drawer.isDrawerOpen()) {
@@ -317,18 +330,87 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
             searchBox.toggleSearch();
         } else if(roosterType == EntityRoosterFragment.class) {
             // actionbar goed maken
-            toggleHamburgerArrow(false);
+            setShowBackArrow(false);
 
             // fragments goed maken
             getSupportFragmentManager().popBackStackImmediate();
             mainFragment = (RoosterViewFragment) getSupportFragmentManager().findFragmentById(R.id.container);
             roosterType = mainFragment.getClass();
-            toolbarSpinnerAdapter.setType(roosterType);
-            drawer.setSelectionByIdentifier(currentSelection);
+            isRooster = roosterType != PGTVRoosterFragment.class;
+            drawer.setSelection(currentSelection);
+
+            // toolbar goed maken
+            updateToolbarViews();
         } else {
             super.onBackPressed();
         }
     }
+
+    private void setRoosterType(Class<? extends RoosterViewFragment> type) { setRoosterType(type, PGTVRoosterFragment.PGTVType.ROOSTER, null); }
+    private void setRoosterType(Class<? extends RoosterViewFragment> type, PGTVRoosterFragment.PGTVType pgtvType) { setRoosterType(type, pgtvType, null); }
+    private void setRoosterType(Class<? extends RoosterViewFragment> type, String query) { setRoosterType(type, PGTVRoosterFragment.PGTVType.ROOSTER, query); }
+    private void setRoosterType(Class<? extends RoosterViewFragment> type, PGTVRoosterFragment.PGTVType pgtvType, String query) {
+        if(type == roosterType && type != PGTVRoosterFragment.class) {
+            // Zelfde type, niets doen behalve bij zoeken en PGTV
+            if(type == EntityRoosterFragment.class) {
+                ((EntityRoosterFragment) mainFragment).setEntity(query);
+                mainFragment.loadRooster();
+            }
+        } else {
+            // Niet zoeken
+            mainFragment = RoosterViewFragment.newInstance(type, getSelectedWeek());
+            roosterType = type;
+
+            if(type == PGTVRoosterFragment.class) {
+                // PGTV type
+                ((PGTVRoosterFragment) mainFragment).setType(pgtvType);
+                isRooster = false;
+            } else if(type == EntityRoosterFragment.class) {
+                // Zoeken
+                ((EntityRoosterFragment) mainFragment).setEntity(query);
+                isRooster = true;
+            } else {
+                isRooster = true;
+            }
+
+            if(type != EntityRoosterFragment.class) {
+                getSupportFragmentManager().popBackStackImmediate();
+                getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).commit();
+                setShowBackArrow(false);
+            } else {
+                getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).addToBackStack("search").commit();
+                setShowBackArrow(true);
+            }
+        }
+
+        updateToolbarViews();
+    }
+
+    private void updateToolbarViews() {
+        View toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
+        View toolbarSpinner = toolbar.findViewById(R.id.toolbar_spinner);
+        if(isRooster && toolbarSpinner != null) {
+            // Rooster en weken geset, toon de spinner en geen titel
+            toolbarSpinner.setVisibility(View.VISIBLE);
+            if(toolbarTitle != null) toolbarTitle.setVisibility(View.GONE);
+        } else {
+            // Geen rooster of geen weken geset, toon geen spinner en een titel
+            if(toolbarTitle == null) return; // dan weet ik het ook niet meer
+            toolbarTitle.setVisibility(View.VISIBLE);
+            if(toolbarSpinner != null) toolbarSpinner.setVisibility(View.GONE);
+
+            // Als het PGTV is, toon de juiste titel
+            if(!isRooster) {
+                ((TextView) toolbarTitle).setText("PGTV - " + ((PGTVRoosterFragment) mainFragment).getType().toDesc());
+            } else {
+                ((TextView) toolbarTitle).setText(R.string.app_name);
+            }
+        }
+
+        supportInvalidateOptionsMenu(); // voor context-afhankelijke knoppen
+    }
+
+    //endregion
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -365,7 +447,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         return true;
     }
 
-    private void addWekenToActionBar(Object weken) {
+    private void addWekenToToolbar(Object weken) {
         ArrayList<Week> wekenArray = (ArrayList<Week>) weken;
         ArrayList<String> strings = new ArrayList<>();
         if (wekenArray == null || wekenArray.isEmpty()) {
@@ -380,9 +462,8 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         View spinnerContainer = LayoutInflater.from(this).inflate(R.layout.toolbar_spinner, toolbar, false);
         ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         toolbar.addView(spinnerContainer, layoutParams);
-        toolbar.findViewById(R.id.toolbar_title).setVisibility(View.GONE);
 
-        toolbarSpinnerAdapter = new ActionBarSpinnerAdapter(this, strings, ((Object) mainFragment).getClass());
+        toolbarSpinnerAdapter = new ToolbarSpinnerAdapter(this, strings);
 
         Spinner spinner = (Spinner) spinnerContainer.findViewById(R.id.toolbar_spinner);
         spinner.setAdapter(toolbarSpinnerAdapter);
@@ -401,6 +482,8 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         if(getSelectedWeek() != -1) {
             spinner.setSelection(strings.indexOf("Week " + getSelectedWeek()));
         }
+
+        updateToolbarViews();
     }
 
     void setSelectedWeek(int week) {
@@ -438,28 +521,17 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
             @Override
             public void onSearch(String s) {
                 closeSearch();
-                /* Fragment dingen */
-                EntityRoosterFragment searchFragment;
-                if (roosterType != EntityRoosterFragment.class) {
-                    // Set to entityrooster
-                    roosterType = EntityRoosterFragment.class;
-                    searchFragment = (EntityRoosterFragment) RoosterViewFragment.newInstance(roosterType, getSelectedWeek());
-                    toolbarSpinnerAdapter.setType(roosterType);
 
-                    mainFragment = searchFragment;
-                    searchFragment.setEntity(s);
+                setRoosterType(EntityRoosterFragment.class, s);
+/*                IDrawerItem drawerItem = drawer.getDrawerItem(drawer.getCurrentSelection());
+                if(drawerItem != null) {
+                    drawerItem.withSetSelected(false);
+                    drawer.updateItem(drawerItem);
+                    //drawer.getAdapter().notifyItemChanged(drawer.getCurrentSelectedPosition());
+                }*/
+                drawer.setSelectionAtPosition(-1);
 
-                    getSupportFragmentManager().beginTransaction().replace(R.id.container, mainFragment).addToBackStack("search").commit();
-
-                    // actionbar & drawer
-                    toggleHamburgerArrow(true);
-                    drawer.getListView().setSelection(-1);
-                    drawer.getListView().setItemChecked(drawer.getCurrentSelection() + 1, false); // +1 for the header offset
-                } else {
-                    searchFragment = (EntityRoosterFragment) mainFragment;
-                    searchFragment.setEntity(s);
-                    searchFragment.loadRooster();
-                }
+                updateToolbarViews();
 
                 // Save search query
             }
@@ -472,7 +544,7 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
         overlay.setVisibility(View.GONE);
     }
 
-    public void toggleHamburgerArrow(boolean showBackArrow) {
+    public void setShowBackArrow(boolean showBackArrow) {
         float start = showBackArrow ? 0: 1;
         float end = showBackArrow ? 1 : 0;
 
@@ -491,22 +563,12 @@ public class RoosterActivity extends AppCompatActivity implements InternetConnec
     @Override
     public void internetConnectionChanged(boolean hasInternetConnection) {
         if(!hasInternetConnection) {
-            internetConnectionSnackbar = Snackbar.make(findViewById(R.id.container), "Geen internetverbinding meer. Zodra er weer verbinding is zal de app het nieuwste rooster ophalen", Snackbar.LENGTH_LONG);
+            internetConnectionSnackbar = Snackbar.make(findViewById(R.id.container), "Geen internetverbinding!", Snackbar.LENGTH_INDEFINITE);
             internetConnectionSnackbar.show();
         } else {
             if(internetConnectionSnackbar != null)
                 internetConnectionSnackbar.dismiss();
         }
         mainFragment.setInternetConnectionState(hasInternetConnection);
-    }
-
-    public void onResume() {
-        super.onResume();
-        InternetConnectionManager.registerListener("main", this);
-    }
-
-    public void onPause() {
-        super.onPause();
-        InternetConnectionManager.unregisterListener("main");
     }
 }

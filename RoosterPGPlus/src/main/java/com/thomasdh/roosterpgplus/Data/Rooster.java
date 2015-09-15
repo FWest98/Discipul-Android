@@ -8,13 +8,13 @@ import com.j256.ormlite.stmt.DeleteBuilder;
 import com.thomasdh.roosterpgplus.Database.DatabaseHelper;
 import com.thomasdh.roosterpgplus.Database.DatabaseManager;
 import com.thomasdh.roosterpgplus.Fragments.RoosterViewFragment;
+import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.ExceptionHandler;
 import com.thomasdh.roosterpgplus.Helpers.HelperFunctions;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
+import com.thomasdh.roosterpgplus.Helpers.Apache.URLEncodedUtils;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeComparator;
 import org.json.JSONArray;

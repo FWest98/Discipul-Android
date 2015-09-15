@@ -1,38 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="90sp"
-    android:background="@drawable/basic_rect_nobottom"
+    android:clipToPadding="false"
     android:id="@+id/rooster_uur_linearlayout">
 
-    <RelativeLayout
+    <com.h6ah4i.android.materialshadowninepatch.MaterialShadowContainerView
+        style="@style/ms9_DefaultShadowStyle"
         android:layout_width="match_parent"
-        android:layout_height="90sp"
+        android:layout_height="wrap_content"
+        android:elevation="1dp"
+        app:ms9_shadowElevation="1dp">
 
-        android:paddingLeft="11sp"
-        android:paddingRight="14sp"
-        android:paddingTop="8sp"
-
-        android:background="@drawable/diagonal_stripes_red"
-
-        android:id="@+id/optioneel_container">
-
-        <TextView
-            android:id="@+id/layerCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#000"
-            android:layout_alignParentRight="true"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/vervallen_tekst"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:textColor="#000"
-            android:layout_height="wrap_content"
-            android:text="@string/rooster_vervallen"
-            android:textSize="20sp" />
+            android:layout_height="90sp"
 
-    </RelativeLayout>
+            android:paddingLeft="11sp"
+            android:paddingRight="14sp"
+            android:paddingTop="8sp"
+            android:layout_margin="2dp"
+            android:layout_marginBottom="7dp"
+
+            android:background="#FEB7B1"
+            android:id="@+id/optioneel_container">
+
+            <TextView
+                android:id="@+id/layerCounter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#000"
+                android:layout_alignParentRight="true"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/vervallen_tekst"
+                android:layout_width="match_parent"
+                android:textColor="#000"
+                android:layout_height="wrap_content"
+                android:text="@string/rooster_vervallen"
+                android:textSize="20sp" />
+
+        </RelativeLayout>
+    </com.h6ah4i.android.materialshadowninepatch.MaterialShadowContainerView>
 </RelativeLayout>

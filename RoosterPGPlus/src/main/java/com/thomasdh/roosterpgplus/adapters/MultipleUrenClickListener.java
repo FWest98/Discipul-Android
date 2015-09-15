@@ -26,7 +26,7 @@ public class MultipleUrenClickListener implements View.OnClickListener {
         this.allUren = allUren;
         shortAnimationTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-        minWidth = new Converter(context).DPtoPX(9);
+        minWidth = new Converter(context).DPtoPX(13);
         allUren.get(currentView - 1).getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @SuppressWarnings("deprecation")
             @Override

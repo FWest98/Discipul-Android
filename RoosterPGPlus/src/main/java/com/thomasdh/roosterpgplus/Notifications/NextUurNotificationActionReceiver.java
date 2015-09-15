@@ -19,7 +19,7 @@ import org.joda.time.DateTime;
 import java.util.Calendar;
 
 public class NextUurNotificationActionReceiver extends BroadcastReceiver {
-    private static int notificationID = 0;
+    private static final int notificationID = 0;
     private static final String NOTIFICATION = "com.thomasdh.roosterpgplus.Notifications.NOTIFICATION";
 
     @Override

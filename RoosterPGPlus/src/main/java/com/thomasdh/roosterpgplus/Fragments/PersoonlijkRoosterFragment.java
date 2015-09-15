@@ -12,14 +12,14 @@ import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterBuilder;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.Models.Lesuur;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -40,7 +40,7 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment implements R
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        Account.initialize(getActivity());
+        Account.initialize(getContext());
 
         setRootView(inflater.inflate(R.layout.fragment_main, container, false));
 
@@ -51,7 +51,7 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment implements R
         viewPager.setAdapter(new AnimatedPagerAdapter());
 
         if(!Account.isSet()) {
-            Account.getInstance(getActivity()).login(getActivity(), result -> loadRooster(), result -> swipeRefreshLayout.setRefreshing(false));
+            Account.getInstance(getContext()).login(getActivity(), result -> loadRooster(), result -> swipeRefreshLayout.setRefreshing(false));
         } else {
             loadRooster();
         }
@@ -72,14 +72,14 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment implements R
     }
 
     @Override
-    public void setLoad() { RoosterInfo.setLoad(LOADS_NAME+getWeek(), System.currentTimeMillis(), getActivity()); }
+    public void setLoad() { RoosterInfo.setLoad(LOADS_NAME+getWeek(), System.currentTimeMillis(), getContext()); }
 
     @Override
-    public long getLoad() { return RoosterInfo.getLoad(LOADS_NAME+getWeek(), getActivity()); }
+    public long getLoad() { return RoosterInfo.getLoad(LOADS_NAME+getWeek(), getContext()); }
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad(LOADS_NAME+getWeek(), getActivity());
+        Long lastLoad = RoosterInfo.getLoad(LOADS_NAME+getWeek(), getContext());
         if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
@@ -101,7 +101,6 @@ public class PersoonlijkRoosterFragment extends RoosterViewFragment implements R
 
     @Override
     public View fillLesView(Lesuur lesuur, View lesView, LayoutInflater inflater) {
-        lesView.findViewById(R.id.optioneel_container).getBackground().setAlpha(0); // geen speciale uren
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 
         TextView vakTextView = (TextView) lesView.findViewById(R.id.rooster_vak);

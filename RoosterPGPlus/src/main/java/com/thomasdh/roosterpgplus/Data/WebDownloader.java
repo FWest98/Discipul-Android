@@ -10,6 +10,7 @@ import com.thomasdh.roosterpgplus.Helpers.InternetConnection;
 import com.thomasdh.roosterpgplus.Models.Klas;
 import com.thomasdh.roosterpgplus.Models.Leerling;
 import com.thomasdh.roosterpgplus.Models.Leraar;
+import com.thomasdh.roosterpgplus.Models.Lokaal;
 import com.thomasdh.roosterpgplus.Models.PGTVPage;
 import com.thomasdh.roosterpgplus.Models.Vak;
 import com.thomasdh.roosterpgplus.Models.Week;
@@ -51,6 +52,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 
             connection.addRequestProperty("APIVersion", Constants.API_VERSION);
+            connection.setConnectTimeout(Constants.TIMEOUT_MILLIS);
 
             String content = "";
             try {
@@ -204,11 +206,13 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
             if("".equals(s)) throw new NullPointerException("Geen lokalen gevonden!");
 
             // verder verwerken
-            ArrayList<String> lokalen = new ArrayList<>();
+            ArrayList<Lokaal> lokalen = new ArrayList<>();
             JSONArray jsonArray = new JSONArray(s);
 
             for(int i = 0; i < jsonArray.length(); i++) {
-                lokalen.add(jsonArray.getString(i));
+                JSONObject jsonLokaal = jsonArray.getJSONObject(i);
+                Lokaal lokaal = new Lokaal (jsonLokaal.getString("code"), jsonLokaal.getString("name"));
+                lokalen.add(lokaal);
             }
 
             return lokalen;
@@ -345,7 +349,7 @@ public class WebDownloader extends AsyncTask<Object, Void, Hashtable<String, Obj
 
 
     private interface AsyncCallback {
-        public Object onBackground(int statusCode, String result) throws Exception;
+        Object onBackground(int statusCode, String result) throws Exception;
     }
 
 }

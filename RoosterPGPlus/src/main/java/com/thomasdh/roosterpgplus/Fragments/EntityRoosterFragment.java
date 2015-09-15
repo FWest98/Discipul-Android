@@ -11,12 +11,11 @@ import android.widget.TextView;
 import com.thomasdh.roosterpgplus.Adapters.AnimatedPagerAdapter;
 import com.thomasdh.roosterpgplus.Data.Account;
 import com.thomasdh.roosterpgplus.Data.RoosterInfo;
+import com.thomasdh.roosterpgplus.Helpers.Apache.BasicNameValuePair;
+import com.thomasdh.roosterpgplus.Helpers.Apache.NameValuePair;
 import com.thomasdh.roosterpgplus.Helpers.FragmentTitle;
 import com.thomasdh.roosterpgplus.R;
 import com.thomasdh.roosterpgplus.Settings.Constants;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.List;
 
@@ -77,7 +76,7 @@ public class EntityRoosterFragment extends RoosterViewFragment {
 
     @Override
     public LoadType getLoadType() {
-        Long lastLoad = RoosterInfo.getLoad("entity"+getEntity()+getWeek(), getActivity());
+        Long lastLoad = RoosterInfo.getLoad("entity"+getEntity()+getWeek(), getContext());
         if(lastLoad == null || lastLoad == 0) {
             return LoadType.ONLINE;
         } else if(System.currentTimeMillis() > lastLoad + MIN_REFRESH_WAIT_TIME) {
@@ -89,12 +88,12 @@ public class EntityRoosterFragment extends RoosterViewFragment {
 
     @Override
     public long getLoad() {
-        return RoosterInfo.getLoad("entity"+getEntity()+getWeek(), getActivity());
+        return RoosterInfo.getLoad("entity"+getEntity()+getWeek(), getContext());
     }
 
     @Override
     public void setLoad() {
-        RoosterInfo.setLoad("entity"+getEntity()+getWeek(), System.currentTimeMillis(), getActivity());
+        RoosterInfo.setLoad("entity"+getEntity()+getWeek(), System.currentTimeMillis(), getContext());
     }
 
     //endregion

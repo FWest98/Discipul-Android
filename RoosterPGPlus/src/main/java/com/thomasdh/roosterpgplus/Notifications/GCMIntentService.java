@@ -24,7 +24,7 @@ public class GCMIntentService extends IntentService {
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         String messageType = gcm.getMessageType(intent);
 
-        if(!extras.isEmpty()) {
+        if(extras != null && !extras.isEmpty()) {
             switch (messageType) {
                 case GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE: {
                     // Handle notification
@@ -37,7 +37,7 @@ public class GCMIntentService extends IntentService {
 
     private static void createNotification(String title, String message, Context context) {
         boolean pushNotificationsSetting = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("pushNotificaties", true);
-        if(!pushNotificationsSetting) {
+        if(!pushNotificationsSetting || "".equals(message)) {
             return;
         }
 

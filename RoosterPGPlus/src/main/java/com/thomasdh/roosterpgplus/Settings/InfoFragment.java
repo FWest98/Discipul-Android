@@ -8,7 +8,6 @@ import com.thomasdh.roosterpgplus.R;
 
 public class InfoFragment extends LibsFragment {
     public InfoFragment() {
-        super();
 
         Bundle bundle = new Bundle();
 
@@ -17,7 +16,7 @@ public class InfoFragment extends LibsFragment {
 
         bundle.putStringArray(Libs.BUNDLE_FIELDS, Libs.toStringArray(R.string.class.getFields()));
         bundle.putStringArray(Libs.BUNDLE_LIBS, new String[]{
-                "projectlombok", "ormlite", "functionaljava", "acra", "rxjava"
+                "projectlombok", "ormlite", "functionaljava", "acra", "rxjava", "dashclock", "materialprogressbar", "persistentsearch", "materialshadow"
         });
 
         bundle.putBoolean(Libs.BUNDLE_VERSION, true);
