@@ -1081,6 +1081,8 @@ public class Account {
                         throw new Exception("Fout bij wijzigen. Log opnieuw in en probeer het opnieuw");
                     case HttpURLConnection.HTTP_NOT_FOUND:
                         throw new Exception("Kon account niet (meer) vinden. Log opnieuw in en probeer het opnieuw");
+                    case HttpURLConnection.HTTP_CONFLICT:
+                        throw new Exception("Gebruikersnaam is al in gebruik!");
                     case HttpURLConnection.HTTP_NO_CONTENT:
                         return data;
                     default:
