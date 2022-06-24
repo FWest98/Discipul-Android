@@ -299,7 +299,7 @@ public class Account {
         NextUurNotifications.disableNotifications(context);
         new NextUurNotifications(context);
 
-        registerGCM();
+        registerGCM(activity);
 
         getAccountInfo(p -> {
             JSONObject json = new JSONObject((String) p);
